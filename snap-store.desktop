@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Snap Store
+Comment=Add, remove or update software on this computer
+Exec=snap-store
+Type=Application
+Keywords=

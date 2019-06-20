@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="SnapApplicationWindow" parent="GtkApplicationWindow">
+    <property name="visible">True</property>
+    <child>
+      <object class="GtkLabel" id="label">
+        <property name="visible">True</property>
+      </object>
+    </child>
+  </template>
+</interface>
