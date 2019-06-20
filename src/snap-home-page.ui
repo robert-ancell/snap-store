@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="SnapApplicationWindow" parent="GtkApplicationWindow">
+  <template class="SnapHomePage" parent="GtkBox">
     <child>
-      <object class="SnapHomePage" id="home_page">
+      <object class="GtkBox" id="category_box">
         <property name="visible">True</property>
+        <property name="orientation">vertical</property>
       </object>
     </child>
   </template>

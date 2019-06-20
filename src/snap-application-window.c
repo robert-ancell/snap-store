@@ -8,10 +8,13 @@
  */
 
 #include "snap-application-window.h"
+#include "snap-home-page.h"
 
 struct _SnapApplicationWindow
 {
     GtkApplicationWindow parent_instance;
+
+    SnapHomePage *home_page;
 };
 
 G_DEFINE_TYPE (SnapApplicationWindow, snap_application_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -28,11 +31,14 @@ snap_application_window_class_init (SnapApplicationWindowClass *klass)
     G_OBJECT_CLASS (klass)->dispose = snap_application_window_dispose;
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/snap-application-window.ui");
+
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), SnapApplicationWindow, home_page);
 }
 
 static void
 snap_application_window_init (SnapApplicationWindow *self)
 {
+    snap_home_page_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 

@@ -2,5 +2,9 @@
 <gresources>
   <gresource prefix="/com/ubuntu/SnapStore">
     <file preprocess="xml-stripblanks">snap-application-window.ui</file>
+    <file preprocess="xml-stripblanks">snap-app-tile.ui</file>
+    <file preprocess="xml-stripblanks">snap-category-view.ui</file>
+    <file preprocess="xml-stripblanks">snap-hero-tile.ui</file>
+    <file preprocess="xml-stripblanks">snap-home-page.ui</file>
   </gresource>
 </gresources>

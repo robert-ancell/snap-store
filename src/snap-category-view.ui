@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="SnapCategoryView" parent="GtkFlowBoxChild">
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel" id="title_label">
+            <property name="visible">True</property>
+            <property name="halign">start</property>
+          </object>
+        </child>
+        <child>
+          <object class="SnapHeroTile" id="hero_tile">
+            <property name="visible">True</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkFlowBox" id="app_flow_box">
+            <property name="visible">True</property>
+            <property name="min-children-per-line">3</property>
+            <property name="max-children-per-line">3</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
