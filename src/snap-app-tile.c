@@ -70,4 +70,5 @@ snap_app_tile_set_name (SnapAppTile *self, const gchar *name)
     gtk_label_set_label (self->name_label, name);
     gtk_label_set_label (self->publisher_label, "Publisher");
     gtk_label_set_label (self->summary_label, "Lorem Ipsum...");
+    gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
 }
