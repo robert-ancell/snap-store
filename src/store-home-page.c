@@ -105,6 +105,53 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
     store_category_view_set_apps (view, apps);
 }
 
+static const gchar *
+get_section_title (const gchar *name)
+{
+    // FIXME: translatable
+    if (strcmp (name, "development") == 0)
+        return "Development";
+    if (strcmp (name, "games") == 0)
+        return "Games";
+    if (strcmp (name, "social") == 0)
+        return "Social";
+    if (strcmp (name, "productivity") == 0)
+        return "Productivity";
+    if (strcmp (name, "utilities") == 0)
+        return "Utilities";
+    if (strcmp (name, "photo-and-video") == 0)
+        return "Photo and Video";
+    if (strcmp (name, "server-and-cloud") == 0)
+        return "Server and Cloud";
+    if (strcmp (name, "security") == 0)
+        return "Security";
+    if (strcmp (name, "") == 0)
+        return "Security";
+    if (strcmp (name, "featured") == 0)
+        return "Featured";
+    if (strcmp (name, "devices-and-iot") == 0)
+        return "Devices and IoT";
+    if (strcmp (name, "music-and-audio") == 0)
+        return "Music and Audio";
+    if (strcmp (name, "entertainment") == 0)
+        return "Entertainment";
+    if (strcmp (name, "art-and-design") == 0)
+        return "Art and Design";
+    if (strcmp (name, "finance") == 0)
+        return "Finance";
+    if (strcmp (name, "news-and-weather") == 0)
+        return "News and Weather";
+    if (strcmp (name, "science") == 0)
+        return "Science";
+    if (strcmp (name, "health-and-fitness") == 0)
+        return "Health and Fitness";
+    if (strcmp (name, "education") == 0)
+        return "Education";
+    if (strcmp (name, "books-and-reference") == 0)
+        return "Books and Reference";
+    return name;
+}
+
 static void
 get_categories_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
@@ -120,7 +167,7 @@ get_categories_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
 
     for (int i = 0; sections[i] != NULL; i++) {
-        StoreCategoryView *view = store_category_view_new (sections[i]);
+        StoreCategoryView *view = store_category_view_new (get_section_title (sections[i]));
         g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
         g_autoptr(SnapdClient) client = snapd_client_new ();
         snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, view);
