@@ -16,7 +16,7 @@
         </child>
         <child>
           <object class="StoreHeroTile" id="hero_tile">
-            <property name="visible">True</property>
+            <property name="visible">False</property>
           </object>
         </child>
         <child>

@@ -101,6 +101,7 @@ store_category_view_set_hero (StoreCategoryView *self, StoreApp *app)
     g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
 
     store_hero_tile_set_app (self->hero_tile, app);
+    gtk_widget_set_visible (GTK_WIDGET (self->hero_tile), app != NULL);
 }
 
 void

@@ -19,6 +19,7 @@ struct _StoreHomePage
     GtkBox parent_instance;
 
     GtkBox *category_box;
+    StoreCategoryView *installed_view;
 
     GCancellable *cancellable;
 };
@@ -129,14 +130,44 @@ get_categories_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 }
 
 static void
+get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    StoreHomePage *self = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GPtrArray) snaps = snapd_client_get_snaps_finish (SNAPD_CLIENT (object), result, &error);
+    if (snaps == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to get installed snaps: %s", error->message);
+        return;
+    }
+
+    g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
+    for (guint i = 0; i < snaps->len; i++) {
+        SnapdSnap *snap = g_ptr_array_index (snaps, i);
+        g_ptr_array_add (apps, snap_to_app (snap));
+    }
+    store_category_view_set_apps (self->installed_view, apps);
+    gtk_widget_show (GTK_WIDGET (self->installed_view));
+}
+
+static void
 store_home_page_init (StoreHomePage *self)
 {
     self->cancellable = g_cancellable_new ();
 
     gtk_widget_init_template (GTK_WIDGET (self));
 
+    self->installed_view = store_category_view_new ("Installed"); // FIXME: translatable
+    g_signal_connect_object (self->installed_view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
+    gtk_box_pack_end (self->category_box, GTK_WIDGET (self->installed_view), FALSE, FALSE, 0);
+
     g_autoptr(SnapdClient) client = snapd_client_new ();
     snapd_client_get_sections_async (client, self->cancellable, get_categories_cb, self);
+
+    g_autoptr(SnapdClient) client2 = snapd_client_new ();
+    snapd_client_get_snaps_async (client2, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);
 }
 
 StoreHomePage *
