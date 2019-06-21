@@ -24,6 +24,13 @@ struct _StoreWindow
 G_DEFINE_TYPE (StoreWindow, store_window, GTK_TYPE_APPLICATION_WINDOW)
 
 static void
+app_activated_cb (StoreWindow *self, const gchar *name)
+{
+    store_app_page_set_name (self->app_page, name);
+    gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->app_page));
+}
+
+static void
 store_window_dispose (GObject *object)
 {
     StoreWindow *self = STORE_WINDOW (object);
@@ -39,6 +46,8 @@ store_window_class_init (StoreWindowClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, app_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, home_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, stack);
+
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
 }
 
 static void

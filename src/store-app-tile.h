@@ -19,4 +19,6 @@ StoreAppTile *store_app_tile_new      (const gchar *name);
 
 void          store_app_tile_set_name (StoreAppTile *tile, const gchar *name);
 
+const gchar  *store_app_tile_get_name (StoreAppTile *tile);
+
 G_END_DECLS

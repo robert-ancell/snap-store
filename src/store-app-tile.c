@@ -71,3 +71,10 @@ store_app_tile_set_name (StoreAppTile *self, const gchar *name)
     gtk_label_set_label (self->summary_label, "Lorem Ipsum...");
     gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
 }
+
+const gchar *
+store_app_tile_get_name (StoreAppTile *self)
+{
+    g_return_val_if_fail (STORE_IS_APP_TILE (self), NULL);
+    return self->name;
+}

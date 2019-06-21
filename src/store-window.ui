@@ -7,6 +7,7 @@
         <child>
           <object class="StoreHomePage" id="home_page">
             <property name="visible">True</property>
+            <signal name="app-activated" handler="app_activated_cb" object="StoreWindow" swapped="yes"/>
           </object>
         </child>
         <child>
