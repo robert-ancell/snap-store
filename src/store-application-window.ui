@@ -2,8 +2,18 @@
 <interface>
   <template class="StoreApplicationWindow" parent="GtkApplicationWindow">
     <child>
-      <object class="StoreHomePage" id="home_page">
+      <object class="GtkStack" id="stack">
         <property name="visible">True</property>
+        <child>
+          <object class="StoreHomePage" id="home_page">
+            <property name="visible">True</property>
+          </object>
+        </child>
+        <child>
+          <object class="StoreAppPage" id="app_page">
+            <property name="visible">True</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>
