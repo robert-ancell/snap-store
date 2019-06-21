@@ -65,7 +65,8 @@ store_hero_tile_set_app (StoreHeroTile *self, StoreApp *app)
     if (app != NULL)
         self->app = g_object_ref (app);
 
-    gtk_label_set_label (self->title_label, store_app_get_title (app));
+    g_autofree gchar *title = g_utf8_strup (store_app_get_title (app), -1);
+    gtk_label_set_label (self->title_label, title);
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
     gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
 }
