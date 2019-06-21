@@ -8,6 +8,7 @@
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
+            <property name="expand">True</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -21,9 +22,11 @@
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
+                    <property name="hexpand">True</property>
                     <child>
                       <object class="GtkLabel" id="title_label">
                         <property name="visible">True</property>
+                        <property name="halign">start</property>
                         <style>
                           <class name="app-page-title-label"/>
                         </style>
@@ -32,6 +35,7 @@
                     <child>
                       <object class="GtkLabel" id="publisher_label">
                         <property name="visible">True</property>
+                        <property name="halign">start</property>
                         <style>
                           <class name="app-page-publisher-label"/>
                         </style>
@@ -61,9 +65,11 @@
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
+                    <property name="hexpand">True</property>
                     <child>
                       <object class="GtkLabel" id="summary_label">
                         <property name="visible">True</property>
+                        <property name="halign">start</property>
                         <style>
                           <class name="app-page-summary-label"/>
                         </style>
@@ -72,7 +78,9 @@
                     <child>
                       <object class="GtkLabel" id="description_label">
                         <property name="visible">True</property>
+                        <property name="halign">start</property>
                         <property name="vexpand">True</property>
+                        <property name="valign">start</property>
                         <style>
                           <class name="app-page-description-label"/>
                         </style>
