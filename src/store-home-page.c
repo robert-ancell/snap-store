@@ -19,6 +19,8 @@ struct _StoreHomePage
     GtkBox parent_instance;
 
     GtkBox *category_box;
+
+    GCancellable *cancellable;
 };
 
 G_DEFINE_TYPE (StoreHomePage, store_home_page, GTK_TYPE_BOX)
@@ -41,6 +43,8 @@ static void
 store_home_page_dispose (GObject *object)
 {
     StoreHomePage *self = STORE_HOME_PAGE (object);
+    g_cancellable_cancel (self->cancellable);
+    g_clear_object (&self->cancellable);
 }
 
 static void
@@ -62,41 +66,66 @@ store_home_page_class_init (StoreHomePageClass *klass)
                                                   1, store_app_get_type ());
 }
 
-static GPtrArray *
-make_apps (const gchar *name_list)
+static void
+get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
-    g_autoptr(GPtrArray) result = g_ptr_array_new_with_free_func (g_object_unref);
-    g_auto(GStrv) names = g_strsplit (name_list, ";", -1);
-    for (int i = 0; names[i] != NULL; i++)
-        g_ptr_array_add (result, store_app_new (names[i]));
-    return g_steal_pointer (&result);
+    StoreCategoryView *view = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GPtrArray) snaps = snapd_client_find_section_finish (SNAPD_CLIENT (object), result, NULL, &error);
+    if (snaps == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to find snaps in category: %s", error->message);
+        return;
+    }
+
+    if (snaps->len >= 1) {
+        SnapdSnap *snap = g_ptr_array_index (snaps, 0);
+        g_autoptr(StoreApp) hero = store_app_new (snapd_snap_get_name (snap));
+        store_category_view_set_hero (view, hero);
+    }
+    g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
+    for (guint i = 1; i < snaps->len && i < 10; i++) {
+        SnapdSnap *snap = g_ptr_array_index (snaps, i);
+        g_ptr_array_add (apps, store_app_new (snapd_snap_get_name (snap)));
+    }
+    store_category_view_set_apps (view, apps);
+}
+
+static void
+get_categories_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    StoreHomePage *self = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_auto(GStrv) sections = snapd_client_get_sections_finish (SNAPD_CLIENT (object), result, &error);
+    if (sections == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to get sections: %s", error->message);
+        return;
+    }
+
+    for (int i = 0; sections[i] != NULL; i++) {
+        StoreCategoryView *view = store_category_view_new (sections[i]);
+        g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
+        g_autoptr(SnapdClient) client = snapd_client_new ();
+        snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, view);
+        gtk_widget_show (GTK_WIDGET (view));
+        gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
+    }
 }
 
 static void
 store_home_page_init (StoreHomePage *self)
 {
+    self->cancellable = g_cancellable_new ();
+
     gtk_widget_init_template (GTK_WIDGET (self));
 
     g_autoptr(SnapdClient) client = snapd_client_new ();
-    g_auto(GStrv) sections = snapd_client_get_sections_sync (client, NULL, NULL); // FIXME async
-    for (int i = 0; sections[i] != NULL; i++) {
-        StoreCategoryView *view = store_category_view_new (sections[i]);
-        g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-        g_autoptr(GPtrArray) snaps = snapd_client_find_section_sync (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, NULL, NULL, NULL); // FIXME async
-        if (snaps->len >= 1) {
-            SnapdSnap *snap = g_ptr_array_index (snaps, 0);
-            g_autoptr(StoreApp) hero = store_app_new (snapd_snap_get_name (snap));
-            store_category_view_set_hero (view, hero);
-        }
-        g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
-        for (guint j = 1; j < snaps->len && j < 10; j++) {
-            SnapdSnap *snap = g_ptr_array_index (snaps, j);
-            g_ptr_array_add (apps, store_app_new (snapd_snap_get_name (snap)));
-        }
-        store_category_view_set_apps (view, apps);
-        gtk_widget_show (GTK_WIDGET (view));
-        gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
-    }
+    snapd_client_get_sections_async (client, self->cancellable, get_categories_cb, self);
 }
 
 StoreHomePage *
