@@ -85,6 +85,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     gtk_label_set_label (self->description_label, store_app_get_description (app));
     g_autofree gchar *details_title = g_strdup_printf ("Details for %s", store_app_get_title (app)); // FIXME: translatable
     gtk_label_set_label (self->details_title_label, details_title);
+    store_image_set_url (self->icon_image, NULL);
     store_image_set_url (self->icon_image, store_app_get_icon (app));
 }
 
