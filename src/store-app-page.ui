@@ -64,7 +64,7 @@
             </child>
             <child>
               <object class="GtkBox" id="screenshots_box">
-                <property name="visible">True</property>
+                <property name="visible">False</property>
                 <property name="orientation">horizontal</property>
               </object>
             </child>
@@ -77,6 +77,7 @@
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
                     <property name="hexpand">True</property>
+                    <property name="spacing">30</property>
                     <child>
                       <object class="GtkLabel" id="summary_label">
                         <property name="visible">True</property>
@@ -109,7 +110,7 @@
                       <object class="GtkLabel" id="details_title_label">
                         <property name="visible">True</property>
                         <style>
-                          <class name="app-page-details-title"/>
+                          <class name="app-page-details-title-label"/>
                         </style>
                       </object>
                     </child>

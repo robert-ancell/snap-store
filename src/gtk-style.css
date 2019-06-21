@@ -1,9 +1,26 @@
+.app-page-details-title-label {
+    font-size: large;
+}
+
+.app-page-summary-label {
+    font-size: large;
+}
+
 .app-page-title-label {
-    font-size: 36px;
-    font-family: Ubuntu;
+    font-size: xx-large;
+}
+
+.app-tile-publisher-label {
+    opacity: 0.5;
 }
 
 .category-title-label {
-    font-size: 36px;
-    font-family: Ubuntu;
+    font-size: xx-large;
+}
+
+.hero-title-label {
+}
+
+.hero-summary-label {
+    font-size: x-large;
 }
