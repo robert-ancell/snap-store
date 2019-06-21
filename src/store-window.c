@@ -17,6 +17,7 @@ struct _StoreWindow
     GtkApplicationWindow parent_instance;
 
     StoreAppPage *app_page;
+    GtkButton *back_button;
     StoreHomePage *home_page;
     GtkStack *stack;
 };
@@ -28,6 +29,14 @@ app_activated_cb (StoreWindow *self, const gchar *name)
 {
     store_app_page_set_name (self->app_page, name);
     gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->app_page));
+    gtk_widget_show (GTK_WIDGET (self->back_button));
+}
+
+static void
+back_button_clicked_cb (StoreWindow *self)
+{
+    gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->home_page));
+    gtk_widget_hide (GTK_WIDGET (self->back_button));
 }
 
 static void
@@ -44,10 +53,12 @@ store_window_class_init (StoreWindowClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-window.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, app_page);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, back_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, home_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, stack);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), back_button_clicked_cb);
 }
 
 static void

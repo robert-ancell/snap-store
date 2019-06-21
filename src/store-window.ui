@@ -6,6 +6,17 @@
         <property name="visible">True</property>
         <property name="title" translatable="yes">Snap Store</property>
         <property name="show_close_button">True</property>
+        <child>
+          <object class="GtkButton" id="back_button">
+            <signal name="clicked" handler="back_button_clicked_cb" object="StoreWindow" swapped="yes"/>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="icon-name">back</property>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
     <child>
