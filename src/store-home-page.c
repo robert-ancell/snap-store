@@ -71,8 +71,14 @@ static StoreApp *
 snap_to_app (SnapdSnap *snap)
 {
     g_autoptr(StoreApp) app = store_app_new (snapd_snap_get_name (snap));
-    store_app_set_title (app, snapd_snap_get_title (snap)); // FIXME: fallback if unset
-    store_app_set_publisher (app, snapd_snap_get_publisher_display_name (snap)); // FIXME: fallback if unset
+    if (snapd_snap_get_title (snap) != NULL)
+        store_app_set_title (app, snapd_snap_get_title (snap));
+    else
+        store_app_set_title (app, snapd_snap_get_name (snap));
+    if (snapd_snap_get_publisher_display_name (snap) != NULL)
+        store_app_set_publisher (app, snapd_snap_get_publisher_display_name (snap));
+    else
+        store_app_set_publisher (app, snapd_snap_get_publisher_username (snap));
     store_app_set_summary (app, snapd_snap_get_summary (snap));
     store_app_set_description (app, snapd_snap_get_description (snap));
     return g_steal_pointer (&app);
