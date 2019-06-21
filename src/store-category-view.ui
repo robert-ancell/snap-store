@@ -9,6 +9,9 @@
           <object class="GtkLabel" id="title_label">
             <property name="visible">True</property>
             <property name="halign">start</property>
+            <style>
+              <class name="category-title-label"/>
+            </style>
           </object>
         </child>
         <child>

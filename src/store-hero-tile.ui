@@ -16,12 +16,18 @@
               <object class="GtkLabel" id="name_label">
                 <property name="visible">True</property>
                 <property name="halign">start</property>
+                <style>
+                  <class name="hero-name-label"/>
+                </style>
               </object>
             </child>
             <child>
               <object class="GtkLabel" id="summary_label">
                 <property name="visible">True</property>
                 <property name="halign">start</property>
+                <style>
+                  <class name="hero-summary-label"/>
+                </style>
               </object>
             </child>
           </object>

@@ -21,11 +21,17 @@
                 <child>
                   <object class="GtkLabel" id="title_label">
                     <property name="visible">True</property>
+                    <style>
+                      <class name="app-page-title-label"/>
+                    </style>
                   </object>
                 </child>
                 <child>
                   <object class="GtkLabel" id="publisher_label">
                     <property name="visible">True</property>
+                    <style>
+                      <class name="app-page-publisher-label"/>
+                    </style>
                   </object>
                 </child>
               </object>
@@ -55,12 +61,18 @@
                 <child>
                   <object class="GtkLabel" id="summary_label">
                     <property name="visible">True</property>
+                    <style>
+                      <class name="app-page-summary-label"/>
+                    </style>
                   </object>
                 </child>
                 <child>
                   <object class="GtkLabel" id="description_label">
                     <property name="visible">True</property>
                     <property name="vexpand">True</property>
+                    <style>
+                      <class name="app-page-description-label"/>
+                    </style>
                   </object>
                 </child>
               </object>
@@ -72,6 +84,9 @@
                 <child>
                   <object class="GtkLabel" id="details_title_label">
                     <property name="visible">True</property>
+                    <style>
+                      <class name="app-page-details-title"/>
+                    </style>
                   </object>
                 </child>
               </object>

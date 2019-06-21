@@ -25,12 +25,18 @@
                   <object class="GtkLabel" id="name_label">
                     <property name="visible">True</property>
                     <property name="halign">start</property>
+                    <style>
+                      <class name="app-tile-name-label"/>
+                    </style>
                   </object>
                 </child>
                 <child>
                   <object class="GtkLabel" id="publisher_label">
                     <property name="visible">True</property>
                     <property name="halign">start</property>
+                    <style>
+                      <class name="app-tile-publisher-label"/>
+                    </style>
                   </object>
                 </child>
               </object>
@@ -41,6 +47,9 @@
                 <property name="vexpand">True</property>
                 <property name="halign">start</property>
                 <property name="valign">start</property>
+                <style>
+                  <class name="app-tile-summary-label"/>
+                </style>
               </object>
             </child>
           </object>
