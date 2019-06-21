@@ -7,6 +7,8 @@
  * (at your option) any later version.
  */
 
+#include <snapd-glib/snapd-glib.h>
+
 #include "store-home-page.h"
 
 #include "store-app.h"
@@ -75,23 +77,26 @@ store_home_page_init (StoreHomePage *self)
 {
     gtk_widget_init_template (GTK_WIDGET (self));
 
-    StoreCategoryView *view = store_category_view_new ("featured");
-    g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-    g_autoptr(StoreApp) featured_hero = store_app_new ("spotify");
-    store_category_view_set_hero (view, featured_hero);
-    g_autoptr(GPtrArray) featured_apps = make_apps ("riot-web;pick-colour-picker;wing7;rider;emacs;toontown;eric-ide;natron;hiri");
-    store_category_view_set_apps (view, featured_apps);
-    gtk_widget_show (GTK_WIDGET (view));
-    gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
-
-    view = store_category_view_new ("development");
-    g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-    g_autoptr(StoreApp) development_hero = store_app_new ("sublime-text");
-    store_category_view_set_hero (view, development_hero);
-    g_autoptr(GPtrArray) development_apps = make_apps ("pycharm-community;postman;atom;notepad-plus-plus;android-studio;phpstorm;eclipse;pycharm-professional;gitkraken");
-    store_category_view_set_apps (view, development_apps);
-    gtk_widget_show (GTK_WIDGET (view));
-    gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
+    g_autoptr(SnapdClient) client = snapd_client_new ();
+    g_auto(GStrv) sections = snapd_client_get_sections_sync (client, NULL, NULL); // FIXME async
+    for (int i = 0; sections[i] != NULL; i++) {
+        StoreCategoryView *view = store_category_view_new (sections[i]);
+        g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
+        g_autoptr(GPtrArray) snaps = snapd_client_find_section_sync (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, NULL, NULL, NULL); // FIXME async
+        if (snaps->len >= 1) {
+            SnapdSnap *snap = g_ptr_array_index (snaps, 0);
+            g_autoptr(StoreApp) hero = store_app_new (snapd_snap_get_name (snap));
+            store_category_view_set_hero (view, hero);
+        }
+        g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
+        for (guint j = 1; j < snaps->len && j < 10; j++) {
+            SnapdSnap *snap = g_ptr_array_index (snaps, j);
+            g_ptr_array_add (apps, store_app_new (snapd_snap_get_name (snap)));
+        }
+        store_category_view_set_apps (view, apps);
+        gtk_widget_show (GTK_WIDGET (view));
+        gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
+    }
 }
 
 StoreHomePage *
