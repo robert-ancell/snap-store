@@ -15,8 +15,8 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreApplicationWindow, store_application_window, STORE, APPLICATION_WINDOW, GtkApplicationWindow)
+G_DECLARE_FINAL_TYPE (StoreWindow, store_window, STORE, WINDOW, GtkApplicationWindow)
 
-StoreApplicationWindow *store_application_window_new (StoreApplication *application);
+StoreWindow *store_window_new (StoreApplication *application);
 
 G_END_DECLS

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="StoreApplicationWindow" parent="GtkApplicationWindow">
+  <template class="StoreWindow" parent="GtkApplicationWindow">
     <child>
       <object class="GtkStack" id="stack">
         <property name="visible">True</property>

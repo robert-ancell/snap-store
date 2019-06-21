@@ -8,13 +8,13 @@
  */
 
 #include "store-application.h"
-#include "store-application-window.h"
+#include "store-window.h"
 
 struct _StoreApplication
 {
     GtkApplication parent_instance;
 
-    StoreApplicationWindow *window;
+    StoreWindow *window;
 };
 
 G_DEFINE_TYPE (StoreApplication, store_application, GTK_TYPE_APPLICATION)
@@ -26,7 +26,7 @@ store_application_startup (GApplication *application)
 
     G_APPLICATION_CLASS (store_application_parent_class)->startup (application);
 
-    self->window = store_application_window_new (self);
+    self->window = store_window_new (self);
 }
 
 static void

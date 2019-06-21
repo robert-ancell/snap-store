@@ -10,12 +10,12 @@ exe = executable('snap-store',
                  sources : [
                    'snap-store.c',
                    'store-application.c',
-                   'store-application-window.c',
                    'store-app-page.c',
                    'store-app-tile.c',
                    'store-category-view.c',
                    'store-hero-tile.c',
-                   'store-home-page.c'
+                   'store-home-page.c',
+                   'store-window.c'
                  ],
                  dependencies : [ gtk_dep, snapd_glib_dep ],
                  install : true)

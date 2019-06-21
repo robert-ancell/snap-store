@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/com/ubuntu/SnapStore">
-    <file preprocess="xml-stripblanks">store-application-window.ui</file>
     <file preprocess="xml-stripblanks">store-app-page.ui</file>
     <file preprocess="xml-stripblanks">store-app-tile.ui</file>
     <file preprocess="xml-stripblanks">store-category-view.ui</file>
     <file preprocess="xml-stripblanks">store-hero-tile.ui</file>
     <file preprocess="xml-stripblanks">store-home-page.ui</file>
+    <file preprocess="xml-stripblanks">store-window.ui</file>
     <file>default-snap-icon.svg</file>
   </gresource>
 </gresources>
