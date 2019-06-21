@@ -18,6 +18,7 @@ struct _StoreAppPage
     GtkLabel *description_label;
     GtkLabel *details_title_label;
     GtkImage *icon_image;
+    GtkButton *install_button;
     GtkLabel *publisher_label;
     GtkLabel *summary_label;
     GtkLabel *title_label;
@@ -31,6 +32,7 @@ static void
 store_app_page_dispose (GObject *object)
 {
     StoreAppPage *self = STORE_APP_PAGE (object);
+    g_clear_pointer (&self->name, g_free);
 }
 
 static void
@@ -43,6 +45,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, description_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_title_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, title_label);

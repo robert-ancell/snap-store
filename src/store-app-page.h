@@ -17,4 +17,6 @@ G_DECLARE_FINAL_TYPE (StoreAppPage, store_app_page, STORE, APP_PAGE, GtkBox)
 
 StoreAppPage *store_app_page_new (void);
 
+void          store_app_page_set_name (StoreAppPage *page, const gchar *name);
+
 G_END_DECLS

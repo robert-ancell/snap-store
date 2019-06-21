@@ -30,6 +30,12 @@
                 </child>
               </object>
             </child>
+            <child>
+              <object class="GtkButton" id="install_button">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Install</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
