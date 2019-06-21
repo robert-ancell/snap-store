@@ -11,10 +11,12 @@
 
 #include <gtk/gtk.h>
 
+#include "store-application.h"
+
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (SnapApplication, snap_application, SNAP, APPLICATION, GtkApplication)
+G_DECLARE_FINAL_TYPE (StoreApplicationWindow, store_application_window, STORE, APPLICATION_WINDOW, GtkApplicationWindow)
 
-SnapApplication *snap_application_new (void);
+StoreApplicationWindow *store_application_window_new (StoreApplication *application);
 
 G_END_DECLS

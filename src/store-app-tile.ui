@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="SnapAppTile" parent="GtkFlowBoxChild">
+  <template class="StoreAppTile" parent="GtkFlowBoxChild">
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>

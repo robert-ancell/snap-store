@@ -13,10 +13,10 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (SnapAppTile, snap_app_tile, SNAP, APP_TILE, GtkFlowBoxChild)
+G_DECLARE_FINAL_TYPE (StoreAppTile, store_app_tile, STORE, APP_TILE, GtkFlowBoxChild)
 
-SnapAppTile *snap_app_tile_new      (const gchar *name);
+StoreAppTile *store_app_tile_new      (const gchar *name);
 
-void         snap_app_tile_set_name (SnapAppTile *tile, const gchar *name);
+void          store_app_tile_set_name (StoreAppTile *tile, const gchar *name);
 
 G_END_DECLS

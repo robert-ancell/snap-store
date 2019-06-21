@@ -13,8 +13,8 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (SnapHomePage, snap_home_page, SNAP, HOME_PAGE, GtkBox)
+G_DECLARE_FINAL_TYPE (StoreHomePage, store_home_page, STORE, HOME_PAGE, GtkBox)
 
-SnapHomePage *snap_home_page_new (void);
+StoreHomePage *store_home_page_new (void);
 
 G_END_DECLS

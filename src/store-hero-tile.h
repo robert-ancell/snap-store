@@ -13,10 +13,10 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (SnapHeroTile, snap_hero_tile, SNAP, HERO_TILE, GtkFlowBoxChild)
+G_DECLARE_FINAL_TYPE (StoreHeroTile, store_hero_tile, STORE, HERO_TILE, GtkFlowBoxChild)
 
-SnapHeroTile *snap_hero_tile_new      (const gchar *name);
+StoreHeroTile *store_hero_tile_new      (const gchar *name);
 
-void          snap_hero_tile_set_name (SnapHeroTile *tile, const gchar *name);
+void           store_hero_tile_set_name (StoreHeroTile *tile, const gchar *name);
 
 G_END_DECLS

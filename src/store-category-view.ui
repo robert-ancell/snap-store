@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="SnapCategoryView" parent="GtkFlowBoxChild">
+  <template class="StoreCategoryView" parent="GtkFlowBoxChild">
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -12,7 +12,7 @@
           </object>
         </child>
         <child>
-          <object class="SnapHeroTile" id="hero_tile">
+          <object class="StoreHeroTile" id="hero_tile">
             <property name="visible">True</property>
           </object>
         </child>

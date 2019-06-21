@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="SnapApplicationWindow" parent="GtkApplicationWindow">
+  <template class="StoreApplicationWindow" parent="GtkApplicationWindow">
     <child>
-      <object class="SnapHomePage" id="home_page">
+      <object class="StoreHomePage" id="home_page">
         <property name="visible">True</property>
       </object>
     </child>
