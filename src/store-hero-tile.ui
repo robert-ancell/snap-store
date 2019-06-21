@@ -12,6 +12,7 @@
             <property name="orientation">vertical</property>
             <property name="hexpand">True</property>
             <property name="valign">center</property>
+            <property name="spacing">20</property>
             <child>
               <object class="GtkLabel" id="name_label">
                 <property name="visible">True</property>
