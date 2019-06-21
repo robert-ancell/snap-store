@@ -91,6 +91,9 @@ snap_to_app (SnapdSnap *snap)
         }
     }
 
+    g_autofree gchar *appstream_id = g_strdup_printf ("io.snapcraft.%s-%s", snapd_snap_get_name (snap), snapd_snap_get_id (snap));
+    store_app_set_appstream_id (app, appstream_id);
+
     return g_steal_pointer (&app);
 }
 

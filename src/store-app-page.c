@@ -11,6 +11,7 @@
 
 #include "store-category-view.h"
 #include "store-image.h"
+#include "store-odrs-client.h"
 
 struct _StoreAppPage
 {
@@ -67,6 +68,23 @@ store_app_page_new (void)
     return g_object_new (store_app_page_get_type (), NULL);
 }
 
+static void
+reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    StoreAppPage *self = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GPtrArray) reviews = store_odrs_client_get_reviews_finish (STORE_ODRS_CLIENT (object), result, &error);
+    if (reviews == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to get ODRS reviews: %s", error->message);
+        return;
+    }
+
+    // FIXME
+}
+
 void
 store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 {
@@ -87,6 +105,10 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     gtk_label_set_label (self->details_title_label, details_title);
     store_image_set_url (self->icon_image, NULL);
     store_image_set_url (self->icon_image, store_app_get_icon (app));
+
+    g_autoptr(StoreOdrsClient) odrs_client = store_odrs_client_new ();
+    store_odrs_client_get_reviews_async (odrs_client, store_app_get_appstream_id (app), NULL, 0, NULL, reviews_cb, self);
+    g_steal_pointer (&odrs_client); // FIXME leaks for testing, remove when async call keeps reference
 }
 
 StoreApp *

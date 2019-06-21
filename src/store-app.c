@@ -13,6 +13,7 @@ struct _StoreApp
 {
     GObject parent_instance;
 
+    gchar *appstream_id;
     gchar *description;
     gchar *icon;
     gchar *name;
@@ -27,6 +28,7 @@ static void
 store_app_dispose (GObject *object)
 {
     StoreApp *self = STORE_APP (object);
+    g_clear_pointer (&self->appstream_id, g_free);
     g_clear_pointer (&self->description, g_free);
     g_clear_pointer (&self->icon, g_free);
     g_clear_pointer (&self->name, g_free);
@@ -44,6 +46,7 @@ store_app_class_init (StoreAppClass *klass)
 static void
 store_app_init (StoreApp *self)
 {
+    self->appstream_id = g_strdup ("");
     self->description = g_strdup ("");
     self->icon = g_strdup ("");
     self->publisher = g_strdup ("");
@@ -57,6 +60,21 @@ store_app_new (const gchar *name)
     StoreApp *self = g_object_new (store_app_get_type (), NULL);
     self->name = g_strdup (name);
     return self;
+}
+
+void
+store_app_set_appstream_id (StoreApp *self, const gchar *appstream_id)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    g_clear_pointer (&self->appstream_id, g_free);
+    self->appstream_id = g_strdup (appstream_id);
+}
+
+const gchar *
+store_app_get_appstream_id (StoreApp *self)
+{
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+    return self->appstream_id;
 }
 
 void
