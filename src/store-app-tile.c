@@ -58,7 +58,6 @@ store_app_tile_new (const gchar *name)
     return self;
 }
 
-
 void
 store_app_tile_set_name (StoreAppTile *self, const gchar *name)
 {
