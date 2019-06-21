@@ -2,9 +2,14 @@
 <interface>
   <template class="StoreHomePage" parent="GtkBox">
     <child>
-      <object class="GtkBox" id="category_box">
+      <object class="GtkScrolledWindow">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkBox" id="category_box">
+            <property name="visible">True</property>
+            <property name="orientation">vertical</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>

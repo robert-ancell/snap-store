@@ -2,91 +2,96 @@
 <interface>
   <template class="StoreAppPage" parent="GtkBox">
     <child>
-      <object class="GtkBox">
+      <object class="GtkScrolledWindow">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="orientation">horizontal</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkImage" id="icon_image">
+              <object class="GtkBox">
                 <property name="visible">True</property>
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkImage" id="icon_image">
+                    <property name="visible">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel" id="title_label">
+                        <property name="visible">True</property>
+                        <style>
+                          <class name="app-page-title-label"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="publisher_label">
+                        <property name="visible">True</property>
+                        <style>
+                          <class name="app-page-publisher-label"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="install_button">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Install</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="screenshots_box">
+                <property name="visible">True</property>
+                <property name="orientation">horizontal</property>
               </object>
             </child>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
+                <property name="orientation">horizontal</property>
                 <child>
-                  <object class="GtkLabel" id="title_label">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
-                    <style>
-                      <class name="app-page-title-label"/>
-                    </style>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel" id="summary_label">
+                        <property name="visible">True</property>
+                        <style>
+                          <class name="app-page-summary-label"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="description_label">
+                        <property name="visible">True</property>
+                        <property name="vexpand">True</property>
+                        <style>
+                          <class name="app-page-description-label"/>
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="publisher_label">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
-                    <style>
-                      <class name="app-page-publisher-label"/>
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="install_button">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Install</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox" id="screenshots_box">
-            <property name="visible">True</property>
-            <property name="orientation">horizontal</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="orientation">horizontal</property>
-            <child>
-              <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkLabel" id="summary_label">
-                    <property name="visible">True</property>
-                    <style>
-                      <class name="app-page-summary-label"/>
-                    </style>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="description_label">
-                    <property name="visible">True</property>
-                    <property name="vexpand">True</property>
-                    <style>
-                      <class name="app-page-description-label"/>
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkLabel" id="details_title_label">
-                    <property name="visible">True</property>
-                    <style>
-                      <class name="app-page-details-title"/>
-                    </style>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel" id="details_title_label">
+                        <property name="visible">True</property>
+                        <style>
+                          <class name="app-page-details-title"/>
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
