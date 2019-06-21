@@ -9,11 +9,13 @@
 
 #include "store-app-tile.h"
 
+#include "store-image.h"
+
 struct _StoreAppTile
 {
     GtkFlowBoxChild parent_instance;
 
-    GtkImage *icon_image;
+    StoreImage *icon_image;
     GtkLabel *name_label;
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image; // FIXME
@@ -47,6 +49,7 @@ store_app_tile_class_init (StoreAppTileClass *klass)
 static void
 store_app_tile_init (StoreAppTile *self)
 {
+    store_image_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 
@@ -71,7 +74,7 @@ store_app_tile_set_app (StoreAppTile *self, StoreApp *app)
     gtk_label_set_label (self->name_label, store_app_get_title (app));
     gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
-    gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
+    store_image_set_url (self->icon_image, store_app_get_icon (app));
 }
 
 StoreApp *

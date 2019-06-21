@@ -10,6 +10,7 @@
 #include "store-app-page.h"
 
 #include "store-category-view.h"
+#include "store-image.h"
 
 struct _StoreAppPage
 {
@@ -17,7 +18,7 @@ struct _StoreAppPage
 
     GtkLabel *description_label;
     GtkLabel *details_title_label;
-    GtkImage *icon_image;
+    StoreImage *icon_image;
     GtkButton *install_button;
     GtkLabel *publisher_label;
     GtkBox *screenshots_box;
@@ -56,6 +57,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
 static void
 store_app_page_init (StoreAppPage *self)
 {
+    store_image_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 
@@ -83,7 +85,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     gtk_label_set_label (self->description_label, store_app_get_description (app));
     g_autofree gchar *details_title = g_strdup_printf ("Details for %s", store_app_get_title (app)); // FIXME: translatable
     gtk_label_set_label (self->details_title_label, details_title);
-    gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
+    store_image_set_url (self->icon_image, store_app_get_icon (app));
 }
 
 StoreApp *

@@ -17,7 +17,7 @@
                 <property name="orientation">horizontal</property>
                 <property name="spacing">24</property>
                 <child>
-                  <object class="GtkImage" id="icon_image">
+                  <object class="StoreImage" id="icon_image">
                     <property name="visible">True</property>
                   </object>
                 </child>

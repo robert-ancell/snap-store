@@ -21,6 +21,10 @@ void         store_app_set_description (StoreApp *app, const gchar *description)
 
 const gchar *store_app_get_description (StoreApp *app);
 
+void         store_app_set_icon        (StoreApp *app, const gchar *icon);
+
+const gchar *store_app_get_icon        (StoreApp *app);
+
 const gchar *store_app_get_name        (StoreApp *app);
 
 void         store_app_set_publisher   (StoreApp *app, const gchar *publisher);

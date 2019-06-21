@@ -14,6 +14,7 @@ struct _StoreApp
     GObject parent_instance;
 
     gchar *description;
+    gchar *icon;
     gchar *name;
     gchar *publisher;
     gchar *summary;
@@ -27,6 +28,7 @@ store_app_dispose (GObject *object)
 {
     StoreApp *self = STORE_APP (object);
     g_clear_pointer (&self->description, g_free);
+    g_clear_pointer (&self->icon, g_free);
     g_clear_pointer (&self->name, g_free);
     g_clear_pointer (&self->publisher, g_free);
     g_clear_pointer (&self->summary, g_free);
@@ -43,6 +45,7 @@ static void
 store_app_init (StoreApp *self)
 {
     self->description = g_strdup ("");
+    self->icon = g_strdup ("");
     self->publisher = g_strdup ("");
     self->summary = g_strdup ("");
     self->title = g_strdup ("");
@@ -69,6 +72,21 @@ store_app_get_description (StoreApp *self)
 {
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
     return self->description;
+}
+
+void
+store_app_set_icon (StoreApp *self, const gchar *icon)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    g_clear_pointer (&self->icon, g_free);
+    self->icon = g_strdup (icon);
+}
+
+const gchar *
+store_app_get_icon (StoreApp *self)
+{
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+    return self->icon;
 }
 
 const gchar *

@@ -9,11 +9,13 @@
 
 #include "store-hero-tile.h"
 
+#include "store-image.h"
+
 struct _StoreHeroTile
 {
     GtkFlowBoxChild parent_instance;
 
-    GtkImage *icon_image;
+    StoreImage *icon_image;
     GtkLabel *title_label;
     GtkLabel *summary_label;
 
@@ -44,7 +46,10 @@ store_hero_tile_class_init (StoreHeroTileClass *klass)
 static void
 store_hero_tile_init (StoreHeroTile *self)
 {
+    store_image_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
+
+    store_image_set_size (self->icon_image, 128); // FIXME: Move into .ui
 }
 
 StoreHeroTile *
@@ -68,7 +73,7 @@ store_hero_tile_set_app (StoreHeroTile *self, StoreApp *app)
     g_autofree gchar *title = g_utf8_strup (store_app_get_title (app), -1);
     gtk_label_set_label (self->title_label, title);
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
-    gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
+    store_image_set_url (self->icon_image, store_app_get_icon (app));
 }
 
 StoreApp *

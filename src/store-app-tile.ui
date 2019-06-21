@@ -7,8 +7,9 @@
         <property name="orientation">horizontal</property>
         <property name="spacing">16</property>
         <child>
-          <object class="GtkImage" id="icon_image">
+          <object class="StoreImage" id="icon_image">
             <property name="visible">True</property>
+            <property name="valign">start</property>
           </object>
         </child>
         <child>

@@ -40,7 +40,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkImage" id="icon_image">
+          <object class="StoreImage" id="icon_image">
             <property name="visible">True</property>
           </object>
         </child>
