@@ -11,6 +11,8 @@
 
 #include <gtk/gtk.h>
 
+#include "store-app.h"
+
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreCategoryView, store_category_view, STORE, CATEGORY_VIEW, GtkFlowBoxChild)
@@ -19,8 +21,8 @@ StoreCategoryView *store_category_view_new      (const gchar *name);
 
 void               store_category_view_set_name (StoreCategoryView *view, const gchar *name);
 
-void               store_category_view_set_hero (StoreCategoryView *view, const gchar *name);
+void               store_category_view_set_hero (StoreCategoryView *view, StoreApp *app);
 
-void               store_category_view_set_apps (StoreCategoryView *view, GStrv names);
+void               store_category_view_set_apps (StoreCategoryView *view, GPtrArray *apps);
 
 G_END_DECLS

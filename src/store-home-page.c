@@ -9,6 +9,7 @@
 
 #include "store-home-page.h"
 
+#include "store-app.h"
 #include "store-category-view.h"
 
 struct _StoreHomePage
@@ -29,9 +30,9 @@ enum
 static guint signals[SIGNAL_LAST] = { 0, };
 
 static void
-app_activated_cb (StoreHomePage *self, const gchar *name)
+app_activated_cb (StoreHomePage *self, StoreApp *app)
 {
-    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, name);
+    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, app);
 }
 
 static void
@@ -56,7 +57,17 @@ store_home_page_class_init (StoreHomePageClass *klass)
                                                   NULL, NULL,
                                                   NULL,
                                                   G_TYPE_NONE,
-                                                  1, G_TYPE_STRING);
+                                                  1, store_app_get_type ());
+}
+
+static GPtrArray *
+make_apps (const gchar *name_list)
+{
+    g_autoptr(GPtrArray) result = g_ptr_array_new_with_free_func (g_object_unref);
+    g_auto(GStrv) names = g_strsplit (name_list, ";", -1);
+    for (int i = 0; names[i] != NULL; i++)
+        g_ptr_array_add (result, store_app_new (names[i]));
+    return g_steal_pointer (&result);
 }
 
 static void
@@ -66,16 +77,18 @@ store_home_page_init (StoreHomePage *self)
 
     StoreCategoryView *view = store_category_view_new ("featured");
     g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-    store_category_view_set_hero (view, "spotify");
-    g_auto(GStrv) featured_apps = g_strsplit ("riot-web;pick-colour-picker;wing7;rider;emacs;toontown;eric-ide;natron;hiri", ";", -1);
+    g_autoptr(StoreApp) featured_hero = store_app_new ("spotify");
+    store_category_view_set_hero (view, featured_hero);
+    g_autoptr(GPtrArray) featured_apps = make_apps ("riot-web;pick-colour-picker;wing7;rider;emacs;toontown;eric-ide;natron;hiri");
     store_category_view_set_apps (view, featured_apps);
     gtk_widget_show (GTK_WIDGET (view));
     gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
 
     view = store_category_view_new ("development");
     g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-    store_category_view_set_hero (view, "sublime-text");
-    g_auto(GStrv) development_apps = g_strsplit ("pycharm-community;postman;atom;notepad-plus-plus;android-studio;phpstorm;eclipse;pycharm-professional;gitkraken", ";", -1);
+    g_autoptr(StoreApp) development_hero = store_app_new ("sublime-text");
+    store_category_view_set_hero (view, development_hero);
+    g_autoptr(GPtrArray) development_apps = make_apps ("pycharm-community;postman;atom;notepad-plus-plus;android-studio;phpstorm;eclipse;pycharm-professional;gitkraken");
     store_category_view_set_apps (view, development_apps);
     gtk_widget_show (GTK_WIDGET (view));
     gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));

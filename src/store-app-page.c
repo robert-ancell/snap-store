@@ -23,7 +23,7 @@ struct _StoreAppPage
     GtkLabel *summary_label;
     GtkLabel *title_label;
 
-    gchar *name;
+    StoreApp *app;
 };
 
 G_DEFINE_TYPE (StoreAppPage, store_app_page, GTK_TYPE_BOX)
@@ -32,7 +32,7 @@ static void
 store_app_page_dispose (GObject *object)
 {
     StoreAppPage *self = STORE_APP_PAGE (object);
-    g_clear_pointer (&self->name, g_free);
+    g_clear_object (&self->app);
 }
 
 static void
@@ -64,18 +64,29 @@ store_app_page_new (void)
 }
 
 void
-store_app_page_set_name (StoreAppPage *self, const gchar *name)
+store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 {
     g_return_if_fail (STORE_IS_APP_PAGE (self));
 
-    g_free (self->name);
-    self->name = g_strdup (name);
+    if (self->app == app)
+        return;
 
-    gtk_label_set_label (self->title_label, name);
-    gtk_label_set_label (self->publisher_label, "Publisher");
-    gtk_label_set_label (self->summary_label, "Lorem Ipsum");
-    gtk_label_set_label (self->description_label, "Lorem Ipsum\nLorem Ipsum\nLorem Ipsum\nLorem Ipsum...");
-    g_autofree gchar *details_title = g_strdup_printf ("Details for %s", name); // FIXME: translatable
+    g_clear_object (&self->app);
+    if (app != NULL)
+        self->app = g_object_ref (app);
+
+    gtk_label_set_label (self->title_label, store_app_get_title (app));
+    gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));
+    gtk_label_set_label (self->summary_label, store_app_get_summary (app));
+    gtk_label_set_label (self->description_label, store_app_get_description (app));
+    g_autofree gchar *details_title = g_strdup_printf ("Details for %s", store_app_get_title (app)); // FIXME: translatable
     gtk_label_set_label (self->details_title_label, details_title);
     gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
+}
+
+StoreApp *
+store_app_page_get_app (StoreAppPage *self)
+{
+    g_return_val_if_fail (STORE_IS_APP_PAGE (self), NULL);
+    return self->app;
 }

@@ -10,6 +10,7 @@ exe = executable('snap-store',
                  sources : [
                    'snap-store.c',
                    'store-application.c',
+                   'store-app.c',
                    'store-app-page.c',
                    'store-app-tile.c',
                    'store-category-view.c',

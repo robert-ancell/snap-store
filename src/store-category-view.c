@@ -36,7 +36,7 @@ static guint signals[SIGNAL_LAST] = { 0, };
 static void
 app_activated_cb (StoreCategoryView *self, StoreAppTile *tile)
 {
-    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_app_tile_get_name (tile));
+    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_app_tile_get_app (tile));
 }
 
 static void
@@ -66,7 +66,7 @@ store_category_view_class_init (StoreCategoryViewClass *klass)
                                                   NULL, NULL,
                                                   NULL,
                                                   G_TYPE_NONE,
-                                                  1, G_TYPE_STRING);
+                                                  1, store_app_get_type ());
 }
 
 static void
@@ -96,20 +96,22 @@ store_category_view_set_name (StoreCategoryView *self, const gchar *name)
 }
 
 void
-store_category_view_set_hero (StoreCategoryView *self, const gchar *name)
+store_category_view_set_hero (StoreCategoryView *self, StoreApp *app)
 {
     g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
 
-    store_hero_tile_set_name (self->hero_tile, name);
+    store_hero_tile_set_app (self->hero_tile, app);
 }
 
 void
-store_category_view_set_apps (StoreCategoryView *self, GStrv names)
+store_category_view_set_apps (StoreCategoryView *self, GPtrArray *apps)
 {
     g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
 
-    for (int i = 0; names[i] != NULL; i++) {
-        StoreAppTile *tile = store_app_tile_new (names[i]);
+    for (guint i = 0; i < apps->len; i++) {
+        StoreApp *app = g_ptr_array_index (apps, i);
+        StoreAppTile *tile = store_app_tile_new ();
+        store_app_tile_set_app (tile, app);
         gtk_widget_show (GTK_WIDGET (tile));
         gtk_container_add (GTK_CONTAINER (self->app_flow_box), GTK_WIDGET (tile));
     }

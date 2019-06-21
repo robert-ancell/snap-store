@@ -11,14 +11,16 @@
 
 #include <gtk/gtk.h>
 
+#include "store-app.h"
+
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreAppTile, store_app_tile, STORE, APP_TILE, GtkFlowBoxChild)
 
-StoreAppTile *store_app_tile_new      (const gchar *name);
+StoreAppTile *store_app_tile_new     (void);
 
-void          store_app_tile_set_name (StoreAppTile *tile, const gchar *name);
+void          store_app_tile_set_app (StoreAppTile *tile, StoreApp *app);
 
-const gchar  *store_app_tile_get_name (StoreAppTile *tile);
+StoreApp     *store_app_tile_get_app (StoreAppTile *tile);
 
 G_END_DECLS

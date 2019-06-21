@@ -17,7 +17,7 @@ struct _StoreHeroTile
     GtkLabel *name_label;
     GtkLabel *summary_label;
 
-    gchar *name;
+    StoreApp *app;
 };
 
 G_DEFINE_TYPE (StoreHeroTile, store_hero_tile, GTK_TYPE_FLOW_BOX_CHILD)
@@ -26,7 +26,7 @@ static void
 store_hero_tile_dispose (GObject *object)
 {
     StoreHeroTile *self = STORE_HERO_TILE (object);
-    g_clear_pointer (&self->name, g_free);
+    g_clear_object (&self->app);
 }
 
 static void
@@ -48,22 +48,31 @@ store_hero_tile_init (StoreHeroTile *self)
 }
 
 StoreHeroTile *
-store_hero_tile_new (const gchar *name)
+store_hero_tile_new (void)
 {
-    StoreHeroTile *self = g_object_new (store_hero_tile_get_type (), NULL);
-    store_hero_tile_set_name (self, name);
-    return self;
+    return g_object_new (store_hero_tile_get_type (), NULL);
 }
 
 void
-store_hero_tile_set_name (StoreHeroTile *self, const gchar *name)
+store_hero_tile_set_app (StoreHeroTile *self, StoreApp *app)
 {
     g_return_if_fail (STORE_IS_HERO_TILE (self));
 
-    g_free (self->name);
-    self->name = g_strdup (name);
+    if (self->app == app)
+        return;
 
-    gtk_label_set_label (self->name_label, name);
-    gtk_label_set_label (self->summary_label, "Lorem Ipsum...");
+    g_clear_object (&self->app);
+    if (app != NULL)
+        self->app = g_object_ref (app);
+
+    gtk_label_set_label (self->name_label, store_app_get_title (app));
+    gtk_label_set_label (self->summary_label, store_app_get_summary (app));
     gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
+}
+
+StoreApp *
+store_hero_tile_get_app (StoreHeroTile *self)
+{
+    g_return_val_if_fail (STORE_IS_HERO_TILE (self), NULL);
+    return self->app;
 }

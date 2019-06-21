@@ -25,9 +25,9 @@ struct _StoreWindow
 G_DEFINE_TYPE (StoreWindow, store_window, GTK_TYPE_APPLICATION_WINDOW)
 
 static void
-app_activated_cb (StoreWindow *self, const gchar *name)
+app_activated_cb (StoreWindow *self, StoreApp *app)
 {
-    store_app_page_set_name (self->app_page, name);
+    store_app_page_set_app (self->app_page, app);
     gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->app_page));
     gtk_widget_show (GTK_WIDGET (self->back_button));
 }
