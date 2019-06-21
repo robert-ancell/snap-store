@@ -66,6 +66,17 @@ store_home_page_class_init (StoreHomePageClass *klass)
                                                   1, store_app_get_type ());
 }
 
+static StoreApp *
+snap_to_app (SnapdSnap *snap)
+{
+    g_autoptr(StoreApp) app = store_app_new (snapd_snap_get_name (snap));
+    store_app_set_title (app, snapd_snap_get_title (snap)); // FIXME: fallback if unset
+    store_app_set_publisher (app, snapd_snap_get_publisher_display_name (snap)); // FIXME: fallback if unset
+    store_app_set_summary (app, snapd_snap_get_summary (snap));
+    store_app_set_description (app, snapd_snap_get_description (snap));
+    return g_steal_pointer (&app);
+}
+
 static void
 get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
@@ -82,13 +93,13 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
 
     if (snaps->len >= 1) {
         SnapdSnap *snap = g_ptr_array_index (snaps, 0);
-        g_autoptr(StoreApp) hero = store_app_new (snapd_snap_get_name (snap));
+        g_autoptr(StoreApp) hero = snap_to_app (snap);
         store_category_view_set_hero (view, hero);
     }
     g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 1; i < snaps->len && i < 10; i++) {
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        g_ptr_array_add (apps, store_app_new (snapd_snap_get_name (snap)));
+        g_ptr_array_add (apps, snap_to_app (snap));
     }
     store_category_view_set_apps (view, apps);
 }

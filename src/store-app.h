@@ -17,13 +17,21 @@ G_DECLARE_FINAL_TYPE (StoreApp, store_app, STORE, APP, GObject)
 
 StoreApp    *store_app_new             (const gchar *name);
 
+void         store_app_set_description (StoreApp *app, const gchar *description);
+
 const gchar *store_app_get_description (StoreApp *app);
 
 const gchar *store_app_get_name        (StoreApp *app);
 
+void         store_app_set_publisher   (StoreApp *app, const gchar *publisher);
+
 const gchar *store_app_get_publisher   (StoreApp *app);
 
+void         store_app_set_summary     (StoreApp *app, const gchar *summary);
+
 const gchar *store_app_get_summary     (StoreApp *app);
+
+void         store_app_set_title       (StoreApp *app, const gchar *title);
 
 const gchar *store_app_get_title       (StoreApp *app);
 

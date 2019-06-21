@@ -14,11 +14,12 @@
             <property name="valign">center</property>
             <property name="spacing">20</property>
             <child>
-              <object class="GtkLabel" id="name_label">
+              <object class="GtkLabel" id="title_label">
                 <property name="visible">True</property>
                 <property name="halign">start</property>
+                <property name="ellipsize">end</property>
                 <style>
-                  <class name="hero-name-label"/>
+                  <class name="hero-title-label"/>
                 </style>
               </object>
             </child>
@@ -26,6 +27,7 @@
               <object class="GtkLabel" id="summary_label">
                 <property name="visible">True</property>
                 <property name="halign">start</property>
+                <property name="ellipsize">end</property>
                 <style>
                   <class name="hero-summary-label"/>
                 </style>

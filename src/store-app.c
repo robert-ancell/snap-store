@@ -13,7 +13,11 @@ struct _StoreApp
 {
     GObject parent_instance;
 
+    gchar *description;
     gchar *name;
+    gchar *publisher;
+    gchar *summary;
+    gchar *title;
 };
 
 G_DEFINE_TYPE (StoreApp, store_app, G_TYPE_OBJECT)
@@ -22,7 +26,11 @@ static void
 store_app_dispose (GObject *object)
 {
     StoreApp *self = STORE_APP (object);
+    g_clear_pointer (&self->description, g_free);
     g_clear_pointer (&self->name, g_free);
+    g_clear_pointer (&self->publisher, g_free);
+    g_clear_pointer (&self->summary, g_free);
+    g_clear_pointer (&self->title, g_free);
 }
 
 static void
@@ -34,6 +42,10 @@ store_app_class_init (StoreAppClass *klass)
 static void
 store_app_init (StoreApp *self)
 {
+    self->description = g_strdup ("");
+    self->publisher = g_strdup ("");
+    self->summary = g_strdup ("");
+    self->title = g_strdup ("");
 }
 
 StoreApp *
@@ -44,11 +56,19 @@ store_app_new (const gchar *name)
     return self;
 }
 
+void
+store_app_set_description (StoreApp *self, const gchar *description)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    g_clear_pointer (&self->description, g_free);
+    self->description = g_strdup (description);
+}
+
 const gchar *
 store_app_get_description (StoreApp *self)
 {
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
-    return "Lorem Ipsum\nLorem Ipsum\nLorem Ipsum\nLorem Ipsum...";
+    return self->description;
 }
 
 const gchar *
@@ -58,23 +78,47 @@ store_app_get_name (StoreApp *self)
     return self->name;
 }
 
+void
+store_app_set_publisher (StoreApp *self, const gchar *publisher)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    g_clear_pointer (&self->publisher, g_free);
+    self->publisher = g_strdup (publisher);
+}
+
 const gchar *
 store_app_get_publisher (StoreApp *self)
 {
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
-    return "Publisher";
+    return self->publisher;
+}
+
+void
+store_app_set_summary (StoreApp *self, const gchar *summary)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    g_clear_pointer (&self->summary, g_free);
+    self->summary = g_strdup (summary);
 }
 
 const gchar *
 store_app_get_summary (StoreApp *self)
 {
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
-    return "Lorem Ipsum";
+    return self->summary;
+}
+
+void
+store_app_set_title (StoreApp *self, const gchar *title)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    g_clear_pointer (&self->title, g_free);
+    self->title = g_strdup (title);
 }
 
 const gchar *
 store_app_get_title (StoreApp *self)
 {
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
-    return self->name;
+    return self->title;
 }

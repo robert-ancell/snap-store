@@ -14,7 +14,7 @@ struct _StoreHeroTile
     GtkFlowBoxChild parent_instance;
 
     GtkImage *icon_image;
-    GtkLabel *name_label;
+    GtkLabel *title_label;
     GtkLabel *summary_label;
 
     StoreApp *app;
@@ -37,7 +37,7 @@ store_hero_tile_class_init (StoreHeroTileClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-hero-tile.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHeroTile, icon_image);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHeroTile, name_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHeroTile, title_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHeroTile, summary_label);
 }
 
@@ -65,7 +65,7 @@ store_hero_tile_set_app (StoreHeroTile *self, StoreApp *app)
     if (app != NULL)
         self->app = g_object_ref (app);
 
-    gtk_label_set_label (self->name_label, store_app_get_title (app));
+    gtk_label_set_label (self->title_label, store_app_get_title (app));
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
     gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
 }
