@@ -9,10 +9,12 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="expand">True</property>
+            <property name="margin">36</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="orientation">horizontal</property>
+                <property name="spacing">24</property>
                 <child>
                   <object class="GtkImage" id="icon_image">
                     <property name="visible">True</property>
@@ -23,6 +25,7 @@
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
                     <property name="hexpand">True</property>
+                    <property name="spacing">16</property>
                     <child>
                       <object class="GtkLabel" id="title_label">
                         <property name="visible">True</property>
@@ -44,9 +47,16 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkButton" id="install_button">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Install</property>
+                    <property name="orientation">vertical</property>
+                    <property name="valign">center</property>
+                    <child>
+                      <object class="GtkButton" id="install_button">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Install</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

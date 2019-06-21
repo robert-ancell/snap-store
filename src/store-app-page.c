@@ -77,4 +77,5 @@ store_app_page_set_name (StoreAppPage *self, const gchar *name)
     gtk_label_set_label (self->description_label, "Lorem Ipsum\nLorem Ipsum\nLorem Ipsum\nLorem Ipsum...");
     g_autofree gchar *details_title = g_strdup_printf ("Details for %s", name); // FIXME: translatable
     gtk_label_set_label (self->details_title_label, details_title);
+    gtk_image_set_from_resource (self->icon_image, "/com/ubuntu/SnapStore/default-snap-icon.svg");
 }
