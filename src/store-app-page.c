@@ -82,7 +82,12 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    // FIXME
+    for (guint i = 0; i < reviews->len; i++) {
+        StoreOdrsReview *review = g_ptr_array_index (reviews, i);
+        g_printerr ("rating: %" G_GINT64_FORMAT "\n", store_odrs_review_get_rating (review));
+        g_printerr ("summary: %s\n", store_odrs_review_get_summary (review));
+        g_printerr ("description: %s\n", store_odrs_review_get_description (review));
+    }
 }
 
 void

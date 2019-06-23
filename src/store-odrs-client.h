@@ -11,13 +11,16 @@
 
 #include <gio/gio.h>
 
+#include "store-odrs-review.h"
+
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreOdrsClient, store_odrs_client, STORE, ODRS_CLIENT, GObject)
 
 StoreOdrsClient *store_odrs_client_new                (void);
 
-void             store_odrs_client_get_reviews_async  (StoreOdrsClient *client, const gchar *app_id, const gchar *version, gint64 limit, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data);
+void             store_odrs_client_get_reviews_async  (StoreOdrsClient *client, const gchar *app_id, const gchar *version, gint64 limit,
+                                                       GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
 GPtrArray       *store_odrs_client_get_reviews_finish (StoreOdrsClient *client, GAsyncResult *result, GError **error);
 

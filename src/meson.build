@@ -19,6 +19,7 @@ exe = executable('snap-store',
                    'store-image.c',
                    'store-media.c',
                    'store-odrs-client.c',
+                   'store-odrs-review.c',
                    'store-window.c'
                  ],
                  dependencies : [ gtk_dep, snapd_glib_dep ],

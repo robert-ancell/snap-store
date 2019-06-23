@@ -12,6 +12,8 @@
 
 #include "store-odrs-client.h"
 
+#include "store-odrs-review.h"
+
 struct _StoreOdrsClient
 {
     GObject parent_instance;
@@ -73,7 +75,7 @@ store_odrs_client_new (void)
 static void
 send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
-    StoreOdrsClient *self = user_data;
+    g_autoptr(GTask) task = user_data;
 
     g_autoptr(GError) error = NULL;
     g_autoptr(GInputStream) stream = soup_session_send_finish (SOUP_SESSION (object), result, &error);
@@ -83,6 +85,8 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         g_warning ("Failed to download image: %s", error->message);
         return;
     }
+
+    StoreOdrsClient *self = g_task_get_source_object (task);
 
     g_autoptr(JsonParser) parser = json_parser_new ();
     if (!json_parser_load_from_stream (parser, stream, self->cancellable, &error)) {
@@ -97,23 +101,28 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
 
     JsonArray *array = json_node_get_array (root);
+    g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 0; i < json_array_get_length (array); i++) {
         JsonNode *element = json_array_get_element (array, i);
 
         if (json_node_get_node_type (element) != JSON_NODE_OBJECT) {
-            g_warning ("ODRS server returned non-object review");
+            g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "ODRS server returned non-object review");
             return;
         }
 
-        JsonObject *review = json_node_get_object (element);
-        g_printerr ("rating: %" G_GINT64_FORMAT "\n", json_object_get_int_member (review, "rating"));
-        g_printerr ("summary: %s\n", json_object_get_string_member (review, "summary"));
-        g_printerr ("description: %s\n", json_object_get_string_member (review, "description"));
+        JsonObject *object = json_node_get_object (element);
+        g_autoptr(StoreOdrsReview) review = store_odrs_review_new ();
+        store_odrs_review_set_rating (review, json_object_get_int_member (object, "rating"));
+        store_odrs_review_set_summary (review, json_object_get_string_member (object, "summary"));
+        store_odrs_review_set_description (review, json_object_get_string_member (object, "description"));
+        g_ptr_array_add (reviews, g_steal_pointer (&review));
     }
+
+    g_task_return_pointer (task, g_steal_pointer (&reviews), (GDestroyNotify) g_ptr_array_unref);
 }
 
 void
-store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id, const gchar *version, gint64 limit, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data)
+store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id, const gchar *version, gint64 limit, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
     g_return_if_fail (app_id != NULL);
@@ -146,12 +155,15 @@ store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id,
     g_autofree gchar *json_text = json_generator_to_data (generator, &json_text_length);
     soup_message_set_request (message, "application/json; charset=utf-8", SOUP_MEMORY_COPY, json_text, json_text_length);
 
-    soup_session_send_async (session, message, self->cancellable, send_cb, self);
+    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
+    soup_session_send_async (session, message, self->cancellable, send_cb, task);
 }
 
 GPtrArray *
 store_odrs_client_get_reviews_finish (StoreOdrsClient *self, GAsyncResult *result, GError **error)
 {
     g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), NULL);
-    return NULL;
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), NULL);
+
+    return g_task_propagate_pointer (G_TASK (result), error);
 }
