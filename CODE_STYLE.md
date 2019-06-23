@@ -1,0 +1,15 @@
+- Golden rule - match existing code for style.
+- Indentation is 4 spaces.
+- No tab characters.
+- No line limit for characters, but use multiple lines to aid readibility.
+- Braces start on the ends of lines.
+- Use GTK widget types, not treat everything as GtkWidget (i.e. GtkLabel instead of GtkWidget).
+- All UI in GtkTemplates.
+- Only worker threads allowed.
+- Use g_auto for memory management - no explicit unrefs / frees.
+- No compile warnings.
+- Fields, functions in alphabetical order.
+- Files laid out in order of:
+  - Private functions.
+  - Class functions.
+  - Public functions.
