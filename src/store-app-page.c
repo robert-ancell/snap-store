@@ -116,6 +116,15 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
         GtkWidget *child = link->data;
         gtk_container_remove (GTK_CONTAINER (self->screenshots_box), child);
     }
+    GPtrArray *screenshots = store_app_get_screenshots (app);
+    for (guint i = 0; i < screenshots->len; i++) {
+        StoreMedia *screenshot = g_ptr_array_index (screenshots, i);
+        StoreImage *image = store_image_new ();
+        gtk_widget_show (GTK_WIDGET (image));
+        store_image_set_url (image, store_media_get_url (screenshot));
+        gtk_container_add (GTK_CONTAINER (self->screenshots_box), GTK_WIDGET (image));
+    }
+    gtk_widget_set_visible (GTK_WIDGET (self->screenshots_box), screenshots->len > 0);
 }
 
 StoreApp *

@@ -18,6 +18,7 @@ struct _StoreApp
     StoreMedia *icon;
     gchar *name;
     gchar *publisher;
+    GPtrArray *screenshots;
     gchar *summary;
     gchar *title;
 };
@@ -33,6 +34,7 @@ store_app_dispose (GObject *object)
     g_clear_object (&self->icon);
     g_clear_pointer (&self->name, g_free);
     g_clear_pointer (&self->publisher, g_free);
+    g_clear_pointer (&self->screenshots, g_ptr_array_unref);
     g_clear_pointer (&self->summary, g_free);
     g_clear_pointer (&self->title, g_free);
 }
@@ -49,6 +51,7 @@ store_app_init (StoreApp *self)
     self->appstream_id = g_strdup ("");
     self->description = g_strdup ("");
     self->publisher = g_strdup ("");
+    self->screenshots = g_ptr_array_new ();
     self->summary = g_strdup ("");
     self->title = g_strdup ("");
 }
@@ -127,6 +130,22 @@ store_app_get_publisher (StoreApp *self)
 {
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
     return self->publisher;
+}
+
+void
+store_app_set_screenshots (StoreApp *self, GPtrArray *screenshots)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    g_clear_pointer (&self->screenshots, g_ptr_array_unref);
+    if (screenshots != NULL)
+        self->screenshots = g_ptr_array_ref (screenshots);
+}
+
+GPtrArray *
+store_app_get_screenshots (StoreApp *self)
+{
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+    return self->screenshots;
 }
 
 void

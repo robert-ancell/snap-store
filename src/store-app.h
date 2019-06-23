@@ -37,6 +37,10 @@ void         store_app_set_publisher    (StoreApp *app, const gchar *publisher);
 
 const gchar *store_app_get_publisher    (StoreApp *app);
 
+void         store_app_set_screenshots  (StoreApp *app, GPtrArray *screenshots);
+
+GPtrArray   *store_app_get_screenshots  (StoreApp *app);
+
 void         store_app_set_summary      (StoreApp *app, const gchar *summary);
 
 const gchar *store_app_get_summary      (StoreApp *app);

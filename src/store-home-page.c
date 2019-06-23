@@ -83,15 +83,21 @@ snap_to_app (SnapdSnap *snap)
     store_app_set_description (app, snapd_snap_get_description (snap));
 
     GPtrArray *media = snapd_snap_get_media (snap);
+    GPtrArray *screenshots = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 0; i < media->len; i++) {
         SnapdMedia *m = g_ptr_array_index (media, i);
-        if (g_strcmp0 (snapd_media_get_media_type (m), "icon") == 0) {
+        if (g_strcmp0 (snapd_media_get_media_type (m), "icon") == 0 && store_app_get_icon (app) == NULL) {
             g_autoptr(StoreMedia) icon = store_media_new ();
             store_media_set_url (icon, snapd_media_get_url (m));
             store_app_set_icon (app, icon);
-            break;
+        }
+        else if (g_strcmp0 (snapd_media_get_media_type (m), "screenshot") == 0) {
+            g_autoptr(StoreMedia) screenshot = store_media_new ();
+            store_media_set_url (screenshot, snapd_media_get_url (m));
+            g_ptr_array_add (screenshots, g_steal_pointer (&screenshot));
         }
     }
+    store_app_set_screenshots (app, screenshots);
 
     g_autofree gchar *appstream_id = g_strdup_printf ("io.snapcraft.%s-%s", snapd_snap_get_name (snap), snapd_snap_get_id (snap));
     store_app_set_appstream_id (app, appstream_id);
