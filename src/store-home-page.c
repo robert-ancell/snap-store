@@ -86,7 +86,9 @@ snap_to_app (SnapdSnap *snap)
     for (guint i = 0; i < media->len; i++) {
         SnapdMedia *m = g_ptr_array_index (media, i);
         if (g_strcmp0 (snapd_media_get_media_type (m), "icon") == 0) {
-            store_app_set_icon (app, snapd_media_get_url (m));
+            g_autoptr(StoreMedia) icon = store_media_new ();
+            store_media_set_url (icon, snapd_media_get_url (m));
+            store_app_set_icon (app, icon);
             break;
         }
     }
@@ -115,7 +117,7 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
     if (snaps->len >= 1) {
         SnapdSnap *snap = g_ptr_array_index (snaps, 0);
         g_autoptr(StoreApp) hero = snap_to_app (snap);
-        if (store_app_get_icon (hero) != NULL && g_strcmp0 (store_app_get_icon (hero), "") != 0) {
+        if (store_app_get_icon (hero) != NULL) {
             store_category_view_set_hero (view, hero);
             start = 1;
         }

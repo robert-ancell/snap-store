@@ -74,7 +74,9 @@ store_app_tile_set_app (StoreAppTile *self, StoreApp *app)
     gtk_label_set_label (self->name_label, store_app_get_title (app));
     gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
-    store_image_set_url (self->icon_image, store_app_get_icon (app));
+    store_image_set_url (self->icon_image, NULL); // FIXME: Hack to reset icon
+    if (store_app_get_icon (app) != NULL)
+        store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
 }
 
 StoreApp *

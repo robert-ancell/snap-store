@@ -103,12 +103,19 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     gtk_label_set_label (self->description_label, store_app_get_description (app));
     g_autofree gchar *details_title = g_strdup_printf ("Details for %s", store_app_get_title (app)); // FIXME: translatable
     gtk_label_set_label (self->details_title_label, details_title);
-    store_image_set_url (self->icon_image, NULL);
-    store_image_set_url (self->icon_image, store_app_get_icon (app));
+    store_image_set_url (self->icon_image, NULL); // FIXME: Hack to reset icon
+    if (store_app_get_icon (app) != NULL)
+        store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
 
     g_autoptr(StoreOdrsClient) odrs_client = store_odrs_client_new ();
     store_odrs_client_get_reviews_async (odrs_client, store_app_get_appstream_id (app), NULL, 0, NULL, reviews_cb, self);
     g_steal_pointer (&odrs_client); // FIXME leaks for testing, remove when async call keeps reference
+
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->screenshots_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        gtk_container_remove (GTK_CONTAINER (self->screenshots_box), child);
+    }
 }
 
 StoreApp *
