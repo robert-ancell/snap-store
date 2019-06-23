@@ -40,16 +40,8 @@ back_button_clicked_cb (StoreWindow *self)
 }
 
 static void
-store_window_dispose (GObject *object)
-{
-    StoreWindow *self = STORE_WINDOW (object);
-}
-
-static void
 store_window_class_init (StoreWindowClass *klass)
 {
-    G_OBJECT_CLASS (klass)->dispose = store_window_dispose;
-
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-window.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, app_page);
