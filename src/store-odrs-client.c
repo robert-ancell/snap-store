@@ -113,6 +113,7 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         JsonObject *object = json_node_get_object (element);
         g_autoptr(StoreOdrsReview) review = store_odrs_review_new ();
         store_odrs_review_set_rating (review, json_object_get_int_member (object, "rating"));
+        store_odrs_review_set_author (review, json_object_get_string_member (object, "user_display"));
         store_odrs_review_set_summary (review, json_object_get_string_member (object, "summary"));
         store_odrs_review_set_description (review, json_object_get_string_member (object, "description"));
         g_ptr_array_add (reviews, g_steal_pointer (&review));

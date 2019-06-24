@@ -12,6 +12,7 @@
 #include "store-category-view.h"
 #include "store-image.h"
 #include "store-odrs-client.h"
+#include "store-review-view.h"
 
 struct _StoreAppPage
 {
@@ -22,6 +23,7 @@ struct _StoreAppPage
     StoreImage *icon_image;
     GtkButton *install_button;
     GtkLabel *publisher_label;
+    GtkBox *reviews_box;
     GtkBox *screenshots_box;
     GtkLabel *summary_label;
     GtkLabel *title_label;
@@ -50,6 +52,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshots_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, title_label);
@@ -82,12 +85,19 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->reviews_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        gtk_container_remove (GTK_CONTAINER (self->reviews_box), child);
+    }
     for (guint i = 0; i < reviews->len; i++) {
         StoreOdrsReview *review = g_ptr_array_index (reviews, i);
-        g_printerr ("rating: %" G_GINT64_FORMAT "\n", store_odrs_review_get_rating (review));
-        g_printerr ("summary: %s\n", store_odrs_review_get_summary (review));
-        g_printerr ("description: %s\n", store_odrs_review_get_description (review));
+        StoreReviewView *view = store_review_view_new ();
+        gtk_widget_show (GTK_WIDGET (view));
+        store_review_view_set_review (view, review);
+        gtk_container_add (GTK_CONTAINER (self->reviews_box), GTK_WIDGET (view));
     }
+    gtk_widget_set_visible (GTK_WIDGET (self->reviews_box), reviews->len > 0);
 }
 
 void
@@ -112,6 +122,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     if (store_app_get_icon (app) != NULL)
         store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
 
+    gtk_widget_hide (GTK_WIDGET (self->reviews_box));
     g_autoptr(StoreOdrsClient) odrs_client = store_odrs_client_new ();
     store_odrs_client_get_reviews_async (odrs_client, store_app_get_appstream_id (app), NULL, 0, NULL, reviews_cb, self);
     g_steal_pointer (&odrs_client); // FIXME leaks for testing, remove when async call keeps reference

@@ -6,6 +6,7 @@
     <file preprocess="xml-stripblanks">store-category-view.ui</file>
     <file preprocess="xml-stripblanks">store-hero-tile.ui</file>
     <file preprocess="xml-stripblanks">store-home-page.ui</file>
+    <file preprocess="xml-stripblanks">store-review-view.ui</file>
     <file preprocess="xml-stripblanks">store-window.ui</file>
     <file>default-snap-icon.svg</file>
     <file>gtk-style.css</file>

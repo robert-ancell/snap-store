@@ -13,6 +13,7 @@ struct _StoreOdrsReview
 {
     GObject parent_instance;
 
+    gchar *author;
     gchar *description;
     gchar *summary;
     gint64 rating;
@@ -24,6 +25,7 @@ static void
 store_odrs_review_dispose (GObject *object)
 {
     StoreOdrsReview *self = STORE_ODRS_REVIEW (object);
+    g_clear_pointer (&self->author, g_free);
     g_clear_pointer (&self->description, g_free);
     g_clear_pointer (&self->summary, g_free);
 }
@@ -37,6 +39,7 @@ store_odrs_review_class_init (StoreOdrsReviewClass *klass)
 static void
 store_odrs_review_init (StoreOdrsReview *self)
 {
+    self->author = g_strdup ("");
     self->description = g_strdup ("");
     self->summary = g_strdup ("");
 }
@@ -45,6 +48,21 @@ StoreOdrsReview *
 store_odrs_review_new (void)
 {
     return g_object_new (store_odrs_review_get_type (), NULL);
+}
+
+void
+store_odrs_review_set_author (StoreOdrsReview *self, const gchar *author)
+{
+    g_return_if_fail (STORE_IS_ODRS_REVIEW (self));
+    g_clear_pointer (&self->author, g_free);
+    self->author = g_strdup (author);
+}
+
+const gchar *
+store_odrs_review_get_author (StoreOdrsReview *self)
+{
+    g_return_val_if_fail (STORE_IS_ODRS_REVIEW (self), NULL);
+    return self->author;
 }
 
 void

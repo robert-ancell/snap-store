@@ -17,6 +17,10 @@ G_DECLARE_FINAL_TYPE (StoreOdrsReview, store_odrs_review, STORE, ODRS_REVIEW, GO
 
 StoreOdrsReview *store_odrs_review_new             (void);
 
+void             store_odrs_review_set_author      (StoreOdrsReview *review, const gchar *author);
+
+const gchar     *store_odrs_review_get_author      (StoreOdrsReview *review);
+
 void             store_odrs_review_set_description (StoreOdrsReview *review, const gchar *description);
 
 const gchar     *store_odrs_review_get_description (StoreOdrsReview *review);
