@@ -10,23 +10,28 @@
 #pragma once
 
 #include <glib-object.h>
+#include <json-glib/json-glib.h>
 
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreMedia, store_media, STORE, MEDIA, GObject)
 
-StoreMedia  *store_media_new        (void);
+StoreMedia  *store_media_new           (void);
 
-void         store_media_set_height (StoreMedia *media, guint height);
+StoreMedia  *store_media_new_from_json (JsonNode *node);
 
-guint        store_media_get_height (StoreMedia *media);
+JsonNode    *store_media_to_json       (StoreMedia *media);
 
-void         store_media_set_width  (StoreMedia *media, guint width);
+void         store_media_set_height    (StoreMedia *media, guint height);
 
-guint        store_media_get_width  (StoreMedia *media);
+guint        store_media_get_height    (StoreMedia *media);
 
-void         store_media_set_url    (StoreMedia *media, const gchar *url);
+void         store_media_set_width     (StoreMedia *media, guint width);
 
-const gchar *store_media_get_url    (StoreMedia *media);
+guint        store_media_get_width     (StoreMedia *media);
+
+void         store_media_set_url       (StoreMedia *media, const gchar *url);
+
+const gchar *store_media_get_url       (StoreMedia *media);
 
 G_END_DECLS

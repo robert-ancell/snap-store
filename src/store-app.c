@@ -58,11 +58,70 @@ store_app_init (StoreApp *self)
 }
 
 StoreApp *
-store_app_new (const gchar *name)
+store_app_new (void)
 {
-    StoreApp *self = g_object_new (store_app_get_type (), NULL);
-    self->name = g_strdup (name);
+    return g_object_new (store_app_get_type (), NULL);
+}
+
+
+StoreApp *
+store_app_new_from_json (JsonNode *node)
+{
+    StoreApp *self = store_app_new ();
+
+    JsonObject *object = json_node_get_object (node);
+    store_app_set_appstream_id (self, json_object_get_string_member (object, "appstream-id"));
+    store_app_set_description (self, json_object_get_string_member (object, "description"));
+    g_autoptr(StoreMedia) icon = store_media_new_from_json (json_object_get_member (object, "icon"));
+    store_app_set_icon (self, icon);
+    store_app_set_name (self, json_object_get_string_member (object, "name"));
+    store_app_set_publisher (self, json_object_get_string_member (object, "publisher"));
+    store_app_set_publisher_validated (self, json_object_get_boolean_member (object, "publisher-validated"));
+    GPtrArray *screenshots = g_ptr_array_new_with_free_func (g_object_unref);
+    //FIXMEstore_app_set_screenshots (self, json_object_get_string_member (object, "screenshots"));
+    store_app_set_screenshots (self, screenshots);
+    store_app_set_summary (self, json_object_get_string_member (object, "summary"));
+    store_app_set_title (self, json_object_get_string_member (object, "title"));
+
     return self;
+}
+
+JsonNode *
+store_app_to_json (StoreApp *self)
+{
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    json_builder_begin_object (builder);
+    json_builder_set_member_name (builder, "appstream-id");
+    json_builder_add_string_value (builder, self->appstream_id);
+    json_builder_set_member_name (builder, "description");
+    json_builder_add_string_value (builder, self->description);
+    if (self->icon != NULL) {
+        json_builder_set_member_name (builder, "icon");
+        json_builder_add_value (builder, store_media_to_json (self->icon));
+    }
+    json_builder_set_member_name (builder, "name");
+    json_builder_add_string_value (builder, self->name);
+    json_builder_set_member_name (builder, "publisher");
+    json_builder_add_string_value (builder, self->publisher);
+    json_builder_set_member_name (builder, "publisher-validated");
+    json_builder_add_boolean_value (builder, self->publisher_validated);
+    json_builder_set_member_name (builder, "screenshots");
+    json_builder_begin_array (builder);
+    for (guint i = 0; i < self->screenshots->len; i++) {
+        StoreMedia *screenshot = g_ptr_array_index (self->screenshots, i);
+        json_builder_add_value (builder, store_media_to_json (screenshot));
+    }
+    json_builder_end_array (builder);
+    json_builder_set_member_name (builder, "summary");
+    json_builder_add_string_value (builder, self->summary);
+    json_builder_set_member_name (builder, "title");
+    json_builder_add_string_value (builder, self->title);
+    json_builder_end_object (builder);
+
+    return json_builder_get_root (builder);
 }
 
 void
@@ -109,6 +168,14 @@ store_app_get_icon (StoreApp *self)
 {
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
     return self->icon;
+}
+
+void
+store_app_set_name (StoreApp *self, const gchar *name)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    g_clear_pointer (&self->name, g_free);
+    self->name = g_strdup (name);
 }
 
 const gchar *

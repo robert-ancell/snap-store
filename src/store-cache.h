@@ -10,6 +10,7 @@
 #pragma once
 
 #include <glib-object.h>
+#include <json-glib/json-glib.h>
 
 G_BEGIN_DECLS
 
@@ -19,8 +20,10 @@ StoreCache *store_cache_new           (void);
 
 void        store_cache_insert        (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, GBytes *data);
 
-void        store_cache_insert_string (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, const gchar *data);
+void        store_cache_insert_json   (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, JsonNode *node);
 
-GBytes     *store_cache_lookup        (StoreCache *cache, const gchar *type, const gchar *name, gboolean hans);
+GBytes     *store_cache_lookup        (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash);
+
+JsonNode   *store_cache_lookup_json   (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash);
 
 G_END_DECLS

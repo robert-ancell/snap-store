@@ -62,11 +62,15 @@ store_cache_insert (StoreCache *self, const gchar *type, const gchar *name, gboo
 }
 
 void
-store_cache_insert_string (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, const gchar *string)
+store_cache_insert_json (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, JsonNode *node)
 {
     g_return_if_fail (STORE_IS_CACHE (self));
 
-    g_autoptr(GBytes) data = g_bytes_new_static (string, strlen (string));
+    g_autoptr(JsonGenerator) generator = json_generator_new ();
+    json_generator_set_root (generator, node);
+    gsize text_length;
+    g_autofree gchar *text = json_generator_to_data (generator, &text_length);
+    g_autoptr(GBytes) data = g_bytes_new_static (text, text_length);
     store_cache_insert (self, type, name, hash, data);
 }
 
@@ -87,4 +91,23 @@ store_cache_lookup (StoreCache *self, const gchar *type, const gchar *name, gboo
     }
 
     return g_bytes_new_take (g_steal_pointer (&contents), contents_length);
+}
+
+JsonNode *
+store_cache_lookup_json (StoreCache *self, const gchar *type, const gchar *name, gboolean hash)
+{
+    g_return_val_if_fail (STORE_IS_CACHE (self), NULL);
+
+    g_autoptr(GBytes) value = store_cache_lookup (self, type, name, hash);
+    if (value == NULL)
+        return NULL;
+
+    g_autoptr(JsonParser) parser = json_parser_new ();
+    g_autoptr(GError) error = NULL;
+    if (!json_parser_load_from_data (parser, g_bytes_get_data (value, NULL), g_bytes_get_size (value), &error)) {
+        g_warning ("Failed to read JSON cache entry %s[%s]: %s", type, name, error->message);
+        return NULL;
+    }
+
+    return json_node_ref (json_parser_get_root (parser));
 }

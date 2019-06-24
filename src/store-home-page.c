@@ -60,7 +60,8 @@ is_screenshot (SnapdMedia *media)
 static StoreApp *
 snap_to_app (SnapdSnap *snap)
 {
-    g_autoptr(StoreApp) app = store_app_new (snapd_snap_get_name (snap));
+    g_autoptr(StoreApp) app = store_app_new ();
+    store_app_set_name (app, snapd_snap_get_name (snap));
     if (snapd_snap_get_title (snap) != NULL)
         store_app_set_title (app, snapd_snap_get_title (snap));
     else
@@ -101,6 +102,13 @@ snap_to_app (SnapdSnap *snap)
 }
 
 static void
+cache_snap (StoreHomePage *self, StoreApp *app)
+{
+    g_autoptr(JsonNode) node = store_app_to_json (app);
+    store_cache_insert_json (self->cache, "snaps", store_app_get_name (app), FALSE, node);
+}
+
+static void
 app_activated_cb (StoreHomePage *self, StoreApp *app)
 {
     g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, app);
@@ -123,7 +131,9 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 0; i < snaps->len; i++) {
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        g_ptr_array_add (apps, snap_to_app (snap));
+        StoreApp *app = snap_to_app (snap);
+        cache_snap (self, app);
+        g_ptr_array_add (apps, app);
     }
     store_category_view_set_apps (self->search_results_view, apps);
 
@@ -209,10 +219,48 @@ store_home_page_class_init (StoreHomePageClass *klass)
                                                   1, store_app_get_type ());
 }
 
+typedef struct
+{
+    StoreHomePage *self;
+    gchar *section_name;
+} FindSectionData;
+
+static FindSectionData *
+find_section_data_new (StoreHomePage *self, const gchar *section_name)
+{
+    FindSectionData *data = g_new0 (FindSectionData, 1);
+    data->self = self;
+    data->section_name = g_strdup (section_name);
+    return data;
+}
+
+static void
+find_section_data_free (FindSectionData *data)
+{
+    g_free (data->section_name);
+    g_free (data);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (FindSectionData, find_section_data_free)
+
+static StoreCategoryView *
+find_store_category_view (StoreHomePage *self, const gchar *section_name)
+{
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        if (STORE_IS_CATEGORY_VIEW (child) &&
+            g_strcmp0 (store_category_view_get_name (STORE_CATEGORY_VIEW (child)), section_name) == 0)
+            return STORE_CATEGORY_VIEW (child);
+    }
+
+    return NULL;
+}
+
 static void
 get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
-    StoreCategoryView *view = user_data;
+    g_autoptr(FindSectionData) data = user_data;
 
     g_autoptr(GError) error = NULL;
     g_autoptr(GPtrArray) snaps = snapd_client_find_section_finish (SNAPD_CLIENT (object), result, NULL, &error);
@@ -223,10 +271,15 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
         return;
     }
 
+    StoreCategoryView *view = find_store_category_view (data->self, data->section_name);
+    if (view == NULL)
+        return;
+
     guint start = 0;
     if (snaps->len >= 1) {
         SnapdSnap *snap = g_ptr_array_index (snaps, 0);
         g_autoptr(StoreApp) hero = snap_to_app (snap);
+        cache_snap (data->self, hero);
         if (store_app_get_icon (hero) != NULL) {
             store_category_view_set_hero (view, hero);
             start = 1;
@@ -292,6 +345,7 @@ get_section_title (const gchar *name)
 static void
 set_sections (StoreHomePage *self, GStrv sections, gboolean populate)
 {
+    // FIXME: Only remove obsolete sections, and download new ones
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
     for (GList *link = children; link != NULL; link = link->next) {
         GtkWidget *child = link->data;
@@ -300,11 +354,12 @@ set_sections (StoreHomePage *self, GStrv sections, gboolean populate)
     }
     for (int i = 0; sections[i] != NULL; i++) {
         StoreCategoryView *view = store_category_view_new ();
-        store_category_view_set_name (view, get_section_title (sections[i]));
+        store_category_view_set_name (view, sections[i]);
+        store_category_view_set_title (view, get_section_title (sections[i]));
         g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
         if (populate) { // FIXME: Hack to stop the following occuring for cached values
             g_autoptr(SnapdClient) client = snapd_client_new ();
-            snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, view);
+            snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, find_section_data_new (self, sections[i]));
         }
         gtk_widget_show (GTK_WIDGET (view));
         gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
@@ -328,8 +383,13 @@ get_sections_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     set_sections (self, sections, TRUE);
 
     /* Save in cache */
-    g_autofree gchar *section_cache = g_strjoinv (";", sections); // FIXME: Use Json
-    store_cache_insert_string (self->cache, "store", "sections", FALSE, section_cache);
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
+    json_builder_begin_array (builder);
+    for (int i = 0; sections[i] != NULL; i++)
+        json_builder_add_string_value (builder, sections[i]);
+    json_builder_end_array (builder);
+    g_autoptr(JsonNode) root = json_builder_get_root (builder);
+    store_cache_insert_json (self->cache, "store", "sections", FALSE, root);
 }
 
 static void
@@ -365,7 +425,7 @@ store_home_page_init (StoreHomePage *self)
     gtk_widget_init_template (GTK_WIDGET (self));
 
     self->installed_view = store_category_view_new (); // FIXME: Move into .ui
-    store_category_view_set_name (self->installed_view, "Installed"); // FIXME: translatable
+    store_category_view_set_title (self->installed_view, "Installed"); // FIXME: translatable
     g_signal_connect_object (self->installed_view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
     gtk_box_pack_end (self->category_box, GTK_WIDGET (self->installed_view), FALSE, FALSE, 0);
 
@@ -373,10 +433,16 @@ store_home_page_init (StoreHomePage *self)
     snapd_client_get_sections_async (client, self->cancellable, get_sections_cb, self);
 
     /* Load cached sections */
-    g_autoptr(GBytes) sections_cache = store_cache_lookup (self->cache, "store", "sections", FALSE);
+    g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "store", "sections", FALSE);
     if (sections_cache != NULL) {
-        g_auto(GStrv) sections = g_strsplit (g_bytes_get_data (sections_cache, NULL), ";", -1);
-        set_sections (self, sections, FALSE);
+        JsonArray *array = json_node_get_array (sections_cache);
+        g_autoptr(GPtrArray) sections = g_ptr_array_new ();
+        for (guint i = 0; i < json_array_get_length (array); i++) {
+            JsonNode *node = json_array_get_element (array, i);
+            g_ptr_array_add (sections, (gpointer) json_node_get_string (node));
+        }
+        g_ptr_array_add (sections, NULL);
+        set_sections (self, (GStrv) sections->pdata, FALSE);
     }
 
     g_autoptr(SnapdClient) client2 = snapd_client_new ();

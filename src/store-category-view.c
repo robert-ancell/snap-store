@@ -101,6 +101,22 @@ store_category_view_set_name (StoreCategoryView *self, const gchar *name)
     gtk_widget_set_visible (GTK_WIDGET (self->title_label), name != NULL);
 }
 
+const gchar *
+store_category_view_get_name (StoreCategoryView *self)
+{
+    g_return_val_if_fail (STORE_IS_CATEGORY_VIEW (self), NULL);
+    return self->name;
+}
+
+void
+store_category_view_set_title (StoreCategoryView *self, const gchar *title)
+{
+    g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
+
+    gtk_label_set_label (self->title_label, title);
+    gtk_widget_set_visible (GTK_WIDGET (self->title_label), title != NULL);
+}
+
 void
 store_category_view_set_hero (StoreCategoryView *self, StoreApp *app)
 {

@@ -10,6 +10,7 @@
 #pragma once
 
 #include <glib-object.h>
+#include <json-glib/json-glib.h>
 
 #include "store-media.h"
 
@@ -17,7 +18,11 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreApp, store_app, STORE, APP, GObject)
 
-StoreApp    *store_app_new                     (const gchar *name);
+StoreApp    *store_app_new                     (void);
+
+StoreApp    *store_app_new_from_json           (JsonNode *node);
+
+JsonNode    *store_app_to_json                 (StoreApp *app);
 
 void         store_app_set_appstream_id        (StoreApp *app, const gchar *appstream_id);
 
@@ -30,6 +35,8 @@ const gchar *store_app_get_description         (StoreApp *app);
 void         store_app_set_icon                (StoreApp *app, StoreMedia *icon);
 
 StoreMedia  *store_app_get_icon                (StoreApp *app);
+
+void         store_app_set_name                (StoreApp *app, const gchar *name);
 
 const gchar *store_app_get_name                (StoreApp *app);
 

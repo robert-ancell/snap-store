@@ -45,6 +45,44 @@ store_media_new (void)
     return g_object_new (store_media_get_type (), NULL);
 }
 
+StoreMedia *
+store_media_new_from_json (JsonNode *node)
+{
+    StoreMedia *self = store_media_new ();
+
+    JsonObject *object = json_node_get_object (node);
+    if (json_object_has_member (object, "height"))
+        store_media_set_height (self, json_object_get_int_member (object, "height"));
+    store_media_set_url (self, json_object_get_string_member (object, "url"));
+    if (json_object_has_member (object, "width"))
+        store_media_set_width (self, json_object_get_int_member (object, "width"));
+
+    return self;
+}
+
+JsonNode *
+store_media_to_json (StoreMedia *self)
+{
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
+
+    g_return_val_if_fail (STORE_IS_MEDIA (self), NULL);
+
+    json_builder_begin_object (builder);
+    if (self->height > 0) {
+        json_builder_set_member_name (builder, "height");
+        json_builder_add_int_value (builder, self->height);
+    }
+    json_builder_set_member_name (builder, "url");
+    json_builder_add_string_value (builder, self->url);
+    if (self->width > 0) {
+        json_builder_set_member_name (builder, "width");
+        json_builder_add_int_value (builder, self->width);
+    }
+    json_builder_end_object (builder);
+
+    return json_builder_get_root (builder);
+}
+
 void
 store_media_set_height (StoreMedia *self, guint height)
 {
