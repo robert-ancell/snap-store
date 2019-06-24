@@ -2,12 +2,15 @@
 <interface>
   <template class="StoreReviewView" parent="GtkBox">
     <property name="orientation">vertical</property>
+    <property name="spacing">20</property>
+    <property name="margin">10</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="orientation">horizontal</property>
+        <property name="spacing">20</property>
         <child>
-          <object class="GtkLabel" id="rating_label">
+          <object class="StoreRatingLabel" id="rating_label">
             <property name="visible">True</property>
             <property name="halign">start</property>
           </object>
