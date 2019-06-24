@@ -59,6 +59,8 @@ store_window_init (StoreWindow *self)
     store_app_page_get_type ();
     store_home_page_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
+
+    gtk_window_set_default_size (GTK_WINDOW (self), 800, 600); // FIXME: Temp
 }
 
 StoreWindow *
