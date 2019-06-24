@@ -84,11 +84,9 @@ store_category_view_init (StoreCategoryView *self)
 }
 
 StoreCategoryView *
-store_category_view_new (const gchar *name)
+store_category_view_new (void)
 {
-    StoreCategoryView *self = g_object_new (store_category_view_get_type (), NULL);
-    store_category_view_set_name (self, name);
-    return self;
+    return g_object_new (store_category_view_get_type (), NULL);
 }
 
 void
@@ -100,6 +98,7 @@ store_category_view_set_name (StoreCategoryView *self, const gchar *name)
     self->name = g_strdup (name);
 
     gtk_label_set_label (self->title_label, name);
+    gtk_widget_set_visible (GTK_WIDGET (self->title_label), name != NULL);
 }
 
 void
@@ -115,6 +114,12 @@ void
 store_category_view_set_apps (StoreCategoryView *self, GPtrArray *apps)
 {
     g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
+
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_flow_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        gtk_container_remove (GTK_CONTAINER (self->app_flow_box), child);
+    }
 
     for (guint i = 0; i < apps->len; i++) {
         StoreApp *app = g_ptr_array_index (apps, i);

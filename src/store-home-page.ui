@@ -5,12 +5,34 @@
       <object class="GtkScrolledWindow">
         <property name="visible">True</property>
         <child>
-          <object class="GtkBox" id="category_box">
+          <object class="GtkBox">
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="margin">36</property>
             <property name="spacing">36</property>
-            <property name="halign">center</property>
+            <property name="valign">start</property>
+            <child>
+              <object class="GtkEntry" id="search_entry">
+                <property name="visible">True</property>
+                <property name="hexpand">True</property>
+                <signal name="notify::text" handler="search_changed_cb" object="StoreHomePage" swapped="yes"/>
+                <signal name="activate" handler="search_cb" object="StoreHomePage" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="StoreCategoryView" id="search_results_view">
+                <property name="visible">False</property>
+                <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="category_box">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">36</property>
+                <property name="halign">center</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>

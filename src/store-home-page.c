@@ -20,8 +20,12 @@ struct _StoreHomePage
 
     GtkBox *category_box;
     StoreCategoryView *installed_view;
+    GtkEntry *search_entry;
+    StoreCategoryView *search_results_view;
 
     GCancellable *cancellable;
+    GCancellable *search_cancellable;
+    GSource *search_timeout;
 };
 
 G_DEFINE_TYPE (StoreHomePage, store_home_page, GTK_TYPE_BOX)
@@ -33,39 +37,6 @@ enum
 };
 
 static guint signals[SIGNAL_LAST] = { 0, };
-
-static void
-app_activated_cb (StoreHomePage *self, StoreApp *app)
-{
-    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, app);
-}
-
-static void
-store_home_page_dispose (GObject *object)
-{
-    StoreHomePage *self = STORE_HOME_PAGE (object);
-    g_cancellable_cancel (self->cancellable);
-    g_clear_object (&self->cancellable);
-}
-
-static void
-store_home_page_class_init (StoreHomePageClass *klass)
-{
-    G_OBJECT_CLASS (klass)->dispose = store_home_page_dispose;
-
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-home-page.ui");
-
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_box);
-
-    signals[SIGNAL_APP_ACTIVATED] = g_signal_new ("app-activated",
-                                                  G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
-                                                  G_SIGNAL_RUN_LAST,
-                                                  0,
-                                                  NULL, NULL,
-                                                  NULL,
-                                                  G_TYPE_NONE,
-                                                  1, store_app_get_type ());
-}
 
 static gboolean
 is_screenshot (SnapdMedia *media)
@@ -125,6 +96,106 @@ snap_to_app (SnapdSnap *snap)
     store_app_set_appstream_id (app, appstream_id);
 
     return g_steal_pointer (&app);
+}
+
+static void
+app_activated_cb (StoreHomePage *self, StoreApp *app)
+{
+    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, app);
+}
+
+static void
+search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    StoreHomePage *self = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GPtrArray) snaps = snapd_client_find_finish (SNAPD_CLIENT (object), result, NULL, &error);
+    if (snaps == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to find snaps: %s", error->message);
+        return;
+    }
+
+    g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
+    for (guint i = 0; i < snaps->len; i++) {
+        SnapdSnap *snap = g_ptr_array_index (snaps, i);
+        g_ptr_array_add (apps, snap_to_app (snap));
+    }
+    store_category_view_set_apps (self->search_results_view, apps);
+
+    gtk_widget_hide (GTK_WIDGET (self->category_box));
+    gtk_widget_show (GTK_WIDGET (self->search_results_view));
+}
+
+static void
+search_cb (StoreHomePage *self)
+{
+    g_autoptr(SnapdClient) client = snapd_client_new ();
+    g_cancellable_cancel (self->search_cancellable);
+    g_clear_object (&self->search_cancellable);
+    self->search_cancellable = g_cancellable_new ();
+    snapd_client_find_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, gtk_entry_get_text (self->search_entry), self->search_cancellable, search_results_cb, self);
+}
+
+static gboolean
+search_timeout_cb (gpointer user_data)
+{
+    StoreHomePage *self = user_data;
+
+    search_cb (self);
+
+    return G_SOURCE_REMOVE;
+}
+
+static void
+search_changed_cb (StoreHomePage *self)
+{
+    if (self->search_timeout)
+        g_source_destroy (self->search_timeout);
+    g_clear_pointer (&self->search_timeout, g_source_unref);
+    self->search_timeout = g_timeout_source_new (200);
+    g_source_set_callback (self->search_timeout, search_timeout_cb, self, NULL);
+    g_source_attach (self->search_timeout, g_main_context_default ());
+}
+
+static void
+store_home_page_dispose (GObject *object)
+{
+    StoreHomePage *self = STORE_HOME_PAGE (object);
+    g_cancellable_cancel (self->cancellable);
+    g_clear_object (&self->cancellable);
+    g_cancellable_cancel (self->search_cancellable);
+    g_clear_object (&self->search_cancellable);
+    if (self->search_timeout)
+        g_source_destroy (self->search_timeout);
+    g_clear_pointer (&self->search_timeout, g_source_unref);
+}
+
+static void
+store_home_page_class_init (StoreHomePageClass *klass)
+{
+    G_OBJECT_CLASS (klass)->dispose = store_home_page_dispose;
+
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-home-page.ui");
+
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_box);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_entry);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_results_view);
+
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_changed_cb);
+
+    signals[SIGNAL_APP_ACTIVATED] = g_signal_new ("app-activated",
+                                                  G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
+                                                  G_SIGNAL_RUN_LAST,
+                                                  0,
+                                                  NULL, NULL,
+                                                  NULL,
+                                                  G_TYPE_NONE,
+                                                  1, store_app_get_type ());
 }
 
 static void
@@ -220,7 +291,8 @@ get_categories_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
 
     for (int i = 0; sections[i] != NULL; i++) {
-        StoreCategoryView *view = store_category_view_new (get_section_title (sections[i]));
+        StoreCategoryView *view = store_category_view_new ();
+        store_category_view_set_name (view, get_section_title (sections[i]));
         g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
         g_autoptr(SnapdClient) client = snapd_client_new ();
         snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, view);
@@ -257,9 +329,11 @@ store_home_page_init (StoreHomePage *self)
 {
     self->cancellable = g_cancellable_new ();
 
+    store_category_view_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
-    self->installed_view = store_category_view_new ("Installed"); // FIXME: translatable
+    self->installed_view = store_category_view_new (); // FIXME: Move into .ui
+    store_category_view_set_name (self->installed_view, "Installed"); // FIXME: translatable
     g_signal_connect_object (self->installed_view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
     gtk_box_pack_end (self->category_box, GTK_WIDGET (self->installed_view), FALSE, FALSE, 0);
 

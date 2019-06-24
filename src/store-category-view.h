@@ -17,7 +17,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreCategoryView, store_category_view, STORE, CATEGORY_VIEW, GtkFlowBoxChild)
 
-StoreCategoryView *store_category_view_new      (const gchar *name);
+StoreCategoryView *store_category_view_new      (void);
 
 void               store_category_view_set_name (StoreCategoryView *view, const gchar *name);
 

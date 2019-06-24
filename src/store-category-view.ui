@@ -8,7 +8,7 @@
         <property name="spacing">30</property>
         <child>
           <object class="GtkLabel" id="title_label">
-            <property name="visible">True</property>
+            <property name="visible">False</property>
             <property name="halign">start</property>
             <style>
               <class name="category-title-label"/>
