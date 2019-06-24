@@ -12,6 +12,7 @@
 #include "store-home-page.h"
 
 #include "store-app.h"
+#include "store-cache.h"
 #include "store-category-view.h"
 
 struct _StoreHomePage
@@ -23,6 +24,7 @@ struct _StoreHomePage
     GtkEntry *search_entry;
     StoreCategoryView *search_results_view;
 
+    StoreCache *cache;
     GCancellable *cancellable;
     GCancellable *search_cancellable;
     GSource *search_timeout;
@@ -172,6 +174,7 @@ static void
 store_home_page_dispose (GObject *object)
 {
     StoreHomePage *self = STORE_HOME_PAGE (object);
+    g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
     g_cancellable_cancel (self->search_cancellable);
@@ -285,7 +288,29 @@ get_section_title (const gchar *name)
 }
 
 static void
-get_categories_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+set_sections (StoreHomePage *self, GStrv sections, gboolean populate)
+{
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        if (child != GTK_WIDGET (self->installed_view))
+            gtk_container_remove (GTK_CONTAINER (self->category_box), child);
+    }
+    for (int i = 0; sections[i] != NULL; i++) {
+        StoreCategoryView *view = store_category_view_new ();
+        store_category_view_set_name (view, get_section_title (sections[i]));
+        g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
+        if (populate) { // FIXME: Hack to stop the following occuring for cached values
+            g_autoptr(SnapdClient) client = snapd_client_new ();
+            snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, view);
+        }
+        gtk_widget_show (GTK_WIDGET (view));
+        gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
+    }
+}
+
+static void
+get_sections_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
     StoreHomePage *self = user_data;
 
@@ -298,15 +323,11 @@ get_categories_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    for (int i = 0; sections[i] != NULL; i++) {
-        StoreCategoryView *view = store_category_view_new ();
-        store_category_view_set_name (view, get_section_title (sections[i]));
-        g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-        g_autoptr(SnapdClient) client = snapd_client_new ();
-        snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, view);
-        gtk_widget_show (GTK_WIDGET (view));
-        gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
-    }
+    set_sections (self, sections, TRUE);
+
+    /* Save in cache */
+    g_autofree gchar *section_cache = g_strjoinv (";", sections); // FIXME: Use Json
+    store_cache_insert_string (self->cache, "store", "sections", FALSE, section_cache);
 }
 
 static void
@@ -335,6 +356,7 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 static void
 store_home_page_init (StoreHomePage *self)
 {
+    self->cache = store_cache_new ();
     self->cancellable = g_cancellable_new ();
 
     store_category_view_get_type ();
@@ -346,7 +368,14 @@ store_home_page_init (StoreHomePage *self)
     gtk_box_pack_end (self->category_box, GTK_WIDGET (self->installed_view), FALSE, FALSE, 0);
 
     g_autoptr(SnapdClient) client = snapd_client_new ();
-    snapd_client_get_sections_async (client, self->cancellable, get_categories_cb, self);
+    snapd_client_get_sections_async (client, self->cancellable, get_sections_cb, self);
+
+    /* Load cached sections */
+    g_autoptr(GBytes) sections_cache = store_cache_lookup (self->cache, "store", "sections", FALSE);
+    if (sections_cache != NULL) {
+        g_auto(GStrv) sections = g_strsplit (g_bytes_get_data (sections_cache, NULL), ";", -1);
+        set_sections (self, sections, FALSE);
+    }
 
     g_autoptr(SnapdClient) client2 = snapd_client_new ();
     snapd_client_get_snaps_async (client2, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);

@@ -61,6 +61,15 @@ store_cache_insert (StoreCache *self, const gchar *type, const gchar *name, gboo
     }
 }
 
+void
+store_cache_insert_string (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, const gchar *string)
+{
+    g_return_if_fail (STORE_IS_CACHE (self));
+
+    g_autoptr(GBytes) data = g_bytes_new_static (string, strlen (string));
+    store_cache_insert (self, type, name, hash, data);
+}
+
 GBytes *
 store_cache_lookup (StoreCache *self, const gchar *type, const gchar *name, gboolean hash)
 {

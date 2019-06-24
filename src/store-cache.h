@@ -15,10 +15,12 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreCache, store_cache, STORE, CACHE, GObject)
 
-StoreCache *store_cache_new    (void);
+StoreCache *store_cache_new           (void);
 
-void        store_cache_insert (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, GBytes *data);
+void        store_cache_insert        (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, GBytes *data);
 
-GBytes     *store_cache_lookup (StoreCache *cache, const gchar *type, const gchar *name, gboolean hans);
+void        store_cache_insert_string (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, const gchar *data);
+
+GBytes     *store_cache_lookup        (StoreCache *cache, const gchar *type, const gchar *name, gboolean hans);
 
 G_END_DECLS
