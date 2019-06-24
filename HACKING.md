@@ -2,6 +2,18 @@
 
 ## Setting up a development environment
 
+To install necessary build dependencies:
+
+`apt install meson ninja-build libsnapd-glib-dev libsoup2.4-dev libgtk-3-dev`
+
+Snap Desktop Store is built using [Meson][] and [Ninja][]. To build te project:
+
+`meson --prefix $PWD/install build/
+ninja -C build/ all install`
+
+[meson]: http://mesonbuild.com
+[ninja]: https://ninja-build.org/
+
 ### Testing
 
 See the [Testing guide](TESTING.md).
