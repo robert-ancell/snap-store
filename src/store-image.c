@@ -175,7 +175,7 @@ store_image_set_url (StoreImage *self, const gchar *url)
     self->cancellable = g_cancellable_new ();
 
     if (url == NULL || g_strcmp0 (url, "") == 0) {
-        g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/com/ubuntu/SnapStore/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
+        g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/io/snapcraft/Store/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
         gtk_image_set_from_pixbuf (GTK_IMAGE (self), pixbuf);
         return;
     }

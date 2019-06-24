@@ -38,7 +38,7 @@ store_review_view_class_init (StoreReviewViewClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_review_view_dispose;
 
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-review-view.ui");
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-review-view.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, author_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, date_label);

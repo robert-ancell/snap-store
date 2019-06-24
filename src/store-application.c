@@ -31,7 +31,7 @@ store_application_dispose (GObject *object)
 static void
 theme_changed_cb (StoreApplication *self)
 {
-    gtk_css_provider_load_from_resource (self->css_provider, "/com/ubuntu/SnapStore/gtk-style.css");
+    gtk_css_provider_load_from_resource (self->css_provider, "/io/snapcraft/Store/gtk-style.css");
 }
 
 static void

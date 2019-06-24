@@ -54,7 +54,7 @@
                         <child>
                           <object class="GtkImage" id="publisher_validated_image">
                             <property name="visible">False</property>
-                            <property name="resource">/com/ubuntu/SnapStore/developer-verified.svg</property>
+                            <property name="resource">/io/snapcraft/Store/developer-verified.svg</property>
                             <style>
                               <class name="pubisher-verified-image"/>
                             </style>

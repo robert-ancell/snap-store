@@ -38,7 +38,7 @@ store_app_tile_class_init (StoreAppTileClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_app_tile_dispose;
 
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-app-tile.ui");
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-tile.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, name_label);

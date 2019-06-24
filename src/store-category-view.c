@@ -57,7 +57,7 @@ store_category_view_class_init (StoreCategoryViewClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_category_view_dispose;
 
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-category-view.ui");
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-category-view.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryView, app_flow_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryView, hero_tile);

@@ -51,7 +51,7 @@ store_hero_tile_class_init (StoreHeroTileClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_hero_tile_dispose;
 
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-hero-tile.ui");
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-hero-tile.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHeroTile, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHeroTile, summary_label);

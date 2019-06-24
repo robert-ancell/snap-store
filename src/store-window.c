@@ -42,7 +42,7 @@ back_button_clicked_cb (StoreWindow *self)
 static void
 store_window_class_init (StoreWindowClass *klass)
 {
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-window.ui");
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-window.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, app_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, back_button);

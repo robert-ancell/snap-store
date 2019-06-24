@@ -46,7 +46,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_app_page_dispose;
 
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-app-page.ui");
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-page.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, description_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_title_label);
