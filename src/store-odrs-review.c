@@ -14,6 +14,7 @@ struct _StoreOdrsReview
     GObject parent_instance;
 
     gchar *author;
+    GDateTime *date_created;
     gchar *description;
     gchar *summary;
     gint64 rating;
@@ -26,6 +27,7 @@ store_odrs_review_dispose (GObject *object)
 {
     StoreOdrsReview *self = STORE_ODRS_REVIEW (object);
     g_clear_pointer (&self->author, g_free);
+    g_clear_pointer (&self->date_created, g_date_time_unref);
     g_clear_pointer (&self->description, g_free);
     g_clear_pointer (&self->summary, g_free);
 }
@@ -63,6 +65,21 @@ store_odrs_review_get_author (StoreOdrsReview *self)
 {
     g_return_val_if_fail (STORE_IS_ODRS_REVIEW (self), NULL);
     return self->author;
+}
+
+void
+store_odrs_review_set_date_created (StoreOdrsReview *self, GDateTime *date_created)
+{
+    g_return_if_fail (STORE_IS_ODRS_REVIEW (self));
+    g_clear_pointer (&self->date_created, g_date_time_unref);
+    self->date_created = g_date_time_ref (date_created);
+}
+
+GDateTime *
+store_odrs_review_get_date_created (StoreOdrsReview *self)
+{
+    g_return_val_if_fail (STORE_IS_ODRS_REVIEW (self), NULL);
+    return self->date_created;
 }
 
 void

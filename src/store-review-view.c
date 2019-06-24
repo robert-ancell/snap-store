@@ -16,6 +16,7 @@ struct _StoreReviewView
     GtkBox parent_instance;
 
     GtkLabel *author_label;
+    GtkLabel *date_label;
     GtkLabel *description_label;
     StoreRatingLabel *rating_label;
     GtkLabel *summary_label;
@@ -40,6 +41,7 @@ store_review_view_class_init (StoreReviewViewClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/com/ubuntu/SnapStore/store-review-view.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, author_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, date_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, description_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, rating_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, summary_label);
@@ -70,9 +72,15 @@ store_review_view_set_review (StoreReviewView *self, StoreOdrsReview *review)
     if (review != NULL)
         self->review = g_object_ref (review);
 
-    gtk_label_set_label (self->author_label, store_odrs_review_get_author (review));
     store_rating_label_set_rating (self->rating_label, store_odrs_review_get_rating (review));
     gtk_label_set_label (self->summary_label, store_odrs_review_get_summary (review));
+    gtk_label_set_label (self->author_label, store_odrs_review_get_author (review));
+    GDateTime *date_created = store_odrs_review_get_date_created (review);
+    if (date_created != NULL) {
+        g_autofree gchar *date_text = g_date_time_format (date_created, "%Y-%m-%d");
+        gtk_label_set_label (self->date_label, date_text);
+    }
+    gtk_widget_set_visible (GTK_WIDGET (self->date_label), date_created != NULL);
     gtk_label_set_label (self->description_label, store_odrs_review_get_description (review));
 }
 

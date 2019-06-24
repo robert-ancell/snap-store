@@ -15,22 +15,26 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreOdrsReview, store_odrs_review, STORE, ODRS_REVIEW, GObject)
 
-StoreOdrsReview *store_odrs_review_new             (void);
+StoreOdrsReview *store_odrs_review_new              (void);
 
-void             store_odrs_review_set_author      (StoreOdrsReview *review, const gchar *author);
+void             store_odrs_review_set_author       (StoreOdrsReview *review, const gchar *author);
 
-const gchar     *store_odrs_review_get_author      (StoreOdrsReview *review);
+const gchar     *store_odrs_review_get_author       (StoreOdrsReview *review);
 
-void             store_odrs_review_set_description (StoreOdrsReview *review, const gchar *description);
+void             store_odrs_review_set_date_created (StoreOdrsReview *review, GDateTime *date_created);
 
-const gchar     *store_odrs_review_get_description (StoreOdrsReview *review);
+GDateTime       *store_odrs_review_get_date_created (StoreOdrsReview *review);
 
-void             store_odrs_review_set_summary     (StoreOdrsReview *review, const gchar *summary);
+void             store_odrs_review_set_description  (StoreOdrsReview *review, const gchar *description);
 
-const gchar     *store_odrs_review_get_summary     (StoreOdrsReview *review);
+const gchar     *store_odrs_review_get_description  (StoreOdrsReview *review);
 
-void             store_odrs_review_set_rating      (StoreOdrsReview *review, gint64 rating);
+void             store_odrs_review_set_summary      (StoreOdrsReview *review, const gchar *summary);
 
-gint64           store_odrs_review_get_rating      (StoreOdrsReview *review);
+const gchar     *store_odrs_review_get_summary      (StoreOdrsReview *review);
+
+void             store_odrs_review_set_rating       (StoreOdrsReview *review, gint64 rating);
+
+gint64           store_odrs_review_get_rating       (StoreOdrsReview *review);
 
 G_END_DECLS

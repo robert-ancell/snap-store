@@ -116,6 +116,10 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
             store_odrs_review_set_rating (review, json_object_get_int_member (object, "rating"));
         if (json_object_has_member (object, "user_display"))
             store_odrs_review_set_author (review, json_object_get_string_member (object, "user_display"));
+        if (json_object_has_member (object, "date_created")) {
+            g_autoptr(GDateTime) date_created = g_date_time_new_from_unix_utc (json_object_get_int_member (object, "date_created"));
+            store_odrs_review_set_date_created (review, date_created);
+        }
         if (json_object_has_member (object, "summary"))
             store_odrs_review_set_summary (review, json_object_get_string_member (object, "summary"));
         if (json_object_has_member (object, "description"))
