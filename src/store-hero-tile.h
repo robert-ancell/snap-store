@@ -15,7 +15,7 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreHeroTile, store_hero_tile, STORE, HERO_TILE, GtkFlowBoxChild)
+G_DECLARE_FINAL_TYPE (StoreHeroTile, store_hero_tile, STORE, HERO_TILE, GtkEventBox)
 
 StoreHeroTile *store_hero_tile_new      (void);
 

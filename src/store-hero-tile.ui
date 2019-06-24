@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="StoreHeroTile" parent="GtkFlowBoxChild">
+  <template class="StoreHeroTile" parent="GtkEventBox">
+    <signal name="button_release_event" handler="button_release_event_cb" object="StoreHeroTile" swapped="yes"/>
     <style>
     <class name="hero-tile"/>
     </style>

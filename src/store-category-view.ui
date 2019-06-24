@@ -18,6 +18,7 @@
         <child>
           <object class="StoreHeroTile" id="hero_tile">
             <property name="visible">False</property>
+            <signal name="activated" handler="hero_activated_cb" object="StoreCategoryView" swapped="yes"/>
           </object>
         </child>
         <child>

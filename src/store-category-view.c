@@ -34,6 +34,12 @@ enum
 static guint signals[SIGNAL_LAST] = { 0, };
 
 static void
+hero_activated_cb (StoreCategoryView *self)
+{
+    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_hero_tile_get_app (self->hero_tile));
+}
+
+static void
 app_activated_cb (StoreCategoryView *self, StoreAppTile *tile)
 {
     g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_app_tile_get_app (tile));
@@ -58,6 +64,7 @@ store_category_view_class_init (StoreCategoryViewClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryView, title_label);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), hero_activated_cb);
 
     signals[SIGNAL_APP_ACTIVATED] = g_signal_new ("app-activated",
                                                   G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
