@@ -132,11 +132,19 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 static void
 search_cb (StoreHomePage *self)
 {
+    const gchar *query = gtk_entry_get_text (self->search_entry);
+
+    if (query[0] == '\0') {
+        gtk_widget_show (GTK_WIDGET (self->category_box));
+        gtk_widget_hide (GTK_WIDGET (self->search_results_view));
+        return;
+    }
+
     g_autoptr(SnapdClient) client = snapd_client_new ();
     g_cancellable_cancel (self->search_cancellable);
     g_clear_object (&self->search_cancellable);
     self->search_cancellable = g_cancellable_new ();
-    snapd_client_find_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, gtk_entry_get_text (self->search_entry), self->search_cancellable, search_results_cb, self);
+    snapd_client_find_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, query, self->search_cancellable, search_results_cb, self);
 }
 
 static gboolean
