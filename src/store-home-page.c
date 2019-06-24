@@ -284,6 +284,8 @@ get_section_title (const gchar *name)
         return "Education";
     if (strcmp (name, "books-and-reference") == 0)
         return "Books and Reference";
+    if (strcmp (name, "personalisation") == 0)
+        return "Personalisation";
     return name;
 }
 
