@@ -79,6 +79,7 @@ snap_to_app (SnapdSnap *snap)
         store_app_set_publisher (app, snapd_snap_get_publisher_display_name (snap));
     else
         store_app_set_publisher (app, snapd_snap_get_publisher_username (snap));
+    store_app_set_publisher_validated (app, snapd_snap_get_publisher_validation (snap) == SNAPD_PUBLISHER_VALIDATION_VERIFIED);
     store_app_set_summary (app, snapd_snap_get_summary (snap));
     store_app_set_description (app, snapd_snap_get_description (snap));
 

@@ -17,36 +17,40 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreApp, store_app, STORE, APP, GObject)
 
-StoreApp    *store_app_new              (const gchar *name);
+StoreApp    *store_app_new                     (const gchar *name);
 
-void         store_app_set_appstream_id (StoreApp *app, const gchar *appstream_id);
+void         store_app_set_appstream_id        (StoreApp *app, const gchar *appstream_id);
 
-const gchar *store_app_get_appstream_id (StoreApp *app);
+const gchar *store_app_get_appstream_id        (StoreApp *app);
 
-void         store_app_set_description  (StoreApp *app, const gchar *description);
+void         store_app_set_description         (StoreApp *app, const gchar *description);
 
-const gchar *store_app_get_description  (StoreApp *app);
+const gchar *store_app_get_description         (StoreApp *app);
 
-void         store_app_set_icon         (StoreApp *app, StoreMedia *icon);
+void         store_app_set_icon                (StoreApp *app, StoreMedia *icon);
 
-StoreMedia  *store_app_get_icon         (StoreApp *app);
+StoreMedia  *store_app_get_icon                (StoreApp *app);
 
-const gchar *store_app_get_name         (StoreApp *app);
+const gchar *store_app_get_name                (StoreApp *app);
 
-void         store_app_set_publisher    (StoreApp *app, const gchar *publisher);
+void         store_app_set_publisher           (StoreApp *app, const gchar *publisher);
 
-const gchar *store_app_get_publisher    (StoreApp *app);
+const gchar *store_app_get_publisher           (StoreApp *app);
 
-void         store_app_set_screenshots  (StoreApp *app, GPtrArray *screenshots);
+void         store_app_set_publisher_validated (StoreApp *app, gboolean validated);
 
-GPtrArray   *store_app_get_screenshots  (StoreApp *app);
+gboolean     store_app_get_publisher_validated (StoreApp *app);
 
-void         store_app_set_summary      (StoreApp *app, const gchar *summary);
+void         store_app_set_screenshots         (StoreApp *app, GPtrArray *screenshots);
 
-const gchar *store_app_get_summary      (StoreApp *app);
+GPtrArray   *store_app_get_screenshots         (StoreApp *app);
 
-void         store_app_set_title        (StoreApp *app, const gchar *title);
+void         store_app_set_summary             (StoreApp *app, const gchar *summary);
 
-const gchar *store_app_get_title        (StoreApp *app);
+const gchar *store_app_get_summary             (StoreApp *app);
+
+void         store_app_set_title               (StoreApp *app, const gchar *title);
+
+const gchar *store_app_get_title               (StoreApp *app);
 
 G_END_DECLS

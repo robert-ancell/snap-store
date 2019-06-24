@@ -23,6 +23,7 @@ struct _StoreAppPage
     StoreImage *icon_image;
     GtkButton *install_button;
     GtkLabel *publisher_label;
+    GtkImage *publisher_validated_image;
     GtkBox *reviews_box;
     GtkBox *screenshots_box;
     GtkLabel *summary_label;
@@ -52,6 +53,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshots_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
@@ -114,6 +116,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 
     gtk_label_set_label (self->title_label, store_app_get_title (app));
     gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));
+    gtk_widget_set_visible (GTK_WIDGET (self->publisher_validated_image), store_app_get_publisher_validated (app));
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
     gtk_label_set_label (self->description_label, store_app_get_description (app));
     g_autofree gchar *details_title = g_strdup_printf ("Details for %s", store_app_get_title (app)); // FIXME: translatable

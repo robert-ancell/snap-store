@@ -37,12 +37,29 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="publisher_label">
+                      <object class="GtkBox">
                         <property name="visible">True</property>
-                        <property name="halign">start</property>
-                        <style>
-                          <class name="app-page-publisher-label"/>
-                        </style>
+                        <property name="orientation">horizontal</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <object class="GtkLabel" id="publisher_label">
+                            <property name="visible">True</property>
+                            <property name="halign">start</property>
+                            <property name="ellipsize">end</property>
+                            <style>
+                              <class name="app-page-publisher-label"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkImage" id="publisher_validated_image">
+                            <property name="visible">False</property>
+                            <property name="resource">/com/ubuntu/SnapStore/developer-verified.svg</property>
+                            <style>
+                              <class name="pubisher-verified-image"/>
+                            </style>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

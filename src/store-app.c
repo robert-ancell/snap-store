@@ -18,6 +18,7 @@ struct _StoreApp
     StoreMedia *icon;
     gchar *name;
     gchar *publisher;
+    gboolean publisher_validated;
     GPtrArray *screenshots;
     gchar *summary;
     gchar *title;
@@ -130,6 +131,20 @@ store_app_get_publisher (StoreApp *self)
 {
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
     return self->publisher;
+}
+
+void
+store_app_set_publisher_validated (StoreApp *self, gboolean validated)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    self->publisher_validated = validated;
+}
+
+gboolean
+store_app_get_publisher_validated (StoreApp *self)
+{
+    g_return_val_if_fail (STORE_IS_APP (self), FALSE);
+    return self->publisher_validated;
 }
 
 void

@@ -18,7 +18,7 @@ struct _StoreAppTile
     StoreImage *icon_image;
     GtkLabel *name_label;
     GtkLabel *publisher_label;
-    GtkImage *publisher_validated_image; // FIXME
+    GtkImage *publisher_validated_image;
     GtkLabel *summary_label;
 
     StoreApp *app;
@@ -43,6 +43,7 @@ store_app_tile_class_init (StoreAppTileClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, name_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, publisher_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, summary_label);
 }
 
@@ -73,6 +74,7 @@ store_app_tile_set_app (StoreAppTile *self, StoreApp *app)
 
     gtk_label_set_label (self->name_label, store_app_get_title (app));
     gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));
+    gtk_widget_set_visible (GTK_WIDGET (self->publisher_validated_image), store_app_get_publisher_validated (app));
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
     store_image_set_url (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
