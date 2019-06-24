@@ -8,6 +8,6 @@ gtk_dep = dependency('gtk+-3.0')
 snapd_glib_dep = dependency('snapd-glib')
 soup_dep = dependency('libsoup-2.4')
 
-install_data('snap-store.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
+install_data('io.snapcraft.Store.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
 
 subdir('src')
