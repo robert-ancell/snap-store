@@ -33,6 +33,7 @@
 }
 
 .review-author-label {
+    opacity: 0.5;
 }
 
 .review-date-label {
