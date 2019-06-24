@@ -67,6 +67,23 @@ store_home_page_class_init (StoreHomePageClass *klass)
                                                   1, store_app_get_type ());
 }
 
+static gboolean
+is_screenshot (SnapdMedia *media)
+{
+    if (g_strcmp0 (snapd_media_get_media_type (media), "screenshot") != 0)
+        return FALSE;
+
+    /* Hide special legacy promotion screenshots */
+    const gchar *url = snapd_media_get_url (media);
+    g_autofree gchar *basename = g_path_get_basename (url);
+    if (g_regex_match_simple ("^banner(?:_[a-zA-Z0-9]{7})?\\.(?:png|jpg)$", basename, 0, 0))
+        return FALSE;
+    if (g_regex_match_simple ("^banner-icon(?:_[a-zA-Z0-9]{7})?\\.(?:png|jpg)$", basename, 0, 0))
+        return FALSE;
+
+    return TRUE;
+}
+
 static StoreApp *
 snap_to_app (SnapdSnap *snap)
 {
@@ -90,11 +107,15 @@ snap_to_app (SnapdSnap *snap)
         if (g_strcmp0 (snapd_media_get_media_type (m), "icon") == 0 && store_app_get_icon (app) == NULL) {
             g_autoptr(StoreMedia) icon = store_media_new ();
             store_media_set_url (icon, snapd_media_get_url (m));
+            store_media_set_width (icon, snapd_media_get_width (m));
+            store_media_set_height (icon, snapd_media_get_height (m));
             store_app_set_icon (app, icon);
         }
-        else if (g_strcmp0 (snapd_media_get_media_type (m), "screenshot") == 0) {
+        else if (is_screenshot (m)) {
             g_autoptr(StoreMedia) screenshot = store_media_new ();
             store_media_set_url (screenshot, snapd_media_get_url (m));
+            store_media_set_width (screenshot, snapd_media_get_width (m));
+            store_media_set_height (screenshot, snapd_media_get_height (m));
             g_ptr_array_add (screenshots, g_steal_pointer (&screenshot));
         }
     }

@@ -141,6 +141,12 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
         StoreImage *image = store_image_new ();
         gtk_widget_show (GTK_WIDGET (image));
         store_image_set_url (image, store_media_get_url (screenshot));
+        guint width, height = 500;
+        if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)
+            width = store_media_get_width (screenshot) * height / store_media_get_height (screenshot);
+        else
+            width = height;
+        store_image_set_size (image, width, height);
         gtk_container_add (GTK_CONTAINER (self->screenshots_box), GTK_WIDGET (image));
     }
     gtk_widget_set_visible (GTK_WIDGET (self->screenshots_box), screenshots->len > 0);

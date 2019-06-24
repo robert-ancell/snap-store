@@ -49,7 +49,7 @@ store_hero_tile_init (StoreHeroTile *self)
     store_image_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
-    store_image_set_size (self->icon_image, 128); // FIXME: Move into .ui
+    store_image_set_size (self->icon_image, 128, 128); // FIXME: Move into .ui
 }
 
 StoreHeroTile *

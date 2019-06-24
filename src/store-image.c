@@ -17,7 +17,8 @@ struct _StoreImage
 
     GCancellable *cancellable;
 
-    int size;
+    guint height;
+    guint width;
     gchar *url;
 };
 
@@ -41,7 +42,7 @@ store_image_class_init (StoreImageClass *klass)
 static void
 store_image_init (StoreImage *self)
 {
-    store_image_set_size (self, 64);
+    store_image_set_size (self, 64, 64); // FIXME: Hard-coded
 }
 
 StoreImage *
@@ -81,14 +82,15 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    gdk_pixbuf_new_from_stream_at_scale_async (stream, self->size, self->size, TRUE, self->cancellable, pixbuf_cb, self);
+    gdk_pixbuf_new_from_stream_at_scale_async (stream, self->width, self->height, TRUE, self->cancellable, pixbuf_cb, self);
 }
 
 void
-store_image_set_size (StoreImage *self, guint size)
+store_image_set_size (StoreImage *self, guint width, guint height)
 {
     g_return_if_fail (STORE_IS_IMAGE (self));
-    self->size = size;
+    self->width = width;
+    self->height = height;
     store_image_set_url (self, self->url);
 }
 
@@ -97,8 +99,10 @@ store_image_set_url (StoreImage *self, const gchar *url)
 {
     g_return_if_fail (STORE_IS_IMAGE (self));
 
-    g_free (self->url);
-    self->url = g_strdup (url);
+    if (url != self->url) {
+        g_free (self->url);
+        self->url = g_strdup (url);
+    }
 
     /* Cancel existing operation */
     g_cancellable_cancel (self->cancellable);
@@ -106,7 +110,7 @@ store_image_set_url (StoreImage *self, const gchar *url)
     self->cancellable = g_cancellable_new ();
 
     if (url == NULL || g_strcmp0 (url, "") == 0) {
-        g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/com/ubuntu/SnapStore/default-snap-icon.svg", self->size, self->size, TRUE, NULL); // FIXME: Make a property
+        g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/com/ubuntu/SnapStore/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
         gtk_image_set_from_pixbuf (GTK_IMAGE (self), pixbuf);
     }
     else {

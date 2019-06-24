@@ -17,7 +17,7 @@ G_DECLARE_FINAL_TYPE (StoreImage, store_image, STORE, IMAGE, GtkImage)
 
 StoreImage *store_image_new      (void);
 
-void        store_image_set_size (StoreImage *image, guint size);
+void        store_image_set_size (StoreImage *image, guint width, guint height);
 
 void        store_image_set_url  (StoreImage *image, const gchar *url);
 

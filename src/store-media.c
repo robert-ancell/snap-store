@@ -13,6 +13,8 @@ struct _StoreMedia
 {
     GObject parent_instance;
 
+    guint height;
+    guint width;
     gchar *url;
 };
 
@@ -41,6 +43,34 @@ StoreMedia *
 store_media_new (void)
 {
     return g_object_new (store_media_get_type (), NULL);
+}
+
+void
+store_media_set_height (StoreMedia *self, guint height)
+{
+    g_return_if_fail (STORE_IS_MEDIA (self));
+    self->height = height;
+}
+
+guint
+store_media_get_height (StoreMedia *self)
+{
+    g_return_val_if_fail (STORE_IS_MEDIA (self), 0);
+    return self->height;
+}
+
+void
+store_media_set_width (StoreMedia *self, guint width)
+{
+    g_return_if_fail (STORE_IS_MEDIA (self));
+    self->width = width;
+}
+
+guint
+store_media_get_width (StoreMedia *self)
+{
+    g_return_val_if_fail (STORE_IS_MEDIA (self), 0);
+    return self->width;
 }
 
 void

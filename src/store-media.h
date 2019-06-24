@@ -15,10 +15,18 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreMedia, store_media, STORE, MEDIA, GObject)
 
-StoreMedia  *store_media_new     (void);
+StoreMedia  *store_media_new        (void);
 
-void         store_media_set_url (StoreMedia *media, const gchar *url);
+void         store_media_set_height (StoreMedia *media, guint height);
 
-const gchar *store_media_get_url (StoreMedia *media);
+guint        store_media_get_height (StoreMedia *media);
+
+void         store_media_set_width  (StoreMedia *media, guint width);
+
+guint        store_media_get_width  (StoreMedia *media);
+
+void         store_media_set_url    (StoreMedia *media, const gchar *url);
+
+const gchar *store_media_get_url    (StoreMedia *media);
 
 G_END_DECLS
