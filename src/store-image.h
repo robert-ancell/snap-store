@@ -10,15 +10,18 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <libsoup/soup.h>
 
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreImage, store_image, STORE, IMAGE, GtkImage)
 
-StoreImage *store_image_new      (void);
+StoreImage *store_image_new         (void);
 
-void        store_image_set_size (StoreImage *image, guint width, guint height);
+void        store_image_set_session (StoreImage *image, SoupSession *session);
 
-void        store_image_set_url  (StoreImage *image, const gchar *url);
+void        store_image_set_size    (StoreImage *image, guint width, guint height);
+
+void        store_image_set_url     (StoreImage *image, const gchar *url);
 
 G_END_DECLS
