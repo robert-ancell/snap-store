@@ -24,6 +24,10 @@ StoreApp    *store_app_new_from_json           (JsonNode *node);
 
 JsonNode    *store_app_to_json                 (StoreApp *app);
 
+void         store_app_refresh_async           (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+
+gboolean     store_app_refresh_finish          (StoreApp *app, GAsyncResult *result, GError **error);
+
 void         store_app_set_appstream_id        (StoreApp *app, const gchar *appstream_id);
 
 const gchar *store_app_get_appstream_id        (StoreApp *app);

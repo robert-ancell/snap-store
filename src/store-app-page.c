@@ -9,6 +9,7 @@
 
 #include "store-app-page.h"
 
+#include "store-cache.h"
 #include "store-category-view.h"
 #include "store-image.h"
 #include "store-odrs-client.h"
@@ -30,6 +31,7 @@ struct _StoreAppPage
     GtkLabel *title_label;
 
     StoreApp *app;
+    GCancellable *cancellable;
 };
 
 G_DEFINE_TYPE (StoreAppPage, store_app_page, GTK_TYPE_BOX)
@@ -39,6 +41,8 @@ store_app_page_dispose (GObject *object)
 {
     StoreAppPage *self = STORE_APP_PAGE (object);
     g_clear_object (&self->app);
+    g_cancellable_cancel (self->cancellable);
+    self->cancellable = g_cancellable_new ();
 }
 
 static void
@@ -113,6 +117,10 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_clear_object (&self->app);
     if (app != NULL)
         self->app = g_object_ref (app);
+
+    g_cancellable_cancel (self->cancellable);
+    self->cancellable = g_cancellable_new ();
+    store_app_refresh_async (app, self->cancellable, NULL, NULL);
 
     gtk_label_set_label (self->title_label, store_app_get_title (app));
     gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));

@@ -7,6 +7,8 @@
  * (at your option) any later version.
  */
 
+#include <snapd-glib/snapd-glib.h> // FIXME: subclass
+
 #include "store-app.h"
 
 struct _StoreApp
@@ -122,6 +124,53 @@ store_app_to_json (StoreApp *self)
     json_builder_end_object (builder);
 
     return json_builder_get_root (builder);
+}
+
+static void
+find_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    GTask *task = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GPtrArray) snaps = snapd_client_find_finish (SNAPD_CLIENT (object), result, NULL, &error);
+    if (snaps == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to get snap information: %s", error->message);
+        return;
+    }
+
+    if (snaps->len != 1) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "Snap find returned %d results, expected 1", snaps->len);
+        return;
+    }
+
+    SnapdSnap *snap = g_ptr_array_index (snaps, 0);
+
+    // FIXME: Merge in updated data
+    // FIXME: Save in cache
+
+    g_task_return_boolean (task, TRUE);
+}
+
+
+void
+store_app_refresh_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+
+    g_autoptr(SnapdClient) client = snapd_client_new ();
+    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
+    snapd_client_find_async (client, SNAPD_FIND_FLAGS_MATCH_NAME, self->name, cancellable, find_cb, task);
+}
+
+gboolean
+store_app_refresh_finish (StoreApp *self, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_APP (self), FALSE);
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), FALSE);
+
+    return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 void
