@@ -159,7 +159,12 @@ store_snap_app_update_from_cache (StoreSnapApp *self, StoreCache *cache)
     store_app_set_publisher (STORE_APP (self), json_object_get_string_member (object, "publisher"));
     store_app_set_publisher_validated (STORE_APP (self), json_object_get_boolean_member (object, "publisher-validated"));
     GPtrArray *screenshots = g_ptr_array_new_with_free_func (g_object_unref);
-    //FIXMEstore_app_set_screenshots (STORE_APP (self), json_object_get_string_member (object, "screenshots"));
+    JsonArray *array = json_object_get_array_member (object, "screenshots");
+    for (guint i = 0; i < json_array_get_length (array); i++) {
+        JsonNode *node = json_array_get_element (array, i);
+        g_autoptr(StoreMedia) screenshot = store_media_new_from_json (node);
+        g_ptr_array_add (screenshots, g_steal_pointer (&screenshot));
+    }
     store_app_set_screenshots (STORE_APP (self), screenshots);
     store_app_set_summary (STORE_APP (self), json_object_get_string_member (object, "summary"));
     store_app_set_title (STORE_APP (self), json_object_get_string_member (object, "title"));
