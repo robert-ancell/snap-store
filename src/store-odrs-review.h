@@ -10,12 +10,17 @@
 #pragma once
 
 #include <glib-object.h>
+#include <json-glib/json-glib.h>
 
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreOdrsReview, store_odrs_review, STORE, ODRS_REVIEW, GObject)
 
 StoreOdrsReview *store_odrs_review_new              (void);
+
+StoreOdrsReview *store_odrs_review_new_from_json    (JsonNode *node);
+
+JsonNode        *store_odrs_review_to_json          (StoreOdrsReview *app);
 
 void             store_odrs_review_set_author       (StoreOdrsReview *review, const gchar *author);
 
@@ -29,12 +34,12 @@ void             store_odrs_review_set_description  (StoreOdrsReview *review, co
 
 const gchar     *store_odrs_review_get_description  (StoreOdrsReview *review);
 
-void             store_odrs_review_set_summary      (StoreOdrsReview *review, const gchar *summary);
-
-const gchar     *store_odrs_review_get_summary      (StoreOdrsReview *review);
-
 void             store_odrs_review_set_rating       (StoreOdrsReview *review, gint64 rating);
 
 gint64           store_odrs_review_get_rating       (StoreOdrsReview *review);
+
+void             store_odrs_review_set_summary      (StoreOdrsReview *review, const gchar *summary);
+
+const gchar     *store_odrs_review_get_summary      (StoreOdrsReview *review);
 
 G_END_DECLS

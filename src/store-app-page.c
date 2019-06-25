@@ -31,6 +31,7 @@ struct _StoreAppPage
     GtkLabel *title_label;
 
     StoreApp *app;
+    StoreCache *cache;
     GCancellable *cancellable;
 };
 
@@ -41,6 +42,7 @@ store_app_page_dispose (GObject *object)
 {
     StoreAppPage *self = STORE_APP_PAGE (object);
     g_clear_object (&self->app);
+    g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     self->cancellable = g_cancellable_new ();
 }
@@ -69,12 +71,32 @@ store_app_page_init (StoreAppPage *self)
 {
     store_image_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
+
+    self->cache = store_cache_new (); // FIXME: Make shared?
 }
 
 StoreAppPage *
 store_app_page_new (void)
 {
     return g_object_new (store_app_page_get_type (), NULL);
+}
+
+static void
+set_reviews (StoreAppPage *self, GPtrArray *reviews)
+{
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->reviews_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        gtk_container_remove (GTK_CONTAINER (self->reviews_box), child);
+    }
+    for (guint i = 0; i < reviews->len; i++) {
+        StoreOdrsReview *review = g_ptr_array_index (reviews, i);
+        StoreReviewView *view = store_review_view_new ();
+        gtk_widget_show (GTK_WIDGET (view));
+        store_review_view_set_review (view, review);
+        gtk_container_add (GTK_CONTAINER (self->reviews_box), GTK_WIDGET (view));
+    }
+    gtk_widget_set_visible (GTK_WIDGET (self->reviews_box), reviews->len > 0);
 }
 
 static void
@@ -91,19 +113,18 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->reviews_box));
-    for (GList *link = children; link != NULL; link = link->next) {
-        GtkWidget *child = link->data;
-        gtk_container_remove (GTK_CONTAINER (self->reviews_box), child);
-    }
+    set_reviews (self, reviews);
+
+    /* Save in cache */
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
+    json_builder_begin_array (builder);
     for (guint i = 0; i < reviews->len; i++) {
         StoreOdrsReview *review = g_ptr_array_index (reviews, i);
-        StoreReviewView *view = store_review_view_new ();
-        gtk_widget_show (GTK_WIDGET (view));
-        store_review_view_set_review (view, review);
-        gtk_container_add (GTK_CONTAINER (self->reviews_box), GTK_WIDGET (view));
+        json_builder_add_value (builder, store_odrs_review_to_json (review));
     }
-    gtk_widget_set_visible (GTK_WIDGET (self->reviews_box), reviews->len > 0);
+    json_builder_end_array (builder);
+    g_autoptr(JsonNode) root = json_builder_get_root (builder);
+    store_cache_insert_json (self->cache, "reviews", store_app_get_name (self->app), FALSE, root);
 }
 
 void
@@ -134,6 +155,19 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
         store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
 
     gtk_widget_hide (GTK_WIDGET (self->reviews_box));
+
+    /* Load cached reviews */
+    g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (self->cache, "reviews", store_app_get_name (app), FALSE);
+    if (reviews_cache != NULL) {
+        g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
+        JsonArray *array = json_node_get_array (reviews_cache);
+        for (guint i = 0; i < json_array_get_length (array); i++) {
+            JsonNode *node = json_array_get_element (array, i);
+            g_ptr_array_add (reviews, store_odrs_review_new_from_json (node));
+        }
+        set_reviews (self, reviews);
+    }
+
     g_autoptr(StoreOdrsClient) odrs_client = store_odrs_client_new ();
     store_odrs_client_get_reviews_async (odrs_client, store_app_get_appstream_id (app), NULL, 0, NULL, reviews_cb, self);
     g_steal_pointer (&odrs_client); // FIXME leaks for testing, remove when async call keeps reference
