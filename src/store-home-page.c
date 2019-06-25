@@ -11,7 +11,7 @@
 
 #include "store-home-page.h"
 
-#include "store-app.h"
+#include "store-snap-app.h"
 #include "store-cache.h"
 #include "store-category-view.h"
 
@@ -40,65 +40,12 @@ enum
 
 static guint signals[SIGNAL_LAST] = { 0, };
 
-static gboolean
-is_screenshot (SnapdMedia *media)
-{
-    if (g_strcmp0 (snapd_media_get_media_type (media), "screenshot") != 0)
-        return FALSE;
-
-    /* Hide special legacy promotion screenshots */
-    const gchar *url = snapd_media_get_url (media);
-    g_autofree gchar *basename = g_path_get_basename (url);
-    if (g_regex_match_simple ("^banner(?:_[a-zA-Z0-9]{7})?\\.(?:png|jpg)$", basename, 0, 0))
-        return FALSE;
-    if (g_regex_match_simple ("^banner-icon(?:_[a-zA-Z0-9]{7})?\\.(?:png|jpg)$", basename, 0, 0))
-        return FALSE;
-
-    return TRUE;
-}
-
 static StoreApp *
 snap_to_app (SnapdSnap *snap)
 {
-    g_autoptr(StoreApp) app = store_app_new ();
-    store_app_set_name (app, snapd_snap_get_name (snap));
-    if (snapd_snap_get_title (snap) != NULL)
-        store_app_set_title (app, snapd_snap_get_title (snap));
-    else
-        store_app_set_title (app, snapd_snap_get_name (snap));
-    if (snapd_snap_get_publisher_display_name (snap) != NULL)
-        store_app_set_publisher (app, snapd_snap_get_publisher_display_name (snap));
-    else
-        store_app_set_publisher (app, snapd_snap_get_publisher_username (snap));
-    store_app_set_publisher_validated (app, snapd_snap_get_publisher_validation (snap) == SNAPD_PUBLISHER_VALIDATION_VERIFIED);
-    store_app_set_summary (app, snapd_snap_get_summary (snap));
-    store_app_set_description (app, snapd_snap_get_description (snap));
-
-    GPtrArray *media = snapd_snap_get_media (snap);
-    GPtrArray *screenshots = g_ptr_array_new_with_free_func (g_object_unref);
-    for (guint i = 0; i < media->len; i++) {
-        SnapdMedia *m = g_ptr_array_index (media, i);
-        if (g_strcmp0 (snapd_media_get_media_type (m), "icon") == 0 && store_app_get_icon (app) == NULL) {
-            g_autoptr(StoreMedia) icon = store_media_new ();
-            store_media_set_url (icon, snapd_media_get_url (m));
-            store_media_set_width (icon, snapd_media_get_width (m));
-            store_media_set_height (icon, snapd_media_get_height (m));
-            store_app_set_icon (app, icon);
-        }
-        else if (is_screenshot (m)) {
-            g_autoptr(StoreMedia) screenshot = store_media_new ();
-            store_media_set_url (screenshot, snapd_media_get_url (m));
-            store_media_set_width (screenshot, snapd_media_get_width (m));
-            store_media_set_height (screenshot, snapd_media_get_height (m));
-            g_ptr_array_add (screenshots, g_steal_pointer (&screenshot));
-        }
-    }
-    store_app_set_screenshots (app, screenshots);
-
-    g_autofree gchar *appstream_id = g_strdup_printf ("io.snapcraft.%s-%s", snapd_snap_get_name (snap), snapd_snap_get_id (snap));
-    store_app_set_appstream_id (app, appstream_id);
-
-    return g_steal_pointer (&app);
+    g_autoptr(StoreSnapApp) app = store_snap_app_new ();
+    store_snap_app_update_from_search (app, snap);
+    return STORE_APP (g_steal_pointer (&app));
 }
 
 static void

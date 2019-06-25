@@ -16,7 +16,15 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreApp, store_app, STORE, APP, GObject)
+G_DECLARE_DERIVABLE_TYPE (StoreApp, store_app, STORE, APP, GObject)
+
+struct _StoreAppClass
+{
+    GObjectClass parent_class;
+
+    void     (*refresh_async)  (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+    gboolean (*refresh_finish) (StoreApp *app, GAsyncResult *result, GError **error);
+};
 
 StoreApp    *store_app_new                     (void);
 
