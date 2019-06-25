@@ -133,17 +133,25 @@ store_category_view_set_apps (StoreCategoryView *self, GPtrArray *apps)
 {
     g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
 
+    /* Ensure correct number of app tiles */
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_flow_box));
-    for (GList *link = children; link != NULL; link = link->next) {
-        GtkWidget *child = link->data;
-        gtk_container_remove (GTK_CONTAINER (self->app_flow_box), child);
-    }
-
-    for (guint i = 0; i < apps->len; i++) {
-        StoreApp *app = g_ptr_array_index (apps, i);
+    guint n_tiles = g_list_length (children);
+    while (n_tiles < apps->len) {
         StoreAppTile *tile = store_app_tile_new ();
-        store_app_tile_set_app (tile, app);
         gtk_widget_show (GTK_WIDGET (tile));
         gtk_container_add (GTK_CONTAINER (self->app_flow_box), GTK_WIDGET (tile));
+        n_tiles++;
+        children = g_list_append (children, tile);
+    }
+    while (n_tiles > apps->len) {
+        for (GList *link = g_list_nth (children, apps->len); link != NULL; link = link->next) {
+            StoreAppTile *tile = link->data;
+            gtk_container_remove (GTK_CONTAINER (self->app_flow_box), GTK_WIDGET (tile));
+        }
+    }
+    for (guint i = 0; i < apps->len; i++) {
+        StoreApp *app = g_ptr_array_index (apps, i);
+        StoreAppTile *tile = g_list_nth_data (children, i);
+        store_app_tile_set_app (tile, app);
     }
 }
