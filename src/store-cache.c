@@ -109,5 +109,9 @@ store_cache_lookup_json (StoreCache *self, const gchar *type, const gchar *name,
         return NULL;
     }
 
-    return json_node_ref (json_parser_get_root (parser));
+    JsonNode *root = json_parser_get_root (parser);
+    if (root == NULL)
+        return NULL;
+
+    return json_node_ref (root);
 }

@@ -38,14 +38,12 @@ find_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     StoreSnapApp *self = g_task_get_source_object (task);
     SnapdSnap *snap = g_ptr_array_index (snaps, 0);
 
-    store_snap_app_update_from_search (self, snap); // FIXME: Also channels
-
-    // store_snap_app_save_to_cache (app, cache); // FIXME: No cache, do in callback?
+    store_snap_app_update_from_search (self, snap);
 
     g_task_return_boolean (task, TRUE);
 }
 
-void
+static void
 store_snap_app_refresh_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_return_if_fail (STORE_IS_SNAP_APP (self));
@@ -55,7 +53,7 @@ store_snap_app_refresh_async (StoreApp *self, GCancellable *cancellable, GAsyncR
     snapd_client_find_async (client, SNAPD_FIND_FLAGS_MATCH_NAME, store_app_get_name (self), cancellable, find_cb, task);
 }
 
-gboolean
+static gboolean
 store_snap_app_refresh_finish (StoreApp *self, GAsyncResult *result, GError **error)
 {
     g_return_val_if_fail (STORE_IS_SNAP_APP (self), FALSE);
@@ -65,10 +63,99 @@ store_snap_app_refresh_finish (StoreApp *self, GAsyncResult *result, GError **er
 }
 
 static void
+store_snap_app_save_to_cache (StoreApp *self, StoreCache *cache)
+{
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
+    json_builder_begin_object (builder);
+    json_builder_set_member_name (builder, "appstream-id"); // FIXME: Move common fields into StoreApp
+    json_builder_add_string_value (builder, store_app_get_appstream_id (self));
+    GPtrArray *channels = store_app_get_channels (self);
+    if (channels->len > 0) {
+        json_builder_set_member_name (builder, "channels");
+        json_builder_begin_array (builder);
+        for (guint i = 0; i < channels->len; i++) {
+            StoreChannel *channel = g_ptr_array_index (channels, i);
+            json_builder_add_value (builder, store_channel_to_json (channel));
+        }
+        json_builder_end_array (builder);
+    }
+    json_builder_set_member_name (builder, "description");
+    json_builder_add_string_value (builder, store_app_get_description (self));
+    if (store_app_get_icon (self) != NULL) {
+        json_builder_set_member_name (builder, "icon");
+        json_builder_add_value (builder, store_media_to_json (store_app_get_icon (self)));
+    }
+    json_builder_set_member_name (builder, "name");
+    json_builder_add_string_value (builder, store_app_get_name (self));
+    json_builder_set_member_name (builder, "publisher");
+    json_builder_add_string_value (builder, store_app_get_publisher (self));
+    json_builder_set_member_name (builder, "publisher-validated");
+    json_builder_add_boolean_value (builder, store_app_get_publisher_validated (self));
+    json_builder_set_member_name (builder, "screenshots");
+    json_builder_begin_array (builder);
+    GPtrArray *screenshots = store_app_get_screenshots (self);
+    for (guint i = 0; i < screenshots->len; i++) {
+        StoreMedia *screenshot = g_ptr_array_index (screenshots, i);
+        json_builder_add_value (builder, store_media_to_json (screenshot));
+    }
+    json_builder_end_array (builder);
+    json_builder_set_member_name (builder, "summary");
+    json_builder_add_string_value (builder, store_app_get_summary (self));
+    json_builder_set_member_name (builder, "title");
+    json_builder_add_string_value (builder, store_app_get_title (self));
+    json_builder_end_object (builder);
+
+    g_autoptr(JsonNode) node = json_builder_get_root (builder);
+    store_cache_insert_json (cache, "snaps", store_app_get_name (self), FALSE, node);
+}
+
+static void
+store_snap_app_update_from_cache (StoreApp *self, StoreCache *cache)
+{
+    const gchar *name = store_app_get_name (STORE_APP (self));
+    g_autoptr(JsonNode) node = store_cache_lookup_json (cache, "snaps", name, FALSE);
+    if (node == NULL)
+        return;
+
+    JsonObject *object = json_node_get_object (node);
+    store_app_set_appstream_id (STORE_APP (self), json_object_get_string_member (object, "appstream-id")); // FIXME: Move common fields into StoreApp
+    if (json_object_has_member (object, "channels")) {
+        g_autoptr(GPtrArray) channels = g_ptr_array_new_with_free_func (g_object_unref);
+        JsonArray *channels_array = json_object_get_array_member (object, "channels");
+        for (guint i = 0; i < json_array_get_length (channels_array); i++) {
+            JsonNode *node = json_array_get_element (channels_array, i);
+            g_autoptr(StoreChannel) channel = store_channel_new_from_json (node);
+            g_ptr_array_add (channels, g_steal_pointer (&channel));
+        }
+        store_app_set_channels (STORE_APP (self), channels);
+    }
+    store_app_set_description (STORE_APP (self), json_object_get_string_member (object, "description"));
+    if (json_object_has_member (object, "icon")) {
+        g_autoptr(StoreMedia) icon = store_media_new_from_json (json_object_get_member (object, "icon"));
+        store_app_set_icon (STORE_APP (self), icon);
+    }
+    store_app_set_name (STORE_APP (self), json_object_get_string_member (object, "name"));
+    store_app_set_publisher (STORE_APP (self), json_object_get_string_member (object, "publisher"));
+    store_app_set_publisher_validated (STORE_APP (self), json_object_get_boolean_member (object, "publisher-validated"));
+    g_autoptr(GPtrArray) screenshots = g_ptr_array_new_with_free_func (g_object_unref);
+    JsonArray *screenshots_array = json_object_get_array_member (object, "screenshots");
+    for (guint i = 0; i < json_array_get_length (screenshots_array); i++) {
+        JsonNode *node = json_array_get_element (screenshots_array, i);
+        g_autoptr(StoreMedia) screenshot = store_media_new_from_json (node);
+        g_ptr_array_add (screenshots, g_steal_pointer (&screenshot));
+    }
+    store_app_set_screenshots (STORE_APP (self), screenshots);
+    store_app_set_summary (STORE_APP (self), json_object_get_string_member (object, "summary"));
+    store_app_set_title (STORE_APP (self), json_object_get_string_member (object, "title"));
+}
+
+static void
 store_snap_app_class_init (StoreSnapAppClass *klass)
 {
     STORE_APP_CLASS (klass)->refresh_async = store_snap_app_refresh_async;
     STORE_APP_CLASS (klass)->refresh_finish = store_snap_app_refresh_finish;
+    STORE_APP_CLASS (klass)->save_to_cache = store_snap_app_save_to_cache;
+    STORE_APP_CLASS (klass)->update_from_cache = store_snap_app_update_from_cache;
 }
 
 static void
@@ -80,45 +167,6 @@ StoreSnapApp *
 store_snap_app_new (void)
 {
     return g_object_new (store_snap_app_get_type (), NULL);
-}
-
-void
-store_snap_app_save_to_cache (StoreSnapApp *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_SNAP_APP (self));
-
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-    json_builder_begin_object (builder);
-    json_builder_set_member_name (builder, "appstream-id"); // FIXME: Move common fields into StoreApp
-    json_builder_add_string_value (builder, store_app_get_appstream_id (STORE_APP (self)));
-    json_builder_set_member_name (builder, "description");
-    json_builder_add_string_value (builder, store_app_get_description (STORE_APP (self)));
-    if (store_app_get_icon (STORE_APP (self)) != NULL) {
-        json_builder_set_member_name (builder, "icon");
-        json_builder_add_value (builder, store_media_to_json (store_app_get_icon (STORE_APP (self))));
-    }
-    json_builder_set_member_name (builder, "name");
-    json_builder_add_string_value (builder, store_app_get_name (STORE_APP (self)));
-    json_builder_set_member_name (builder, "publisher");
-    json_builder_add_string_value (builder, store_app_get_publisher (STORE_APP (self)));
-    json_builder_set_member_name (builder, "publisher-validated");
-    json_builder_add_boolean_value (builder, store_app_get_publisher_validated (STORE_APP (self)));
-    json_builder_set_member_name (builder, "screenshots");
-    json_builder_begin_array (builder);
-    GPtrArray *screenshots = store_app_get_screenshots (STORE_APP (self));
-    for (guint i = 0; i < screenshots->len; i++) {
-        StoreMedia *screenshot = g_ptr_array_index (screenshots, i);
-        json_builder_add_value (builder, store_media_to_json (screenshot));
-    }
-    json_builder_end_array (builder);
-    json_builder_set_member_name (builder, "summary");
-    json_builder_add_string_value (builder, store_app_get_summary (STORE_APP (self)));
-    json_builder_set_member_name (builder, "title");
-    json_builder_add_string_value (builder, store_app_get_title (STORE_APP (self)));
-    json_builder_end_object (builder);
-
-    g_autoptr(JsonNode) node = json_builder_get_root (builder);
-    store_cache_insert_json (cache, "snaps", store_app_get_name (STORE_APP (self)), FALSE, node);
 }
 
 static gboolean
@@ -139,38 +187,6 @@ is_screenshot (SnapdMedia *media)
 }
 
 void
-store_snap_app_update_from_cache (StoreSnapApp *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_SNAP_APP (self));
-
-    const gchar *name = store_app_get_name (STORE_APP (self));
-    g_autoptr(JsonNode) node = store_cache_lookup_json (cache, "snaps", name, FALSE);
-    if (node == NULL)
-        return;
-
-    JsonObject *object = json_node_get_object (node);
-    store_app_set_appstream_id (STORE_APP (self), json_object_get_string_member (object, "appstream-id")); // FIXME: Move common fields into StoreApp
-    store_app_set_description (STORE_APP (self), json_object_get_string_member (object, "description"));
-    if (json_object_has_member (object, "icon")) {
-        g_autoptr(StoreMedia) icon = store_media_new_from_json (json_object_get_member (object, "icon"));
-        store_app_set_icon (STORE_APP (self), icon);
-    }
-    store_app_set_name (STORE_APP (self), json_object_get_string_member (object, "name"));
-    store_app_set_publisher (STORE_APP (self), json_object_get_string_member (object, "publisher"));
-    store_app_set_publisher_validated (STORE_APP (self), json_object_get_boolean_member (object, "publisher-validated"));
-    GPtrArray *screenshots = g_ptr_array_new_with_free_func (g_object_unref);
-    JsonArray *array = json_object_get_array_member (object, "screenshots");
-    for (guint i = 0; i < json_array_get_length (array); i++) {
-        JsonNode *node = json_array_get_element (array, i);
-        g_autoptr(StoreMedia) screenshot = store_media_new_from_json (node);
-        g_ptr_array_add (screenshots, g_steal_pointer (&screenshot));
-    }
-    store_app_set_screenshots (STORE_APP (self), screenshots);
-    store_app_set_summary (STORE_APP (self), json_object_get_string_member (object, "summary"));
-    store_app_set_title (STORE_APP (self), json_object_get_string_member (object, "title"));
-}
-
-void
 store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
 {
     g_return_if_fail (STORE_IS_SNAP_APP (self));
@@ -187,6 +203,20 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
     store_app_set_publisher_validated (STORE_APP (self), snapd_snap_get_publisher_validation (snap) == SNAPD_PUBLISHER_VALIDATION_VERIFIED);
     store_app_set_summary (STORE_APP (self), snapd_snap_get_summary (snap));
     store_app_set_description (STORE_APP (self), snapd_snap_get_description (snap));
+
+    /* Channels are only returned on searches for a particular snap */
+    GPtrArray *channels = snapd_snap_get_channels (snap);
+    if (channels->len > 0) {
+        GPtrArray *store_channels = g_ptr_array_new_with_free_func (g_object_unref);
+        for (guint i = 0; i < channels->len; i++) {
+            SnapdChannel *c = g_ptr_array_index (channels, i);
+            g_autoptr(StoreChannel) channel = store_channel_new ();
+            store_channel_set_name (channel, snapd_channel_get_name (c));
+            store_channel_set_version (channel, snapd_channel_get_version (c));
+            g_ptr_array_add (store_channels, g_steal_pointer (&channel));
+        }
+        store_app_set_channels (STORE_APP (self), store_channels);
+    }
 
     GPtrArray *media = snapd_snap_get_media (snap);
     GPtrArray *screenshots = g_ptr_array_new_with_free_func (g_object_unref);

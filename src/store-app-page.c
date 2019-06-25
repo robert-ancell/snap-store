@@ -38,49 +38,19 @@ struct _StoreAppPage
 G_DEFINE_TYPE (StoreAppPage, store_app_page, GTK_TYPE_BOX)
 
 static void
-store_app_page_dispose (GObject *object)
+refresh_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
-    StoreAppPage *self = STORE_APP_PAGE (object);
-    g_clear_object (&self->app);
-    g_clear_object (&self->cache);
-    g_cancellable_cancel (self->cancellable);
-    self->cancellable = g_cancellable_new ();
+    StoreAppPage *self = user_data;
 
-    G_OBJECT_CLASS (store_app_page_parent_class)->dispose (object);
-}
+    g_autoptr(GError) error = NULL;
+    if (!store_app_refresh_finish (STORE_APP (object), result, &error)) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to refresh app: %s", error->message);
+        return;
+    }
 
-static void
-store_app_page_class_init (StoreAppPageClass *klass)
-{
-    G_OBJECT_CLASS (klass)->dispose = store_app_page_dispose;
-
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-page.ui");
-
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, description_label);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_title_label);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshots_box);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, title_label);
-}
-
-static void
-store_app_page_init (StoreAppPage *self)
-{
-    store_image_get_type ();
-    gtk_widget_init_template (GTK_WIDGET (self));
-
-    self->cache = store_cache_new (); // FIXME: Make shared?
-}
-
-StoreAppPage *
-store_app_page_new (void)
-{
-    return g_object_new (store_app_page_get_type (), NULL);
+    store_app_save_to_cache (self->app, self->cache);
 }
 
 static void
@@ -129,6 +99,52 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     store_cache_insert_json (self->cache, "reviews", store_app_get_name (self->app), FALSE, root);
 }
 
+static void
+store_app_page_dispose (GObject *object)
+{
+    StoreAppPage *self = STORE_APP_PAGE (object);
+    g_clear_object (&self->app);
+    g_clear_object (&self->cache);
+    g_cancellable_cancel (self->cancellable);
+    self->cancellable = g_cancellable_new ();
+
+    G_OBJECT_CLASS (store_app_page_parent_class)->dispose (object);
+}
+
+static void
+store_app_page_class_init (StoreAppPageClass *klass)
+{
+    G_OBJECT_CLASS (klass)->dispose = store_app_page_dispose;
+
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-page.ui");
+
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, description_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_title_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshots_box);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, title_label);
+}
+
+static void
+store_app_page_init (StoreAppPage *self)
+{
+    store_image_get_type ();
+    gtk_widget_init_template (GTK_WIDGET (self));
+
+    self->cache = store_cache_new (); // FIXME: Make shared?
+}
+
+StoreAppPage *
+store_app_page_new (void)
+{
+    return g_object_new (store_app_page_get_type (), NULL);
+}
+
 void
 store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 {
@@ -143,7 +159,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 
     g_cancellable_cancel (self->cancellable);
     self->cancellable = g_cancellable_new ();
-    store_app_refresh_async (app, self->cancellable, NULL, NULL);
+    store_app_refresh_async (app, self->cancellable, refresh_cb, self);
 
     gtk_label_set_label (self->title_label, store_app_get_title (app));
     gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));

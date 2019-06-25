@@ -65,7 +65,7 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_app_new ();
         store_snap_app_update_from_search (app, snap);
-        store_snap_app_save_to_cache (app, self->cache);
+        store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
     store_category_view_set_apps (self->search_results_view, apps);
@@ -234,7 +234,7 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_app_new ();
         store_snap_app_update_from_search (app, snap);
-        store_snap_app_save_to_cache (app, data->self->cache);
+        store_app_save_to_cache (STORE_APP (app), data->self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
     set_category_apps (data->self, data->section_name, apps);
@@ -426,7 +426,7 @@ store_home_page_init (StoreHomePage *self)
                     const gchar *name = json_node_get_string (node);
                     g_autoptr(StoreSnapApp) app = store_snap_app_new ();
                     store_app_set_name (STORE_APP (app), name);
-                    store_snap_app_update_from_cache (app, self->cache);
+                    store_app_update_from_cache (STORE_APP (app), self->cache);
                     g_ptr_array_add (apps, g_object_ref (app));
                 }
 

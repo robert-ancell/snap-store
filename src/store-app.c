@@ -12,6 +12,7 @@
 typedef struct
 {
     gchar *appstream_id;
+    GPtrArray *channels;
     gchar *description;
     StoreMedia *icon;
     gchar *name;
@@ -31,6 +32,7 @@ store_app_dispose (GObject *object)
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
     g_clear_pointer (&priv->appstream_id, g_free);
+    g_clear_pointer (&priv->channels, g_ptr_array_unref);
     g_clear_pointer (&priv->description, g_free);
     g_clear_object (&priv->icon);
     g_clear_pointer (&priv->name, g_free);
@@ -54,6 +56,7 @@ store_app_init (StoreApp *self)
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
     priv->appstream_id = g_strdup ("");
+    priv->channels = g_ptr_array_new ();
     priv->description = g_strdup ("");
     priv->publisher = g_strdup ("");
     priv->screenshots = g_ptr_array_new ();
@@ -76,6 +79,20 @@ store_app_refresh_finish (StoreApp *self, GAsyncResult *result, GError **error)
 }
 
 void
+store_app_save_to_cache (StoreApp *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    STORE_APP_GET_CLASS (self)->save_to_cache (self, cache);
+}
+
+void
+store_app_update_from_cache (StoreApp *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    STORE_APP_GET_CLASS (self)->update_from_cache (self, cache);
+}
+
+void
 store_app_set_appstream_id (StoreApp *self, const gchar *appstream_id)
 {
     StoreAppPrivate *priv = store_app_get_instance_private (self);
@@ -94,6 +111,28 @@ store_app_get_appstream_id (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
     return priv->appstream_id;
+}
+
+void
+store_app_set_channels (StoreApp *self, GPtrArray *channels)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    g_clear_pointer (&priv->channels, g_ptr_array_unref);
+    if (channels != NULL)
+        priv->channels = g_ptr_array_ref (channels);
+}
+
+GPtrArray *
+store_app_get_channels (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    return priv->channels;
 }
 
 void

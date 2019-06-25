@@ -12,6 +12,7 @@
 #include <glib-object.h>
 
 #include "store-cache.h"
+#include "store-channel.h"
 #include "store-media.h"
 
 G_BEGIN_DECLS
@@ -24,15 +25,25 @@ struct _StoreAppClass
 
     void      (*refresh_async)     (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
     gboolean  (*refresh_finish)    (StoreApp *app, GAsyncResult *result, GError **error);
+    void      (*save_to_cache)     (StoreApp *app, StoreCache *cache);
+    void      (*update_from_cache) (StoreApp *app, StoreCache *cache);
 };
 
 void         store_app_refresh_async           (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
 gboolean     store_app_refresh_finish          (StoreApp *app, GAsyncResult *result, GError **error);
 
+void         store_app_save_to_cache           (StoreApp *app, StoreCache *cache);
+
+void         store_app_update_from_cache       (StoreApp *app, StoreCache *cache);
+
 void         store_app_set_appstream_id        (StoreApp *app, const gchar *appstream_id);
 
 const gchar *store_app_get_appstream_id        (StoreApp *app);
+
+void         store_app_set_channels            (StoreApp *app, GPtrArray *channels);
+
+GPtrArray   *store_app_get_channels            (StoreApp *app);
 
 void         store_app_set_description         (StoreApp *app, const gchar *description);
 
