@@ -36,6 +36,8 @@ store_image_dispose (GObject *object)
     g_clear_object (&self->cancellable);
     g_clear_object (&self->session);
     g_clear_pointer (&self->url, g_free);
+
+    G_OBJECT_CLASS (store_image_parent_class)->dispose (object);
 }
 
 static void

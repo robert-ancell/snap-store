@@ -45,6 +45,8 @@ store_app_page_dispose (GObject *object)
     g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     self->cancellable = g_cancellable_new ();
+
+    G_OBJECT_CLASS (store_app_page_parent_class)->dispose (object);
 }
 
 static void

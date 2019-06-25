@@ -26,6 +26,8 @@ store_application_dispose (GObject *object)
 {
     StoreApplication *self = STORE_APPLICATION (object);
     g_clear_object (&self->css_provider);
+
+    G_OBJECT_CLASS (store_application_parent_class)->dispose (object);
 }
 
 static void

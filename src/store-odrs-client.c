@@ -35,6 +35,8 @@ store_odrs_client_dispose (GObject *object)
     g_clear_pointer (&self->distro, g_free);
     g_clear_pointer (&self->locale, g_free);
     g_clear_pointer (&self->user_hash, g_free);
+
+    G_OBJECT_CLASS (store_odrs_client_parent_class)->dispose (object);
 }
 
 static void

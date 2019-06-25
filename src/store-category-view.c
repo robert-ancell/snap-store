@@ -50,6 +50,8 @@ store_category_view_dispose (GObject *object)
 {
     StoreCategoryView *self = STORE_CATEGORY_VIEW (object);
     g_clear_pointer (&self->name, g_free);
+
+    G_OBJECT_CLASS (store_category_view_parent_class)->dispose (object);
 }
 
 static void

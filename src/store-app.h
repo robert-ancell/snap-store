@@ -10,8 +10,8 @@
 #pragma once
 
 #include <glib-object.h>
-#include <json-glib/json-glib.h>
 
+#include "store-cache.h"
 #include "store-media.h"
 
 G_BEGIN_DECLS
@@ -22,15 +22,9 @@ struct _StoreAppClass
 {
     GObjectClass parent_class;
 
-    void     (*refresh_async)  (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
-    gboolean (*refresh_finish) (StoreApp *app, GAsyncResult *result, GError **error);
+    void      (*refresh_async)     (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+    gboolean  (*refresh_finish)    (StoreApp *app, GAsyncResult *result, GError **error);
 };
-
-StoreApp    *store_app_new                     (void);
-
-StoreApp    *store_app_new_from_json           (JsonNode *node);
-
-JsonNode    *store_app_to_json                 (StoreApp *app);
 
 void         store_app_refresh_async           (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 

@@ -12,12 +12,17 @@
 #include <snapd-glib/snapd-glib.h>
 
 #include "store-app.h"
+#include "store-cache.h"
 
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreSnapApp, store_snap_app, STORE, SNAP_APP, StoreApp)
 
 StoreSnapApp *store_snap_app_new                (void);
+
+void          store_snap_app_save_to_cache      (StoreSnapApp *app, StoreCache *cache);
+
+void          store_snap_app_update_from_cache  (StoreSnapApp *app, StoreCache *cache);
 
 void          store_snap_app_update_from_search (StoreSnapApp *app, SnapdSnap *snap);
 

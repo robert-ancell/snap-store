@@ -24,7 +24,10 @@ static void
 store_media_dispose (GObject *object)
 {
     StoreMedia *self = STORE_MEDIA (object);
+
     g_clear_pointer (&self->url, g_free);
+
+    G_OBJECT_CLASS (store_media_parent_class)->dispose (object);
 }
 
 static void

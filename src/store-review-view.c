@@ -31,6 +31,8 @@ store_review_view_dispose (GObject *object)
 {
     StoreReviewView *self = STORE_REVIEW_VIEW (object);
     g_clear_object (&self->review);
+
+    G_OBJECT_CLASS (store_review_view_parent_class)->dispose (object);
 }
 
 static void

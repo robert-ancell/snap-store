@@ -30,6 +30,8 @@ store_odrs_review_dispose (GObject *object)
     g_clear_pointer (&self->date_created, g_date_time_unref);
     g_clear_pointer (&self->description, g_free);
     g_clear_pointer (&self->summary, g_free);
+
+    G_OBJECT_CLASS (store_odrs_review_parent_class)->dispose (object);
 }
 
 static void
