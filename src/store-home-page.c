@@ -193,6 +193,29 @@ find_store_category_view (StoreHomePage *self, const gchar *section_name)
 }
 
 static void
+set_category_apps (StoreHomePage *self, const gchar *section_name, GPtrArray *apps)
+{
+    StoreCategoryView *view = find_store_category_view (self, section_name);
+    if (view == NULL)
+        return;
+
+    guint start = 0;
+    if (apps->len >= 1) {
+        StoreSnapApp *hero = g_ptr_array_index (apps, 0);
+        if (store_app_get_icon (STORE_APP (hero)) != NULL) {
+            store_category_view_set_hero (view, STORE_APP (hero));
+            start = 1;
+        }
+    }
+    g_autoptr(GPtrArray) featured_apps = g_ptr_array_new_with_free_func (g_object_unref);
+    for (guint i = start; i < apps->len && i < start + 9; i++) {
+        StoreSnapApp *app = g_ptr_array_index (apps, i);
+        g_ptr_array_add (featured_apps, g_object_ref (app));
+    }
+    store_category_view_set_apps (view, featured_apps);
+}
+
+static void
 get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
     g_autoptr(FindSectionData) data = user_data;
@@ -206,34 +229,20 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
         return;
     }
 
-    StoreCategoryView *view = find_store_category_view (data->self, data->section_name);
-    if (view == NULL)
-        return;
-
-    guint start = 0;
-    if (snaps->len >= 1) {
-        SnapdSnap *snap = g_ptr_array_index (snaps, 0);
-        g_autoptr(StoreSnapApp) hero = store_snap_app_new ();
-        store_snap_app_update_from_search (hero, snap);
-        store_snap_app_save_to_cache (hero, data->self->cache);
-        if (store_app_get_icon (STORE_APP (hero)) != NULL) {
-            store_category_view_set_hero (view, STORE_APP (hero));
-            start = 1;
-        }
-    }
     g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
-    for (guint i = start; i < snaps->len && i < start + 9; i++) {
+    for (guint i = 0; i < snaps->len; i++) {
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_app_new ();
         store_snap_app_update_from_search (app, snap);
+        store_snap_app_save_to_cache (app, data->self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
-    store_category_view_set_apps (view, apps);
+    set_category_apps (data->self, data->section_name, apps);
 
     /* Save in cache */
     g_autoptr(JsonBuilder) builder = json_builder_new ();
     json_builder_begin_array (builder);
-    for (guint i = start; i < snaps->len; i++) {
+    for (guint i = 0; i < snaps->len; i++) {
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         json_builder_add_string_value (builder, snapd_snap_get_name (snap));
     }
@@ -294,42 +303,31 @@ get_section_title (const gchar *name)
 static void
 set_sections (StoreHomePage *self, GStrv sections, gboolean populate)
 {
-    // FIXME: Only remove obsolete sections, and download new ones
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
-    for (GList *link = children; link != NULL; link = link->next) {
-        GtkWidget *child = link->data;
-        if (child != GTK_WIDGET (self->installed_view))
-            gtk_container_remove (GTK_CONTAINER (self->category_box), child);
-    }
+    /* Add or update existing categories */
     for (int i = 0; sections[i] != NULL; i++) {
-        StoreCategoryView *view = store_category_view_new ();
-        store_category_view_set_name (view, sections[i]);
-        store_category_view_set_title (view, get_section_title (sections[i]));
-        g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-        gtk_widget_show (GTK_WIDGET (view));
-        gtk_container_add (GTK_CONTAINER (self->category_box), GTK_WIDGET (view));
-
-        /* Load cached search results */
-        g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", sections[i], FALSE);
-        if (sections_cache != NULL) {
-            JsonArray *array = json_node_get_array (sections_cache);
-            g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
-            for (guint i = 0; i < json_array_get_length (array); i++) {
-                JsonNode *node = json_array_get_element (array, i);
-
-                const gchar *name = json_node_get_string (node);
-                g_autoptr(StoreSnapApp) app = store_snap_app_new ();
-                store_app_set_name (STORE_APP (app), name);
-                store_snap_app_update_from_cache (app, self->cache);
-                g_ptr_array_add (apps, g_object_ref (app));
-            }
-            store_category_view_set_apps (view, apps);
+        StoreCategoryView *view = find_store_category_view (self, sections[i]); // FIXME: Only look ahead from current position
+        if (view != NULL)
+            gtk_box_reorder_child (self->category_box, GTK_WIDGET (view), i);
+        else {
+            view = store_category_view_new ();
+            gtk_widget_show (GTK_WIDGET (view));
+            store_category_view_set_name (view, sections[i]);
+            store_category_view_set_title (view, get_section_title (sections[i]));
+            g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
+            gtk_container_add_with_properties (GTK_CONTAINER (self->category_box), GTK_WIDGET (view), "position", i, NULL);
         }
-
         if (populate) { // FIXME: Hack to stop the following occuring for cached values
             g_autoptr(SnapdClient) client = snapd_client_new ();
             snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, find_section_data_new (self, sections[i]));
         }
+    }
+
+    /* Remove remaining unused categories */
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
+    for (GList *link = g_list_nth (children, g_strv_length (sections)); link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        if (child != GTK_WIDGET (self->installed_view))
+            gtk_container_remove (GTK_CONTAINER (self->category_box), child);
     }
 }
 
@@ -401,21 +399,41 @@ store_home_page_init (StoreHomePage *self)
     g_autoptr(SnapdClient) client = snapd_client_new ();
     snapd_client_get_sections_async (client, self->cancellable, get_sections_cb, self);
 
+    g_autoptr(SnapdClient) client2 = snapd_client_new ();
+    snapd_client_get_snaps_async (client2, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);
+
     /* Load cached sections */
     g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", "_index", FALSE);
     if (sections_cache != NULL) {
         JsonArray *array = json_node_get_array (sections_cache);
-        g_autoptr(GPtrArray) sections = g_ptr_array_new ();
+        g_autoptr(GPtrArray) section_array = g_ptr_array_new ();
         for (guint i = 0; i < json_array_get_length (array); i++) {
             JsonNode *node = json_array_get_element (array, i);
-            g_ptr_array_add (sections, (gpointer) json_node_get_string (node));
+            g_ptr_array_add (section_array, (gpointer) json_node_get_string (node));
         }
-        g_ptr_array_add (sections, NULL);
-        set_sections (self, (GStrv) sections->pdata, FALSE);
-    }
+        g_ptr_array_add (section_array, NULL);
+        GStrv sections = (GStrv) section_array->pdata;
+        set_sections (self, sections, FALSE);
 
-    g_autoptr(SnapdClient) client2 = snapd_client_new ();
-    snapd_client_get_snaps_async (client2, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);
+        for (int i = 0; sections[i] != NULL; i++) {
+            g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", sections[i], FALSE);
+            if (sections_cache != NULL) {
+                JsonArray *array = json_node_get_array (sections_cache);
+                g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
+                for (guint j = 0; j < json_array_get_length (array); j++) {
+                    JsonNode *node = json_array_get_element (array, j);
+
+                    const gchar *name = json_node_get_string (node);
+                    g_autoptr(StoreSnapApp) app = store_snap_app_new ();
+                    store_app_set_name (STORE_APP (app), name);
+                    store_snap_app_update_from_cache (app, self->cache);
+                    g_ptr_array_add (apps, g_object_ref (app));
+                }
+
+                set_category_apps (self, sections[i], apps);
+            }
+        }
+    }
 }
 
 StoreHomePage *
