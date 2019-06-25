@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Snap Store
 Comment=Add, remove or update software on this computer
-Icon=io.snapcraft.Store.png
+Icon=${SNAP}/meta/gui/io.snapcraft.Store.png
 Exec=snap-store
 Type=Application
 Keywords=
