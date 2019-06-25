@@ -93,10 +93,9 @@ store_app_to_json (StoreApp *self)
 {
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
     json_builder_begin_object (builder);
     json_builder_set_member_name (builder, "appstream-id");
     json_builder_add_string_value (builder, priv->appstream_id);

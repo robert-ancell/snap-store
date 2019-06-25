@@ -63,10 +63,9 @@ store_media_new_from_json (JsonNode *node)
 JsonNode *
 store_media_to_json (StoreMedia *self)
 {
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-
     g_return_val_if_fail (STORE_IS_MEDIA (self), NULL);
 
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
     json_builder_begin_object (builder);
     if (self->height > 0) {
         json_builder_set_member_name (builder, "height");
