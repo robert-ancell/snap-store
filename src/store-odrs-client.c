@@ -80,6 +80,37 @@ store_odrs_client_new (void)
 }
 
 static void
+get_ratings_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    g_autoptr(GTask) task = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GInputStream) stream = soup_session_send_finish (SOUP_SESSION (object), result, &error);
+    if (stream == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to download image: %s", error->message);
+        return;
+    }
+
+    StoreOdrsClient *self = g_task_get_source_object (task);
+
+    g_autoptr(JsonParser) parser = json_parser_new ();
+    if (!json_parser_load_from_stream (parser, stream, self->cancellable, &error)) {
+        g_warning ("Failed to parse ODRS response: %s", error->message);
+        return;
+    }
+
+    JsonNode *root = json_parser_get_root (parser);
+    if (json_node_get_node_type (root) != JSON_NODE_ARRAY) {
+        g_warning ("Failed to get reviews, server returned non JSON array");
+        return;
+    }
+
+    g_task_return_pointer (task, NULL, NULL); // FIXME
+}
+
+static void
 get_reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
     g_autoptr(GTask) task = user_data;
@@ -167,6 +198,28 @@ submit_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
 
     g_task_return_boolean (task, TRUE);
+}
+
+void
+store_odrs_client_get_ratings_async (StoreOdrsClient *self,
+                                     GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
+
+    g_autofree gchar *uri= g_strdup_printf ("%s/ratings", self->server_uri);
+    g_autoptr(SoupMessage) message = soup_message_new ("GET", uri);
+
+    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
+    soup_session_send_async (self->soup_session, message, self->cancellable, get_ratings_cb, task);
+}
+
+GPtrArray *
+store_odrs_client_get_ratings_finish (StoreOdrsClient *self, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), FALSE);
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), FALSE);
+
+    return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 void
