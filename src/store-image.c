@@ -17,6 +17,7 @@ struct _StoreImage
 
     GByteArray *buffer;
     StoreCache *cache;
+    GCancellable *cache_cancellable;
     GCancellable *cancellable;
     guint height;
     guint width;
@@ -32,6 +33,8 @@ store_image_dispose (GObject *object)
     StoreImage *self = STORE_IMAGE (object);
     g_clear_pointer (&self->buffer, g_byte_array_unref);
     g_clear_object (&self->cache);
+    g_cancellable_cancel (self->cache_cancellable);
+    g_clear_object (&self->cache_cancellable);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
     g_clear_object (&self->session);
@@ -116,12 +119,16 @@ read_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
+    /* Cancel cached image if we got there first */
+    g_cancellable_cancel (self->cache_cancellable);
+    g_clear_object (&self->cache_cancellable);
+
     g_autoptr(GBytes) full_data = g_bytes_new_static (self->buffer->data, self->buffer->len);
     gboolean used = process_image (self, full_data);
 
     /* Save in cache */
     if (used)
-        store_cache_insert (self->cache, "images", self->url, TRUE, full_data);
+        store_cache_insert (self->cache, "images", self->url, TRUE, full_data, self->cancellable, NULL); // FIXME: Report error?
 
     g_clear_pointer (&self->buffer, g_byte_array_unref);
 }
@@ -141,6 +148,24 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
 
     g_input_stream_read_bytes_async (stream, 65535, G_PRIORITY_DEFAULT, self->cancellable, read_cb, self);
+}
+
+static void
+cache_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    StoreImage *self = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GBytes) data = store_cache_lookup_finish (STORE_CACHE (object), result, &error);
+    if (data == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
+            g_warning ("Failed to load cached image: %s", error->message);
+        return;
+    }
+
+    process_image (self, data);
 }
 
 void
@@ -189,7 +214,8 @@ store_image_set_url (StoreImage *self, const gchar *url)
     soup_session_send_async (self->session, message, self->cancellable, send_cb, self);
 
     /* Load cached version */
-    g_autoptr(GBytes) data = store_cache_lookup (self->cache, "images", url, TRUE);
-    if (data != NULL)
-        process_image (self, data);
+    g_cancellable_cancel (self->cache_cancellable);
+    g_clear_object (&self->cache_cancellable);
+    self->cache_cancellable = g_cancellable_new ();
+    store_cache_lookup_async (self->cache, "images", url, TRUE, self->cache_cancellable, cache_cb, self);
 }

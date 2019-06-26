@@ -16,15 +16,33 @@ struct _StoreCache
 
 G_DEFINE_TYPE (StoreCache, store_cache, G_TYPE_OBJECT)
 
-static gchar *
-get_cache_path (const gchar *type, const gchar *name, gboolean hash)
+static GFile *
+get_cache_file (const gchar *type, const gchar *name, gboolean hash)
 {
+    g_autofree gchar *filename = NULL;
     if (hash) {
         g_autofree gchar *hashed_name = g_compute_checksum_for_string (G_CHECKSUM_SHA1, name, -1);
-        return g_build_filename (g_get_user_cache_dir (), "snap-store", type, hashed_name, NULL);
+        filename = g_build_filename (g_get_user_cache_dir (), "snap-store", type, hashed_name, NULL);
     }
     else
-        return g_build_filename (g_get_user_cache_dir (), "snap-store", type, name, NULL);
+        filename = g_build_filename (g_get_user_cache_dir (), "snap-store", type, name, NULL);
+    return g_file_new_for_path (filename);
+}
+
+static void
+contents_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    GTask *task = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar *contents = NULL;
+    gsize contents_length;
+    if (!g_file_load_contents_finish (G_FILE (object), result, &contents, &contents_length, NULL, &error)) {
+        g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    g_task_return_pointer (task, g_bytes_new_take (g_steal_pointer (&contents), contents_length), (GDestroyNotify) g_bytes_unref);
 }
 
 static void
@@ -43,22 +61,19 @@ store_cache_new (void)
     return g_object_new (store_cache_get_type (), NULL);
 }
 
-void
-store_cache_insert (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, GBytes *data)
+gboolean
+store_cache_insert (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, GBytes *data, GCancellable *cancellable, GError **error)
 {
-    g_return_if_fail (STORE_IS_CACHE (self));
+    g_return_val_if_fail (STORE_IS_CACHE (self), FALSE);
 
-    g_autofree gchar *path = get_cache_path (type, name, hash);
+    g_autoptr(GFile) file = get_cache_file (type, name, hash);
 
-    g_autofree gchar *dir = g_path_get_dirname (path);
+    g_autofree gchar *dir = g_path_get_dirname (g_file_get_path (file));
     g_mkdir_with_parents (dir, 0700);
 
     gsize contents_length;
     const gchar *contents = g_bytes_get_data (data, &contents_length);
-    g_autoptr(GError) error = NULL;
-    if (!g_file_set_contents (path, contents, contents_length, &error)) {
-        g_warning ("Failed to write cache entry %s[%s] of size %" G_GSIZE_FORMAT ": %s", type, name, contents_length, error->message);
-    }
+    return g_file_replace_contents (file, contents, contents_length, NULL, FALSE, G_FILE_CREATE_PRIVATE, NULL, cancellable, error);
 }
 
 void
@@ -71,21 +86,44 @@ store_cache_insert_json (StoreCache *self, const gchar *type, const gchar *name,
     gsize text_length;
     g_autofree gchar *text = json_generator_to_data (generator, &text_length);
     g_autoptr(GBytes) data = g_bytes_new_static (text, text_length);
-    store_cache_insert (self, type, name, hash, data);
+    g_autoptr(GError) error = NULL;
+    if (!store_cache_insert (self, type, name, hash, data, NULL, &error))
+        g_printerr ("Failed to write JSON cache entry: %s", error->message);
+}
+
+void
+store_cache_lookup_async (StoreCache *self, const gchar *type, const gchar *name, gboolean hash,
+                          GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_return_if_fail (STORE_IS_CACHE (self));
+
+    g_autoptr(GFile) file = get_cache_file (type, name, hash);
+
+    GTask *task = g_task_new (self, cancellable, callback, callback_data);
+    g_file_load_contents_async (file, cancellable, contents_cb, task);
 }
 
 GBytes *
-store_cache_lookup (StoreCache *self, const gchar *type, const gchar *name, gboolean hash)
+store_cache_lookup_finish (StoreCache *self, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_CACHE (self), FALSE);
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), FALSE);
+
+    return g_task_propagate_pointer (G_TASK (result), error);
+}
+
+GBytes *
+store_cache_lookup_sync (StoreCache *self, const gchar *type, const gchar *name, gboolean hash)
 {
     g_return_val_if_fail (STORE_IS_CACHE (self), NULL);
 
-    g_autofree gchar *path = get_cache_path (type, name, hash);
+    g_autoptr(GFile) file = get_cache_file (type, name, hash);
 
     g_autoptr(GError) error = NULL;
     g_autofree gchar *contents = NULL;
     gsize contents_length;
-    if (!g_file_get_contents (path, &contents, &contents_length, &error)) {
-        if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+    if (!g_file_load_contents (file, NULL, &contents, &contents_length, NULL, &error)) {
+        if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
             g_warning ("Failed to read cache entry %s[%s]: %s", type, name, error->message);
         return NULL;
     }
@@ -98,7 +136,7 @@ store_cache_lookup_json (StoreCache *self, const gchar *type, const gchar *name,
 {
     g_return_val_if_fail (STORE_IS_CACHE (self), NULL);
 
-    g_autoptr(GBytes) value = store_cache_lookup (self, type, name, hash);
+    g_autoptr(GBytes) value = store_cache_lookup_sync (self, type, name, hash);
     if (value == NULL)
         return NULL;
 

@@ -18,11 +18,16 @@ G_DECLARE_FINAL_TYPE (StoreCache, store_cache, STORE, CACHE, GObject)
 
 StoreCache *store_cache_new           (void);
 
-void        store_cache_insert        (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, GBytes *data);
+gboolean    store_cache_insert        (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, GBytes *data, GCancellable *cancellable, GError **error);
 
 void        store_cache_insert_json   (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash, JsonNode *node);
 
-GBytes     *store_cache_lookup        (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash);
+void        store_cache_lookup_async  (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash,
+                                       GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+
+GBytes     *store_cache_lookup_finish (StoreCache *cache, GAsyncResult *result, GError **error);
+
+GBytes     *store_cache_lookup_sync   (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash);
 
 JsonNode   *store_cache_lookup_json   (StoreCache *cache, const gchar *type, const gchar *name, gboolean hash);
 
