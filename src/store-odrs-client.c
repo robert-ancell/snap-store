@@ -21,6 +21,8 @@ struct _StoreOdrsClient
     GCancellable *cancellable;
     gchar *distro;
     gchar *locale;
+    gchar *server_uri;
+    SoupSession *soup_session;
     gchar *user_hash;
 };
 
@@ -34,6 +36,7 @@ store_odrs_client_dispose (GObject *object)
     g_clear_object (&self->cancellable);
     g_clear_pointer (&self->distro, g_free);
     g_clear_pointer (&self->locale, g_free);
+    g_clear_object (&self->soup_session);
     g_clear_pointer (&self->user_hash, g_free);
 
     G_OBJECT_CLASS (store_odrs_client_parent_class)->dispose (object);
@@ -65,6 +68,8 @@ store_odrs_client_init (StoreOdrsClient *self)
     self->cancellable = g_cancellable_new ();
     self->distro = g_strdup ("Ubuntu"); // FIXME
     self->locale = g_strdup ("en"); // FIXME
+    self->server_uri = g_strdup ("https://odrs.gnome.org/1.0/reviews/api");
+    self->soup_session = soup_session_new (); // FIXME: Support common session
     self->user_hash = get_user_hash ();
 }
 
@@ -75,7 +80,7 @@ store_odrs_client_new (void)
 }
 
 static void
-send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+get_reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
     g_autoptr(GTask) task = user_data;
 
@@ -104,6 +109,7 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 
     JsonArray *array = json_node_get_array (root);
     g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
+    g_autofree gchar *user_skey = NULL;
     for (guint i = 0; i < json_array_get_length (array); i++) {
         JsonNode *element = json_array_get_element (array, i);
 
@@ -111,25 +117,56 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
             g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "ODRS server returned non-object review");
             return;
         }
-
         JsonObject *object = json_node_get_object (element);
+
+        /* Skip empty reviews (one always sent to provide secret key) */
+        if (!json_object_has_member (object, "rating"))
+            continue;
+
+        if (user_skey == NULL)
+            user_skey = g_strdup (json_object_get_string_member (object, "user_skey"));
+
         g_autoptr(StoreOdrsReview) review = store_odrs_review_new ();
-        if (json_object_has_member (object, "rating"))
-            store_odrs_review_set_rating (review, json_object_get_int_member (object, "rating"));
-        if (json_object_has_member (object, "user_display"))
-            store_odrs_review_set_author (review, json_object_get_string_member (object, "user_display"));
-        if (json_object_has_member (object, "date_created")) {
-            g_autoptr(GDateTime) date_created = g_date_time_new_from_unix_utc (json_object_get_int_member (object, "date_created"));
-            store_odrs_review_set_date_created (review, date_created);
-        }
-        if (json_object_has_member (object, "summary"))
-            store_odrs_review_set_summary (review, json_object_get_string_member (object, "summary"));
-        if (json_object_has_member (object, "description"))
-            store_odrs_review_set_description (review, json_object_get_string_member (object, "description"));
+        store_odrs_review_set_rating (review, json_object_get_int_member (object, "rating"));
+        store_odrs_review_set_author (review, json_object_get_string_member (object, "user_display"));
+        g_autoptr(GDateTime) date_created = g_date_time_new_from_unix_utc (json_object_get_int_member (object, "date_created"));
+        store_odrs_review_set_date_created (review, date_created);
+        store_odrs_review_set_summary (review, json_object_get_string_member (object, "summary"));
+        store_odrs_review_set_description (review, json_object_get_string_member (object, "description"));
         g_ptr_array_add (reviews, g_steal_pointer (&review));
     }
 
+    /* Attach a fake review on the end with the secret key */
+    g_autoptr(StoreOdrsReview) review = store_odrs_review_new ();
+    store_odrs_review_set_summary (review, user_skey);
+    g_ptr_array_add (reviews, g_steal_pointer (&review));
+
     g_task_return_pointer (task, g_steal_pointer (&reviews), (GDestroyNotify) g_ptr_array_unref);
+}
+
+static void
+submit_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    g_autoptr(GTask) task = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(GInputStream) stream = soup_session_send_finish (SOUP_SESSION (object), result, &error);
+    if (stream == NULL) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to download image: %s", error->message);
+        return;
+    }
+
+    StoreOdrsClient *self = g_task_get_source_object (task);
+
+    g_autoptr(JsonParser) parser = json_parser_new ();
+    if (!json_parser_load_from_stream (parser, stream, self->cancellable, &error)) {
+        g_warning ("Failed to parse ODRS response: %s", error->message);
+        return;
+    }
+
+    g_task_return_boolean (task, TRUE);
 }
 
 void
@@ -141,8 +178,8 @@ store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id,
     if (version == NULL)
         version = "";
 
-    g_autoptr(SoupSession) session = soup_session_new (); // FIXME: common session?
-    g_autoptr(SoupMessage) message = soup_message_new ("POST", "https://odrs.gnome.org/1.0/reviews/api/fetch");
+    g_autofree gchar *uri= g_strdup_printf ("%s/fetch", self->server_uri);
+    g_autoptr(SoupMessage) message = soup_message_new ("POST", uri);
 
     g_autoptr(JsonBuilder) builder = json_builder_new ();
     json_builder_begin_object (builder);
@@ -167,14 +204,78 @@ store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id,
     soup_message_set_request (message, "application/json; charset=utf-8", SOUP_MEMORY_COPY, json_text, json_text_length);
 
     GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
-    soup_session_send_async (session, message, self->cancellable, send_cb, task);
+    soup_session_send_async (self->soup_session, message, self->cancellable, get_reviews_cb, task);
 }
 
 GPtrArray *
-store_odrs_client_get_reviews_finish (StoreOdrsClient *self, GAsyncResult *result, GError **error)
+store_odrs_client_get_reviews_finish (StoreOdrsClient *self, GAsyncResult *result, gchar **user_skey, GError **error)
 {
     g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), NULL);
     g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), NULL);
 
-    return g_task_propagate_pointer (G_TASK (result), error);
+    g_autoptr(GPtrArray) reviews = g_task_propagate_pointer (G_TASK (result), error);
+    if (reviews == NULL)
+        return NULL;
+
+    /* Pull off fake review to get secret key */
+    if (user_skey != NULL) {
+        StoreOdrsReview *review = g_ptr_array_index (reviews, reviews->len - 1);
+        *user_skey = g_strdup (store_odrs_review_get_summary (review));
+    }
+    g_ptr_array_remove_index (reviews, reviews->len - 1);
+
+    return g_steal_pointer (&reviews);
+}
+
+void
+store_odrs_client_submit_async (StoreOdrsClient *self, const gchar *user_skey, const gchar *app_id, const gchar *version, const gchar *user_display, const gchar *summary, const gchar *description, gint64 rating,
+                                GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
+    g_return_if_fail (app_id != NULL);
+
+    g_autofree gchar *uri= g_strdup_printf ("%s/submit", self->server_uri);
+    g_autoptr(SoupMessage) message = soup_message_new ("POST", uri);
+
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
+    json_builder_begin_object (builder);
+    json_builder_set_member_name (builder, "user_hash");
+    json_builder_add_string_value (builder, self->user_hash);
+    json_builder_set_member_name (builder, "user_skey");
+    json_builder_add_string_value (builder, user_skey);
+    json_builder_set_member_name (builder, "app_id");
+    json_builder_add_string_value (builder, app_id);
+    json_builder_set_member_name (builder, "locale");
+    json_builder_add_string_value (builder, self->locale);
+    json_builder_set_member_name (builder, "distro");
+    json_builder_add_string_value (builder, self->distro);
+    json_builder_set_member_name (builder, "version");
+    json_builder_add_string_value (builder, version);
+    json_builder_set_member_name (builder, "user_display");
+    json_builder_add_string_value (builder, user_display);
+    json_builder_set_member_name (builder, "summary");
+    json_builder_add_string_value (builder, summary);
+    json_builder_set_member_name (builder, "description");
+    json_builder_add_string_value (builder, description);
+    json_builder_set_member_name (builder, "rating");
+    json_builder_add_int_value (builder, rating);
+    json_builder_end_object (builder);
+    g_autoptr(JsonGenerator) generator = json_generator_new ();
+    g_autoptr(JsonNode) root = json_builder_get_root (builder);
+    json_generator_set_root (generator, root);
+    gsize json_text_length;
+    g_autofree gchar *json_text = json_generator_to_data (generator, &json_text_length);
+    soup_message_set_request (message, "application/json; charset=utf-8", SOUP_MEMORY_COPY, json_text, json_text_length);
+
+    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
+    soup_session_send_async (self->soup_session, message, self->cancellable, submit_cb, task);
+}
+
+gboolean
+store_odrs_client_submit_finish (StoreOdrsClient *self, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), FALSE);
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), FALSE);
+
+    return g_task_propagate_boolean (G_TASK (result), error);
 }

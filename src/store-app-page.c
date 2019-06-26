@@ -82,13 +82,15 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     StoreAppPage *self = user_data;
 
     g_autoptr(GError) error = NULL;
-    g_autoptr(GPtrArray) reviews = store_odrs_client_get_reviews_finish (STORE_ODRS_CLIENT (object), result, &error);
+    g_autofree gchar *user_skey = NULL;
+    g_autoptr(GPtrArray) reviews = store_odrs_client_get_reviews_finish (STORE_ODRS_CLIENT (object), result, &user_skey, &error);
     if (reviews == NULL) {
         if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
             return;
         g_warning ("Failed to get ODRS reviews: %s", error->message);
         return;
     }
+    // FIXME: Store and use review key
 
     set_reviews (self, reviews);
 

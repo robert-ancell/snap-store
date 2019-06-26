@@ -22,6 +22,11 @@ StoreOdrsClient *store_odrs_client_new                (void);
 void             store_odrs_client_get_reviews_async  (StoreOdrsClient *client, const gchar *app_id, const gchar *version, gint64 limit,
                                                        GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
-GPtrArray       *store_odrs_client_get_reviews_finish (StoreOdrsClient *client, GAsyncResult *result, GError **error);
+GPtrArray       *store_odrs_client_get_reviews_finish (StoreOdrsClient *client, GAsyncResult *result, gchar **user_skey, GError **error);
+
+void             store_odrs_client_submit_async       (StoreOdrsClient *client, const gchar *user_skey, const gchar *app_id, const gchar *version, const gchar *user_display, const gchar *summary, const gchar *description, gint64 rating,
+                                                       GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+
+gboolean         store_odrs_client_submit_finish      (StoreOdrsClient *client, GAsyncResult *result, GError **error);
 
 G_END_DECLS
