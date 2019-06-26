@@ -76,19 +76,17 @@ store_cache_insert (StoreCache *self, const gchar *type, const gchar *name, gboo
     return g_file_replace_contents (file, contents, contents_length, NULL, FALSE, G_FILE_CREATE_PRIVATE, NULL, cancellable, error);
 }
 
-void
-store_cache_insert_json (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, JsonNode *node)
+gboolean
+store_cache_insert_json (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, JsonNode *node, GCancellable *cancellable, GError **error)
 {
-    g_return_if_fail (STORE_IS_CACHE (self));
+    g_return_val_if_fail (STORE_IS_CACHE (self), FALSE);
 
     g_autoptr(JsonGenerator) generator = json_generator_new ();
     json_generator_set_root (generator, node);
     gsize text_length;
     g_autofree gchar *text = json_generator_to_data (generator, &text_length);
     g_autoptr(GBytes) data = g_bytes_new_static (text, text_length);
-    g_autoptr(GError) error = NULL;
-    if (!store_cache_insert (self, type, name, hash, data, NULL, &error))
-        g_printerr ("Failed to write JSON cache entry: %s", error->message);
+    return store_cache_insert (self, type, name, hash, data, cancellable, error);
 }
 
 void
@@ -113,39 +111,32 @@ store_cache_lookup_finish (StoreCache *self, GAsyncResult *result, GError **erro
 }
 
 GBytes *
-store_cache_lookup_sync (StoreCache *self, const gchar *type, const gchar *name, gboolean hash)
+store_cache_lookup_sync (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, GCancellable *cancellable, GError **error)
 {
     g_return_val_if_fail (STORE_IS_CACHE (self), NULL);
 
     g_autoptr(GFile) file = get_cache_file (type, name, hash);
 
-    g_autoptr(GError) error = NULL;
     g_autofree gchar *contents = NULL;
     gsize contents_length;
-    if (!g_file_load_contents (file, NULL, &contents, &contents_length, NULL, &error)) {
-        if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
-            g_warning ("Failed to read cache entry %s[%s]: %s", type, name, error->message);
+    if (!g_file_load_contents (file, cancellable, &contents, &contents_length, NULL, error))
         return NULL;
-    }
 
     return g_bytes_new_take (g_steal_pointer (&contents), contents_length);
 }
 
 JsonNode *
-store_cache_lookup_json (StoreCache *self, const gchar *type, const gchar *name, gboolean hash)
+store_cache_lookup_json (StoreCache *self, const gchar *type, const gchar *name, gboolean hash, GCancellable *cancellable, GError **error)
 {
     g_return_val_if_fail (STORE_IS_CACHE (self), NULL);
 
-    g_autoptr(GBytes) value = store_cache_lookup_sync (self, type, name, hash);
+    g_autoptr(GBytes) value = store_cache_lookup_sync (self, type, name, hash, cancellable, error);
     if (value == NULL)
         return NULL;
 
     g_autoptr(JsonParser) parser = json_parser_new ();
-    g_autoptr(GError) error = NULL;
-    if (!json_parser_load_from_data (parser, g_bytes_get_data (value, NULL), g_bytes_get_size (value), &error)) {
-        g_warning ("Failed to read JSON cache entry %s[%s]: %s", type, name, error->message);
+    if (!json_parser_load_from_data (parser, g_bytes_get_data (value, NULL), g_bytes_get_size (value), error))
         return NULL;
-    }
 
     JsonNode *root = json_parser_get_root (parser);
     if (root == NULL)

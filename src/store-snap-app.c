@@ -162,14 +162,14 @@ store_snap_app_save_to_cache (StoreApp *self, StoreCache *cache)
     json_builder_end_object (builder);
 
     g_autoptr(JsonNode) node = json_builder_get_root (builder);
-    store_cache_insert_json (cache, "snaps", store_app_get_name (self), FALSE, node);
+    store_cache_insert_json (cache, "snaps", store_app_get_name (self), FALSE, node, NULL, NULL);
 }
 
 static void
 store_snap_app_update_from_cache (StoreApp *self, StoreCache *cache)
 {
     const gchar *name = store_app_get_name (STORE_APP (self));
-    g_autoptr(JsonNode) node = store_cache_lookup_json (cache, "snaps", name, FALSE);
+    g_autoptr(JsonNode) node = store_cache_lookup_json (cache, "snaps", name, FALSE, NULL, NULL);
     if (node == NULL)
         return;
 

@@ -252,7 +252,7 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
     }
     json_builder_end_array (builder);
     g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    store_cache_insert_json (self->cache, "sections", data->section_name, FALSE, root);
+    store_cache_insert_json (self->cache, "sections", data->section_name, FALSE, root, NULL, NULL);
 }
 
 static const gchar *
@@ -378,7 +378,7 @@ get_sections_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         json_builder_add_string_value (builder, sections[i]);
     json_builder_end_array (builder);
     g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    store_cache_insert_json (self->cache, "sections", "_index", FALSE, root);
+    store_cache_insert_json (self->cache, "sections", "_index", FALSE, root, NULL, NULL);
 }
 
 static void
@@ -431,7 +431,7 @@ store_home_page_init (StoreHomePage *self)
     snapd_client_get_snaps_async (client2, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);
 
     /* Load cached sections */
-    g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", "_index", FALSE);
+    g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", "_index", FALSE, NULL, NULL);
     if (sections_cache != NULL) {
         JsonArray *array = json_node_get_array (sections_cache);
         g_autoptr(GPtrArray) section_array = g_ptr_array_new ();
@@ -444,7 +444,7 @@ store_home_page_init (StoreHomePage *self)
         set_sections (self, sections, FALSE);
 
         for (int i = 0; sections[i] != NULL; i++) {
-            g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", sections[i], FALSE);
+            g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", sections[i], FALSE, NULL, NULL);
             if (sections_cache != NULL) {
                 JsonArray *array = json_node_get_array (sections_cache);
                 g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);

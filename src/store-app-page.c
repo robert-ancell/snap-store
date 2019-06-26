@@ -105,7 +105,7 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
     json_builder_end_array (builder);
     g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    store_cache_insert_json (self->cache, "reviews", store_app_get_name (self->app), FALSE, root);
+    store_cache_insert_json (self->cache, "reviews", store_app_get_name (self->app), FALSE, root, NULL, NULL);
 }
 
 static void
@@ -215,7 +215,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     gtk_widget_hide (GTK_WIDGET (self->reviews_box));
 
     /* Load cached reviews */
-    g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (self->cache, "reviews", store_app_get_name (app), FALSE);
+    g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (self->cache, "reviews", store_app_get_name (app), FALSE, NULL, NULL);
     if (reviews_cache != NULL) {
         g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
         JsonArray *array = json_node_get_array (reviews_cache);
