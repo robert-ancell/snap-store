@@ -2,7 +2,9 @@
 <interface>
   <template class="StoreReviewView" parent="GtkBox">
     <property name="orientation">vertical</property>
-    <property name="margin">10</property>
+    <style>
+      <class name="review-box"/>
+    </style>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>

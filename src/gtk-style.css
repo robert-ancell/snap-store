@@ -49,6 +49,12 @@
     opacity: 0.5;
 }
 
+.review-box {
+    padding: 18px;
+    background-color: white;
+    box-shadow: gray 3px 3px 3px;
+}
+
 .review-date-label {
     opacity: 0.5;
 }
