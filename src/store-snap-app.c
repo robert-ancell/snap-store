@@ -79,6 +79,10 @@ store_snap_app_save_to_cache (StoreApp *self, StoreCache *cache)
         }
         json_builder_end_array (builder);
     }
+    if (store_app_get_contact (self) != NULL) {
+        json_builder_set_member_name (builder, "contact");
+        json_builder_add_string_value (builder, store_app_get_contact (self));
+    }
     json_builder_set_member_name (builder, "description");
     json_builder_add_string_value (builder, store_app_get_description (self));
     if (store_app_get_icon (self) != NULL) {
@@ -129,6 +133,8 @@ store_snap_app_update_from_cache (StoreApp *self, StoreCache *cache)
         }
         store_app_set_channels (STORE_APP (self), channels);
     }
+    if (json_object_has_member (object, "contact"))
+        store_app_set_contact (STORE_APP (self), json_object_get_string_member (object, "contact"));
     store_app_set_description (STORE_APP (self), json_object_get_string_member (object, "description"));
     if (json_object_has_member (object, "icon")) {
         g_autoptr(StoreMedia) icon = store_media_new_from_json (json_object_get_member (object, "icon"));
@@ -203,6 +209,7 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
     store_app_set_publisher_validated (STORE_APP (self), snapd_snap_get_publisher_validation (snap) == SNAPD_PUBLISHER_VALIDATION_VERIFIED);
     store_app_set_summary (STORE_APP (self), snapd_snap_get_summary (snap));
     store_app_set_description (STORE_APP (self), snapd_snap_get_description (snap));
+    store_app_set_contact (STORE_APP (self), snapd_snap_get_contact (snap));
 
     /* Channels are only returned on searches for a particular snap */
     GPtrArray *channels = snapd_snap_get_channels (snap);

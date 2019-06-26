@@ -21,6 +21,7 @@ struct _StoreAppPage
     GtkBox parent_instance;
 
     StoreChannelCombo *channel_combo;
+    GtkLabel *contact_label;
     GtkLabel *description_label;
     GtkLabel *details_title_label;
     StoreImage *icon_image;
@@ -102,6 +103,14 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 }
 
 static void
+contact_link_cb (StoreAppPage *self, const gchar *uri)
+{
+    g_autoptr(GError) error = NULL;
+    if (!gtk_show_uri_on_window (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (self))), uri, GDK_CURRENT_TIME, &error))
+        g_warning ("Failed to show contact URL %s: %s", uri, error->message);
+}
+
+static void
 store_app_page_dispose (GObject *object)
 {
     StoreAppPage *self = STORE_APP_PAGE (object);
@@ -121,6 +130,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-page.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, channel_combo);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, contact_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, description_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_title_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
@@ -131,6 +141,8 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshots_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, title_label);
+
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), contact_link_cb);
 }
 
 static void
@@ -175,6 +187,14 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     store_image_set_url (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
         store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
+
+    if (store_app_get_contact (app) != NULL) {
+        g_autofree gchar *contact_label = g_strdup_printf ("<a href=\"%s\">Contact %s</a>", store_app_get_contact (app), store_app_get_publisher (app)); // FIXME: Escape
+        gtk_label_set_label (self->contact_label, contact_label);
+        gtk_widget_show (GTK_WIDGET (self->contact_label));
+    }
+    else
+        gtk_widget_hide (GTK_WIDGET (self->contact_label));
 
     store_channel_combo_set_app (self->channel_combo, app);
 

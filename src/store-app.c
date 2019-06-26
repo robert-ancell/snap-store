@@ -13,6 +13,7 @@ typedef struct
 {
     gchar *appstream_id;
     GPtrArray *channels;
+    gchar *contact;
     gchar *description;
     StoreMedia *icon;
     gchar *name;
@@ -27,6 +28,7 @@ enum
 {
     PROP_0,
     PROP_CHANNELS,
+    PROP_CONTACT,
     PROP_DESCRIPTION,
     PROP_ICON,
     PROP_NAME,
@@ -47,6 +49,7 @@ store_app_dispose (GObject *object)
 
     g_clear_pointer (&priv->appstream_id, g_free);
     g_clear_pointer (&priv->channels, g_ptr_array_unref);
+    g_clear_pointer (&priv->contact, g_free);
     g_clear_pointer (&priv->description, g_free);
     g_clear_object (&priv->icon);
     g_clear_pointer (&priv->name, g_free);
@@ -68,6 +71,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
     {
     case PROP_CHANNELS:
         g_value_set_boxed (value, priv->channels);
+        break;
+    case PROP_CONTACT:
+        g_value_set_string (value, priv->contact);
         break;
     case PROP_DESCRIPTION:
         g_value_set_string (value, priv->description);
@@ -105,6 +111,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
     {
     case PROP_CHANNELS:
         store_app_set_channels (self, g_value_get_boxed (value));
+        break;
+    case PROP_CONTACT:
+        store_app_set_contact (self, g_value_get_string (value));
         break;
     case PROP_DESCRIPTION:
         store_app_set_description (self, g_value_get_string (value));
@@ -165,6 +174,7 @@ store_app_class_init (StoreAppClass *klass)
     G_OBJECT_CLASS (klass)->set_property = store_app_set_property;
 
     install_array_property (klass, PROP_CHANNELS, "channels");
+    install_string_property (klass, PROP_CONTACT, "contact");
     install_string_property (klass, PROP_DESCRIPTION, "description");
     install_object_property (klass, PROP_ICON, "icon", store_media_get_type ());
     install_string_property (klass, PROP_NAME, "name");
@@ -179,13 +189,8 @@ store_app_init (StoreApp *self)
 {
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
-    priv->appstream_id = g_strdup ("");
     priv->channels = g_ptr_array_new ();
-    priv->description = g_strdup ("");
-    priv->publisher = g_strdup ("");
     priv->screenshots = g_ptr_array_new ();
-    priv->summary = g_strdup ("");
-    priv->title = g_strdup ("");
 }
 
 void
@@ -259,6 +264,29 @@ store_app_get_channels (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
     return priv->channels;
+}
+
+void
+store_app_set_contact (StoreApp *self, const gchar *contact)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    g_clear_pointer (&priv->contact, g_free);
+    priv->contact = g_strdup (contact);
+
+    g_object_notify (G_OBJECT (self), "contact");
+}
+
+const gchar *
+store_app_get_contact (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    return priv->contact;
 }
 
 void

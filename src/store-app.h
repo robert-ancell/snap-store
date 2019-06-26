@@ -45,6 +45,10 @@ void         store_app_set_channels            (StoreApp *app, GPtrArray *channe
 
 GPtrArray   *store_app_get_channels            (StoreApp *app);
 
+void         store_app_set_contact             (StoreApp *app, const gchar *contact);
+
+const gchar *store_app_get_contact             (StoreApp *app);
+
 void         store_app_set_description         (StoreApp *app, const gchar *description);
 
 const gchar *store_app_get_description         (StoreApp *app);
