@@ -12,7 +12,7 @@
 
 #include "store-home-page.h"
 
-#include "store-snap-app.h"
+#include "store-snap-pool.h"
 #include "store-cache.h"
 #include "store-category-view.h"
 
@@ -29,6 +29,7 @@ struct _StoreHomePage
     GCancellable *cancellable;
     GCancellable *search_cancellable;
     GSource *search_timeout;
+    StoreSnapPool *snap_pool;
 };
 
 G_DEFINE_TYPE (StoreHomePage, store_home_page, GTK_TYPE_BOX)
@@ -64,7 +65,7 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 0; i < snaps->len; i++) {
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        g_autoptr(StoreSnapApp) app = store_snap_app_new ();
+        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
         store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
@@ -126,6 +127,7 @@ store_home_page_dispose (GObject *object)
     if (self->search_timeout)
         g_source_destroy (self->search_timeout);
     g_clear_pointer (&self->search_timeout, g_source_unref);
+    g_clear_object (&self->snap_pool);
 
     G_OBJECT_CLASS (store_home_page_parent_class)->dispose (object);
 }
@@ -220,6 +222,7 @@ static void
 get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
     g_autoptr(FindSectionData) data = user_data;
+    StoreHomePage *self = data->self;
 
     g_autoptr(GError) error = NULL;
     g_autoptr(GPtrArray) snaps = snapd_client_find_section_finish (SNAPD_CLIENT (object), result, NULL, &error);
@@ -233,12 +236,12 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
     g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 0; i < snaps->len; i++) {
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        g_autoptr(StoreSnapApp) app = store_snap_app_new ();
+        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
-        store_app_save_to_cache (STORE_APP (app), data->self->cache);
+        store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
-    set_category_apps (data->self, data->section_name, apps);
+    set_category_apps (self, data->section_name, apps);
 
     /* Save in cache */
     g_autoptr(JsonBuilder) builder = json_builder_new ();
@@ -249,7 +252,7 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
     }
     json_builder_end_array (builder);
     g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    store_cache_insert_json (data->self->cache, "sections", data->section_name, FALSE, root);
+    store_cache_insert_json (self->cache, "sections", data->section_name, FALSE, root);
 }
 
 static const gchar *
@@ -395,7 +398,7 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 0; i < snaps->len; i++) {
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        g_autoptr(StoreSnapApp) app = store_snap_app_new ();
+        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_app_set_installed (STORE_APP (app), TRUE);
         store_snap_app_update_from_search (app, snap);
         g_ptr_array_add (apps, g_steal_pointer (&app));
@@ -409,6 +412,7 @@ store_home_page_init (StoreHomePage *self)
 {
     self->cache = store_cache_new ();
     self->cancellable = g_cancellable_new ();
+    self->snap_pool = store_snap_pool_new (); // FIXME: Move into application class
 
     store_category_view_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
@@ -448,7 +452,7 @@ store_home_page_init (StoreHomePage *self)
                     JsonNode *node = json_array_get_element (array, j);
 
                     const gchar *name = json_node_get_string (node);
-                    g_autoptr(StoreSnapApp) app = store_snap_app_new ();
+                    g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, name);
                     store_app_set_name (STORE_APP (app), name);
                     store_app_update_from_cache (STORE_APP (app), self->cache);
                     g_ptr_array_add (apps, g_object_ref (app));
