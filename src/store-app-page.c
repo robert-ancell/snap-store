@@ -201,7 +201,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     if (store_app_get_contact (app) != NULL) {
         g_autofree gchar *contact_label = g_strdup_printf (/* Link shown below app description to contact app publisher. The %s is replaced with the publisher name. */
                                                            _("Contact %s"), store_app_get_publisher (app));
-        g_autofree gchar *link_text = g_strdup_printf ("<a href=\"%s\">%s</a>", store_app_get_contact (app), contact_label); // FIXME: Escape
+        g_autofree gchar *link_text = g_markup_printf_escaped ("<a href=\"%s\">%s</a>", store_app_get_contact (app), contact_label);
         gtk_label_set_label (self->contact_label, link_text);
         gtk_widget_show (GTK_WIDGET (self->contact_label));
     }
