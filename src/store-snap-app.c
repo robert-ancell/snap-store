@@ -16,6 +16,54 @@ struct _StoreSnapApp
 
 G_DEFINE_TYPE (StoreSnapApp, store_snap_app, store_app_get_type ())
 
+static int
+strv_index (GStrv values, const gchar *value)
+{
+    for (int i = 0; values[i] != NULL; i++)
+       if (g_strcmp0 (values[i], value) == 0)
+           return i;
+    return -1;
+}
+
+static int
+compare_indexes (GStrv values, const gchar *a, const gchar *b)
+{
+    int index_a = strv_index (values, a);
+    int index_b = strv_index (values, b);
+    if (index_a == index_b)
+        return g_strcmp0 (a, b);
+    else if (index_a < 0)
+        return 1;
+    else if (index_b < 0)
+        return -1;
+    else
+        return index_a - index_b;
+}
+
+static int
+compare_channel (gconstpointer a, gconstpointer b, gpointer user_data)
+{
+    SnapdChannel *channel_a = *(SnapdChannel **)a;
+    SnapdChannel *channel_b = *(SnapdChannel **)b;
+    SnapdSnap *snap = user_data;
+
+    const gchar *track_a = snapd_channel_get_track (channel_a);
+    const gchar *track_b = snapd_channel_get_track (channel_b);
+    if (g_strcmp0 (track_a, track_b) != 0) {
+        GStrv tracks = snapd_snap_get_tracks (snap);
+        return compare_indexes (tracks, track_a, track_b);
+    }
+
+    const gchar *risk_a = snapd_channel_get_risk (channel_a);
+    const gchar *risk_b = snapd_channel_get_risk (channel_b);
+    if (g_strcmp0 (risk_a, risk_b) != 0) {
+        gchar *risks[] = { "stable", "candidate", "beta", "edge", NULL };
+        return compare_indexes (risks, risk_a, risk_b);
+    }
+
+    return g_strcmp0 (snapd_channel_get_branch (channel_a), snapd_channel_get_branch (channel_b));
+}
+
 static void
 find_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
@@ -215,10 +263,19 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
     GPtrArray *channels = snapd_snap_get_channels (snap);
     if (channels->len > 0) {
         GPtrArray *store_channels = g_ptr_array_new_with_free_func (g_object_unref);
-        for (guint i = 0; i < channels->len; i++) {
-            SnapdChannel *c = g_ptr_array_index (channels, i);
+        g_autoptr(GPtrArray) sorted_channels = g_ptr_array_new ();
+        for (guint i = 0; i < channels->len; i++)
+            g_ptr_array_add (sorted_channels, g_ptr_array_index (channels, i));
+        g_ptr_array_sort_with_data (sorted_channels, compare_channel, snap);
+        for (guint i = 0; i < sorted_channels->len; i++) {
+            SnapdChannel *c = g_ptr_array_index (sorted_channels, i);
             g_autoptr(StoreChannel) channel = store_channel_new ();
-            store_channel_set_name (channel, snapd_channel_get_name (c));
+            g_autofree gchar *name = NULL;
+            if (snapd_channel_get_branch (c) != NULL)
+                name = g_strdup_printf ("%s/%s/%s", snapd_channel_get_track (c), snapd_channel_get_risk (c), snapd_channel_get_branch (c));
+            else
+                name = g_strdup_printf ("%s/%s", snapd_channel_get_track (c), snapd_channel_get_risk (c));
+            store_channel_set_name (channel, name);
             store_channel_set_version (channel, snapd_channel_get_version (c));
             g_ptr_array_add (store_channels, g_steal_pointer (&channel));
         }
