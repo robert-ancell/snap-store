@@ -7,6 +7,7 @@
  * (at your option) any later version.
  */
 
+#include <glib/gi18n.h>
 #include <snapd-glib/snapd-glib.h>
 
 #include "store-home-page.h"
@@ -254,49 +255,69 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
 static const gchar *
 get_section_title (const gchar *name)
 {
-    // FIXME: translatable
     if (strcmp (name, "development") == 0)
-        return "Development";
+        /* Title for Development snap category */
+        return _("Development");
     if (strcmp (name, "games") == 0)
-        return "Games";
+        /* Title for Games snap category */
+        return _("Games");
     if (strcmp (name, "social") == 0)
-        return "Social";
+        /* Title for Social snap category */
+        return _("Social");
     if (strcmp (name, "productivity") == 0)
-        return "Productivity";
+        /* Title for Productivity snap category */
+        return _("Productivity");
     if (strcmp (name, "utilities") == 0)
-        return "Utilities";
+        /* Title for Utilities snap category */
+        return _("Utilities");
     if (strcmp (name, "photo-and-video") == 0)
-        return "Photo and Video";
+        /* Title for Photo and Video snap category */
+        return _("Photo and Video");
     if (strcmp (name, "server-and-cloud") == 0)
-        return "Server and Cloud";
+        /* Title for Server and Cloud snap category */
+        return _("Server and Cloud");
     if (strcmp (name, "security") == 0)
-        return "Security";
+        /* Title for Security snap category */
+        return _("Security");
     if (strcmp (name, "") == 0)
-        return "Security";
+        /* Title for Security snap category */
+        return _("Security");
     if (strcmp (name, "featured") == 0)
-        return "Featured";
+        /* Title for Featured snap category */
+        return _("Featured");
     if (strcmp (name, "devices-and-iot") == 0)
-        return "Devices and IoT";
+        /* Title for Devices and IoT snap category */
+        return _("Devices and IoT");
     if (strcmp (name, "music-and-audio") == 0)
-        return "Music and Audio";
+        /* Title for Music and Audio snap category */
+        return _("Music and Audio");
     if (strcmp (name, "entertainment") == 0)
-        return "Entertainment";
+        /* Title for Entertainment snap category */
+        return _("Entertainment");
     if (strcmp (name, "art-and-design") == 0)
-        return "Art and Design";
+        /* Title for Art and Design snap category */
+        return _("Art and Design");
     if (strcmp (name, "finance") == 0)
-        return "Finance";
+        /* Title for Finance snap category */
+        return _("Finance");
     if (strcmp (name, "news-and-weather") == 0)
-        return "News and Weather";
+        /* Title for News and Weather snap category */
+        return _("News and Weather");
     if (strcmp (name, "science") == 0)
-        return "Science";
+        /* Title for Science snap category */
+        return _("Science");
     if (strcmp (name, "health-and-fitness") == 0)
-        return "Health and Fitness";
+        /* Title for Health and Fitness snap category */
+        return _("Health and Fitness");
     if (strcmp (name, "education") == 0)
-        return "Education";
+        /* Title for Education snap category */
+        return _("Education");
     if (strcmp (name, "books-and-reference") == 0)
-        return "Books and Reference";
+        /* Title for Books and Reference snap category */
+        return _("Books and Reference");
     if (strcmp (name, "personalisation") == 0)
-        return "Personalisation";
+        /* Title for Personalisation snap category */
+        return _("Personalisation");
     return name;
 }
 
@@ -393,7 +414,9 @@ store_home_page_init (StoreHomePage *self)
     gtk_widget_init_template (GTK_WIDGET (self));
 
     self->installed_view = store_category_view_new (); // FIXME: Move into .ui
-    store_category_view_set_title (self->installed_view, "Installed"); // FIXME: translatable
+    store_category_view_set_title (self->installed_view,
+                                   /* Title for category showing installed snaps */
+                                   _("Installed"));
     g_signal_connect_object (self->installed_view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
     gtk_box_pack_end (self->category_box, GTK_WIDGET (self->installed_view), FALSE, FALSE, 0);
 

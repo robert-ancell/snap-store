@@ -7,6 +7,8 @@
  * (at your option) any later version.
  */
 
+#include <glib/gi18n.h>
+
 #include "store-app-page.h"
 
 #include "store-cache.h"
@@ -189,15 +191,18 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     gtk_widget_set_visible (GTK_WIDGET (self->publisher_validated_image), store_app_get_publisher_validated (app));
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
     gtk_label_set_label (self->description_label, store_app_get_description (app));
-    g_autofree gchar *details_title = g_strdup_printf ("Details for %s", store_app_get_title (app)); // FIXME: translatable
+    g_autofree gchar *details_title = g_strdup_printf (/* Label above details on app page. The %s is replaced with the title of the snap */
+                                                       _("Details for %s"), store_app_get_title (app));
     gtk_label_set_label (self->details_title_label, details_title);
     store_image_set_url (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
         store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
 
     if (store_app_get_contact (app) != NULL) {
-        g_autofree gchar *contact_label = g_strdup_printf ("<a href=\"%s\">Contact %s</a>", store_app_get_contact (app), store_app_get_publisher (app)); // FIXME: Escape
-        gtk_label_set_label (self->contact_label, contact_label);
+        g_autofree gchar *contact_label = g_strdup_printf (/* Link shown below app description to contact app publisher. The %s is replaced with the publisher name. */
+                                                           _("Contact %s"), store_app_get_publisher (app));
+        g_autofree gchar *link_text = g_strdup_printf ("<a href=\"%s\">%s</a>", store_app_get_contact (app), contact_label); // FIXME: Escape
+        gtk_label_set_label (self->contact_label, link_text);
         gtk_widget_show (GTK_WIDGET (self->contact_label));
     }
     else

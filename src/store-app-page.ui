@@ -169,7 +169,7 @@
                         <property name="visible">True</property>
                         <property name="margin-top">18</property>
                         <property name="xalign">0</property>
-                        <property name="label" translatable="yes">License</property>
+                        <property name="label" translatable="yes" comments="Label above license information on app page">License</property>
                         <style>
                           <class name="app-page-details-heading-label"/>
                         </style>

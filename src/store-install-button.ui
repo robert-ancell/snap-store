@@ -11,13 +11,13 @@
         <child>
           <object class="GtkLabel" id="install_label">
             <property name="visible">True</property>
-            <property name="label" translatable="yes">Install</property>
+            <property name="label" translatable="yes" comments="Label on install/remove button when snap is not installed">Install</property>
           </object>
         </child>
         <child>
           <object class="GtkLabel" id="remove_label">
             <property name="visible">True</property>
-            <property name="label" translatable="yes">Remove</property>
+            <property name="label" translatable="yes" comments="Label on install/remove button when snap is installed">Remove</property>
           </object>
         </child>
       </object>
