@@ -16,6 +16,7 @@ typedef struct
     gchar *contact;
     gchar *description;
     StoreMedia *icon;
+    gboolean installed;
     gchar *name;
     gchar *publisher;
     gboolean publisher_validated;
@@ -31,6 +32,7 @@ enum
     PROP_CONTACT,
     PROP_DESCRIPTION,
     PROP_ICON,
+    PROP_INSTALLED,
     PROP_NAME,
     PROP_PUBLISHER,
     PROP_SCREENSHOTS,
@@ -81,6 +83,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
     case PROP_ICON:
         g_value_set_object (value, priv->icon);
         break;
+    case PROP_INSTALLED:
+        g_value_set_boolean (value, priv->installed);
+        break;
     case PROP_NAME:
         g_value_set_string (value, priv->name);
         break;
@@ -120,6 +125,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
         break;
     case PROP_ICON:
         store_app_set_icon (self, g_value_get_object (value));
+        break;
+    case PROP_INSTALLED:
+        store_app_set_installed (self, g_value_get_boolean (value));
         break;
     case PROP_NAME:
         store_app_set_name (self, g_value_get_string (value));
@@ -167,6 +175,14 @@ install_object_property (StoreAppClass *klass, guint property_id, const gchar *n
 }
 
 static void
+install_boolean_property (StoreAppClass *klass, guint property_id, const gchar *name)
+{
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     property_id,
+                                     g_param_spec_boolean (name, NULL, NULL, FALSE, G_PARAM_READWRITE));
+}
+
+static void
 store_app_class_init (StoreAppClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_app_dispose;
@@ -177,6 +193,7 @@ store_app_class_init (StoreAppClass *klass)
     install_string_property (klass, PROP_CONTACT, "contact");
     install_string_property (klass, PROP_DESCRIPTION, "description");
     install_object_property (klass, PROP_ICON, "icon", store_media_get_type ());
+    install_boolean_property (klass, PROP_INSTALLED, "installed");
     install_string_property (klass, PROP_NAME, "name");
     install_string_property (klass, PROP_PUBLISHER, "publisher");
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
@@ -194,6 +211,20 @@ store_app_init (StoreApp *self)
 }
 
 void
+store_app_install_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    STORE_APP_GET_CLASS (self)->install_async (self, cancellable, callback, callback_data);
+}
+
+gboolean
+store_app_install_finish (StoreApp *self, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_APP (self), FALSE);
+    return STORE_APP_GET_CLASS (self)->install_finish (self, result, error);
+}
+
+void
 store_app_refresh_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_return_if_fail (STORE_IS_APP (self));
@@ -205,6 +236,20 @@ store_app_refresh_finish (StoreApp *self, GAsyncResult *result, GError **error)
 {
     g_return_val_if_fail (STORE_IS_APP (self), FALSE);
     return STORE_APP_GET_CLASS (self)->refresh_finish (self, result, error);
+}
+
+void
+store_app_remove_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_return_if_fail (STORE_IS_APP (self));
+    STORE_APP_GET_CLASS (self)->remove_async (self, cancellable, callback, callback_data);
+}
+
+gboolean
+store_app_remove_finish (StoreApp *self, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_APP (self), FALSE);
+    return STORE_APP_GET_CLASS (self)->remove_finish (self, result, error);
 }
 
 void
@@ -334,6 +379,28 @@ store_app_get_icon (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
     return priv->icon;
+}
+
+void
+store_app_set_installed (StoreApp *self, gboolean installed)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    priv->installed = installed;
+
+    g_object_notify (G_OBJECT (self), "installed");
+}
+
+gboolean
+store_app_get_installed (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), FALSE);
+
+    return priv->installed;
 }
 
 void

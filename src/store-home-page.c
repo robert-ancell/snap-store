@@ -375,6 +375,7 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     for (guint i = 0; i < snaps->len; i++) {
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_app_new ();
+        store_app_set_installed (STORE_APP (app), TRUE);
         store_snap_app_update_from_search (app, snap);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }

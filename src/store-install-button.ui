@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="StoreInstallButton" parent="GtkButton">
+    <signal name="activate" handler="activate_cb" object="StoreInstallButton" swapped="yes"/>
+    <style>
+    <class name="install-button"/>
+    </style>
+    <child>
+      <object class="GtkStack" id="label_stack">
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkLabel" id="install_label">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Install</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="remove_label">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Remove</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

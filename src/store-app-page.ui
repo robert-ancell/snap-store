@@ -82,9 +82,8 @@
                     <property name="orientation">vertical</property>
                     <property name="valign">center</property>
                     <child>
-                      <object class="GtkButton" id="install_button">
+                      <object class="StoreInstallButton" id="install_button">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Install</property>
                       </object>
                     </child>
                   </object>

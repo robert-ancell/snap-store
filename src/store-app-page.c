@@ -13,6 +13,7 @@
 #include "store-category-view.h"
 #include "store-channel-combo.h"
 #include "store-image.h"
+#include "store-install-button.h"
 #include "store-odrs-client.h"
 #include "store-review-view.h"
 
@@ -25,7 +26,7 @@ struct _StoreAppPage
     GtkLabel *description_label;
     GtkLabel *details_title_label;
     StoreImage *icon_image;
-    GtkButton *install_button;
+    StoreInstallButton *install_button;
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
     GtkBox *reviews_box;
@@ -150,6 +151,7 @@ store_app_page_init (StoreAppPage *self)
 {
     store_channel_combo_get_type ();
     store_image_get_type ();
+    store_install_button_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
     self->cache = store_cache_new (); // FIXME: Make shared?
@@ -197,6 +199,8 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
         gtk_widget_hide (GTK_WIDGET (self->contact_label));
 
     store_channel_combo_set_app (self->channel_combo, app);
+
+    store_install_button_set_app (self->install_button, app);
 
     gtk_widget_hide (GTK_WIDGET (self->reviews_box));
 
