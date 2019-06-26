@@ -11,6 +11,7 @@
 
 #include "store-cache.h"
 #include "store-category-view.h"
+#include "store-channel-combo.h"
 #include "store-image.h"
 #include "store-odrs-client.h"
 #include "store-review-view.h"
@@ -19,8 +20,7 @@ struct _StoreAppPage
 {
     GtkBox parent_instance;
 
-    GtkComboBox *channel_combo;
-    GtkListStore *channel_model;
+    StoreChannelCombo *channel_combo;
     GtkLabel *description_label;
     GtkLabel *details_title_label;
     StoreImage *icon_image;
@@ -121,7 +121,6 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-page.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, channel_combo);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, channel_model);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, description_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_title_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
@@ -137,6 +136,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
 static void
 store_app_page_init (StoreAppPage *self)
 {
+    store_channel_combo_get_type ();
     store_image_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
@@ -176,16 +176,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     if (store_app_get_icon (app) != NULL)
         store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
 
-    gtk_list_store_clear (self->channel_model);
-    GPtrArray *channels = store_app_get_channels (app);
-    for (guint i = 0; i < channels->len; i++) {
-        StoreChannel *channel = g_ptr_array_index (channels, i);
-        GtkTreeIter iter;
-        gtk_list_store_append (self->channel_model, &iter);
-        g_autofree gchar *label = g_strdup_printf ("%s %s", store_channel_get_name (channel), store_channel_get_version (channel));
-        g_printerr ("%s\n", label);
-        gtk_list_store_set (self->channel_model, &iter, 0, label, -1);
-    }
+    store_channel_combo_set_app (self->channel_combo, app);
 
     gtk_widget_hide (GTK_WIDGET (self->reviews_box));
 

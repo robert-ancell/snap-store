@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="StoreChannelCombo" parent="GtkComboBox">
+    <property name="model">channel_model</property>
+    <child>
+      <object class="GtkCellRendererText" id="renderer">
+      </object>
+    </child>
+  </template>
+  <object class="GtkListStore" id="channel_model">
+    <columns>
+      <!-- column-name label -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+</interface>
