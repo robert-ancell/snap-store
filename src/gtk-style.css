@@ -1,8 +1,15 @@
 .app-page-contact-label {
 }
 
+.app-page-details-heading-label {
+    font-weight: bold;
+}
+
 .app-page-details-title-label {
     font-size: large;
+}
+
+.app-page-details-value-label {
 }
 
 .app-page-summary-label {

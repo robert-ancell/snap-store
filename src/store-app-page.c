@@ -27,6 +27,7 @@ struct _StoreAppPage
     GtkLabel *details_title_label;
     StoreImage *icon_image;
     StoreInstallButton *install_button;
+    GtkLabel *license_label;
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
     GtkBox *reviews_box;
@@ -136,6 +137,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_title_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, license_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
@@ -180,6 +182,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     store_app_refresh_async (app, self->cancellable, refresh_cb, self);
 
     gtk_label_set_label (self->title_label, store_app_get_title (app));
+    gtk_label_set_label (self->license_label, store_app_get_license (app));
     gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));
     gtk_widget_set_visible (GTK_WIDGET (self->publisher_validated_image), store_app_get_publisher_validated (app));
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));

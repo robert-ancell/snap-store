@@ -73,6 +73,10 @@ void         store_app_set_installed           (StoreApp *app, gboolean installe
 
 gboolean     store_app_get_installed           (StoreApp *app);
 
+void         store_app_set_license             (StoreApp *app, const gchar *license);
+
+const gchar *store_app_get_license             (StoreApp *app);
+
 void         store_app_set_name                (StoreApp *app, const gchar *name);
 
 const gchar *store_app_get_name                (StoreApp *app);

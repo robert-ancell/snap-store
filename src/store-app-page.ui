@@ -107,6 +107,7 @@
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="orientation">horizontal</property>
+                <property name="spacing">18</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
@@ -158,6 +159,28 @@
                         <property name="visible">True</property>
                         <style>
                           <class name="app-page-details-title-label"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="margin-top">18</property>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">License</property>
+                        <style>
+                          <class name="app-page-details-heading-label"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="license_label">
+                        <property name="visible">True</property>
+                        <property name="margin-top">10</property>
+                        <property name="margin-left">10</property>
+                        <property name="xalign">0</property>
+                        <style>
+                          <class name="app-page-details-value-label"/>
                         </style>
                       </object>
                     </child>

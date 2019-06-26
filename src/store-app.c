@@ -17,6 +17,7 @@ typedef struct
     gchar *description;
     StoreMedia *icon;
     gboolean installed;
+    gchar *license;
     gchar *name;
     gchar *publisher;
     gboolean publisher_validated;
@@ -33,6 +34,7 @@ enum
     PROP_DESCRIPTION,
     PROP_ICON,
     PROP_INSTALLED,
+    PROP_LICENSE,
     PROP_NAME,
     PROP_PUBLISHER,
     PROP_SCREENSHOTS,
@@ -54,6 +56,7 @@ store_app_dispose (GObject *object)
     g_clear_pointer (&priv->contact, g_free);
     g_clear_pointer (&priv->description, g_free);
     g_clear_object (&priv->icon);
+    g_clear_pointer (&priv->license, g_free);
     g_clear_pointer (&priv->name, g_free);
     g_clear_pointer (&priv->publisher, g_free);
     g_clear_pointer (&priv->screenshots, g_ptr_array_unref);
@@ -85,6 +88,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
         break;
     case PROP_INSTALLED:
         g_value_set_boolean (value, priv->installed);
+        break;
+    case PROP_LICENSE:
+        g_value_set_string (value, priv->license);
         break;
     case PROP_NAME:
         g_value_set_string (value, priv->name);
@@ -128,6 +134,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
         break;
     case PROP_INSTALLED:
         store_app_set_installed (self, g_value_get_boolean (value));
+        break;
+    case PROP_LICENSE:
+        store_app_set_license (self, g_value_get_string (value));
         break;
     case PROP_NAME:
         store_app_set_name (self, g_value_get_string (value));
@@ -194,6 +203,7 @@ store_app_class_init (StoreAppClass *klass)
     install_string_property (klass, PROP_DESCRIPTION, "description");
     install_object_property (klass, PROP_ICON, "icon", store_media_get_type ());
     install_boolean_property (klass, PROP_INSTALLED, "installed");
+    install_string_property (klass, PROP_NAME, "license");
     install_string_property (klass, PROP_NAME, "name");
     install_string_property (klass, PROP_PUBLISHER, "publisher");
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
@@ -401,6 +411,29 @@ store_app_get_installed (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), FALSE);
 
     return priv->installed;
+}
+
+void
+store_app_set_license (StoreApp *self, const gchar *license)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    g_clear_pointer (&priv->license, g_free);
+    priv->license = g_strdup (license);
+
+    g_object_notify (G_OBJECT (self), "license");
+}
+
+const gchar *
+store_app_get_license (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    return priv->license;
 }
 
 void
