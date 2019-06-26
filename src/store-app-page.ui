@@ -70,6 +70,19 @@
                     <property name="orientation">vertical</property>
                     <property name="valign">center</property>
                     <child>
+                      <object class="GtkComboBox" id="channel_combo">
+                        <property name="visible">True</property>
+                        <property name="model">channel_model</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="valign">center</property>
+                    <child>
                       <object class="GtkButton" id="install_button">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Install</property>
@@ -154,4 +167,10 @@
       </object>
     </child>
   </template>
+  <object class="GtkListStore" id="channel_model">
+    <columns>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
 </interface>

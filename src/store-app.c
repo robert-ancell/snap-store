@@ -23,6 +23,20 @@ typedef struct
     gchar *title;
 } StoreAppPrivate;
 
+enum
+{
+    PROP_0,
+    PROP_CHANNELS,
+    PROP_DESCRIPTION,
+    PROP_ICON,
+    PROP_NAME,
+    PROP_PUBLISHER,
+    PROP_SCREENSHOTS,
+    PROP_SUMMARY,
+    PROP_TITLE,
+    PROP_LAST
+};
+
 G_DEFINE_TYPE_WITH_PRIVATE (StoreApp, store_app, G_TYPE_OBJECT)
 
 static void
@@ -45,9 +59,119 @@ store_app_dispose (GObject *object)
 }
 
 static void
+store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+    StoreApp *self = STORE_APP (object);
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    switch (prop_id)
+    {
+    case PROP_CHANNELS:
+        g_value_set_boxed (value, priv->channels);
+        break;
+    case PROP_DESCRIPTION:
+        g_value_set_string (value, priv->description);
+        break;
+    case PROP_ICON:
+        g_value_set_object (value, priv->icon);
+        break;
+    case PROP_NAME:
+        g_value_set_string (value, priv->name);
+        break;
+    case PROP_PUBLISHER:
+        g_value_set_string (value, priv->publisher);
+        break;
+    case PROP_SCREENSHOTS:
+        g_value_set_boxed (value, priv->screenshots);
+        break;
+    case PROP_SUMMARY:
+        g_value_set_string (value, priv->summary);
+        break;
+    case PROP_TITLE:
+        g_value_set_string (value, priv->title);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_app_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StoreApp *self = STORE_APP (object);
+
+    switch (prop_id)
+    {
+    case PROP_CHANNELS:
+        store_app_set_channels (self, g_value_get_boxed (value));
+        break;
+    case PROP_DESCRIPTION:
+        store_app_set_description (self, g_value_get_string (value));
+        break;
+    case PROP_ICON:
+        store_app_set_icon (self, g_value_get_object (value));
+        break;
+    case PROP_NAME:
+        store_app_set_name (self, g_value_get_string (value));
+        break;
+    case PROP_PUBLISHER:
+        store_app_set_publisher (self, g_value_get_string (value));
+        break;
+    case PROP_SCREENSHOTS:
+        store_app_set_screenshots (self, g_value_get_boxed (value));
+        break;
+    case PROP_SUMMARY:
+        store_app_set_summary (self, g_value_get_string (value));
+        break;
+    case PROP_TITLE:
+        store_app_set_title (self, g_value_get_string (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+install_string_property (StoreAppClass *klass, guint property_id, const gchar *name)
+{
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     property_id,
+                                     g_param_spec_string (name, NULL, NULL, NULL, G_PARAM_READWRITE));
+}
+
+static void
+install_array_property (StoreAppClass *klass, guint property_id, const gchar *name)
+{
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     property_id,
+                                     g_param_spec_boxed (name, NULL, NULL, G_TYPE_PTR_ARRAY, G_PARAM_READWRITE));
+}
+
+static void
+install_object_property (StoreAppClass *klass, guint property_id, const gchar *name, GType type)
+{
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     property_id,
+                                     g_param_spec_object (name, NULL, NULL, type, G_PARAM_READWRITE));
+}
+
+static void
 store_app_class_init (StoreAppClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_app_dispose;
+    G_OBJECT_CLASS (klass)->get_property = store_app_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_app_set_property;
+
+    install_array_property (klass, PROP_CHANNELS, "channels");
+    install_string_property (klass, PROP_DESCRIPTION, "description");
+    install_object_property (klass, PROP_ICON, "icon", store_media_get_type ());
+    install_string_property (klass, PROP_NAME, "name");
+    install_string_property (klass, PROP_PUBLISHER, "publisher");
+    install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
+    install_string_property (klass, PROP_SUMMARY, "summary");
+    install_string_property (klass, PROP_TITLE, "title");
 }
 
 static void
@@ -123,6 +247,8 @@ store_app_set_channels (StoreApp *self, GPtrArray *channels)
     g_clear_pointer (&priv->channels, g_ptr_array_unref);
     if (channels != NULL)
         priv->channels = g_ptr_array_ref (channels);
+
+    g_object_notify (G_OBJECT (self), "channels");
 }
 
 GPtrArray *
@@ -144,6 +270,8 @@ store_app_set_description (StoreApp *self, const gchar *description)
 
     g_clear_pointer (&priv->description, g_free);
     priv->description = g_strdup (description);
+
+    g_object_notify (G_OBJECT (self), "description");
 }
 
 const gchar *
@@ -166,6 +294,8 @@ store_app_set_icon (StoreApp *self, StoreMedia *icon)
     g_clear_object (&priv->icon);
     if (icon != NULL)
         priv->icon = g_object_ref (icon);
+
+    g_object_notify (G_OBJECT (self), "icon");
 }
 
 StoreMedia *
@@ -187,6 +317,8 @@ store_app_set_name (StoreApp *self, const gchar *name)
 
     g_clear_pointer (&priv->name, g_free);
     priv->name = g_strdup (name);
+
+    g_object_notify (G_OBJECT (self), "name");
 }
 
 const gchar *
@@ -208,6 +340,8 @@ store_app_set_publisher (StoreApp *self, const gchar *publisher)
 
     g_clear_pointer (&priv->publisher, g_free);
     priv->publisher = g_strdup (publisher);
+
+    g_object_notify (G_OBJECT (self), "publisher");
 }
 
 const gchar *
@@ -250,6 +384,8 @@ store_app_set_screenshots (StoreApp *self, GPtrArray *screenshots)
     g_clear_pointer (&priv->screenshots, g_ptr_array_unref);
     if (screenshots != NULL)
         priv->screenshots = g_ptr_array_ref (screenshots);
+
+    g_object_notify (G_OBJECT (self), "screenshots");
 }
 
 GPtrArray *
@@ -271,6 +407,8 @@ store_app_set_summary (StoreApp *self, const gchar *summary)
 
     g_clear_pointer (&priv->summary, g_free);
     priv->summary = g_strdup (summary);
+
+    g_object_notify (G_OBJECT (self), "summary");
 }
 
 const gchar *
@@ -292,6 +430,8 @@ store_app_set_title (StoreApp *self, const gchar *title)
 
     g_clear_pointer (&priv->title, g_free);
     priv->title = g_strdup (title);
+
+    g_object_notify (G_OBJECT (self), "title");
 }
 
 const gchar *
