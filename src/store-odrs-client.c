@@ -79,6 +79,22 @@ store_odrs_client_new (void)
     return g_object_new (store_odrs_client_get_type (), NULL);
 }
 
+void
+store_odrs_client_set_distro (StoreOdrsClient *self, const gchar *distro)
+{
+    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
+    g_free (self->distro);
+    self->distro = g_strdup (distro);
+}
+
+void
+store_odrs_client_set_locale (StoreOdrsClient *self, const gchar *locale)
+{
+    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
+    g_free (self->locale);
+    self->locale = g_strdup (locale);
+}
+
 static void
 get_ratings_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {

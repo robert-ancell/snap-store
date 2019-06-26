@@ -19,6 +19,10 @@ G_DECLARE_FINAL_TYPE (StoreOdrsClient, store_odrs_client, STORE, ODRS_CLIENT, GO
 
 StoreOdrsClient *store_odrs_client_new                (void);
 
+void             store_odrs_client_set_distro         (StoreOdrsClient *client, const gchar *distro);
+
+void             store_odrs_client_set_locale         (StoreOdrsClient *client, const gchar *locale);
+
 void             store_odrs_client_get_ratings_async  (StoreOdrsClient *client,
                                                        GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
