@@ -1,4 +1,8 @@
 .app-page-contact-label {
+    font-family: Ubuntu-Light;
+    font-size: 16px;
+    color: #007aa6;
+    text-decoration: none;
 }
 
 .app-page-description-label {
@@ -16,14 +20,27 @@
 }
 
 .app-page-details-heading-label {
+    font-family: Ubuntu-Light;
     font-size: 24px;
+    color: #111111;
+}
+
+.app-page-details-key-label {
+    font-family: Ubuntu-Light;
+    font-size: 16px;
+    color: #4a4a4a;
 }
 
 .app-page-details-title-label {
+    font-family: Ubuntu-Light;
     font-size: 24px;
+    color: #111111;
 }
 
 .app-page-details-value-label {
+    font-family: Ubuntu-Light;
+    font-size: 16px;
+    color: #111111;
 }
 
 .app-page-header-box {
@@ -47,7 +64,9 @@
 }
 
 .app-page-summary-label {
-    font-size: large;
+    font-family: Ubuntu;
+    font-size: 18px;
+    color: #212121;
 }
 
 .app-page-title-label {
@@ -114,6 +133,7 @@
 .review-description-label {
     font-family: Ubuntu-Light;
     font-size: 16px;
+    color: #212121;
 }
 
 .review-summary-label {

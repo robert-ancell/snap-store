@@ -27,7 +27,6 @@ struct _StoreAppPage
     StoreChannelCombo *channel_combo;
     GtkLabel *contact_label;
     GtkLabel *description_label;
-    GtkLabel *details_title_label;
     StoreImage *icon_image;
     StoreInstallButton *install_button;
     GtkLabel *license_label;
@@ -143,7 +142,6 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, channel_combo);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, contact_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, description_label);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_title_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, license_label);
@@ -204,16 +202,13 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     gtk_widget_set_visible (GTK_WIDGET (self->publisher_validated_image), store_app_get_publisher_validated (app));
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
     gtk_label_set_label (self->description_label, store_app_get_description (app));
-    g_autofree gchar *details_title = g_strdup_printf (/* Label above details on app page. The %s is replaced with the title of the snap */
-                                                       _("Details for %s"), store_app_get_title (app));
-    gtk_label_set_label (self->details_title_label, details_title);
     store_image_set_uri (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
         store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));
 
     if (store_app_get_contact (app) != NULL) {
-        g_autofree gchar *contact_label = g_strdup_printf (/* Link shown below app description to contact app publisher. The %s is replaced with the publisher name. */
-                                                           _("Contact %s"), store_app_get_publisher (app));
+        /* Link shown below app description to contact app publisher. */
+        const gchar *contact_label = _("Contact");
         g_autofree gchar *link_text = g_markup_printf_escaped ("<a href=\"%s\">%s</a>", store_app_get_contact (app), contact_label);
         gtk_label_set_label (self->contact_label, link_text);
         gtk_widget_show (GTK_WIDGET (self->contact_label));

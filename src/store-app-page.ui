@@ -158,6 +158,7 @@
                             <property name="halign">start</property>
                             <property name="xalign">0</property>
                             <property name="use-markup">True</property>
+                            <property name="track-visited-links">False</property>
                             <signal name="activate-link" handler="contact_link_cb" object="StoreAppPage" swapped="yes"/>
                             <style>
                               <class name="app-page-contact-label"/>
@@ -170,34 +171,173 @@
                       <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="orientation">vertical</property>
+                        <property name="spacing">24</property>
                         <child>
-                          <object class="GtkLabel" id="details_title_label">
+                          <object class="GtkLabel">
                             <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes" comments="Label above app details on app page">Details</property>
                             <style>
                               <class name="app-page-details-title-label"/>
                             </style>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkGrid">
                             <property name="visible">True</property>
-                            <property name="margin-top">18</property>
-                            <property name="xalign">0</property>
-                            <property name="label" translatable="yes" comments="Label above license information on app page">License</property>
-                            <style>
-                              <class name="app-page-details-heading-label"/>
-                            </style>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="license_label">
-                            <property name="visible">True</property>
-                            <property name="margin-top">10</property>
-                            <property name="margin-left">10</property>
-                            <property name="xalign">0</property>
-                            <style>
-                              <class name="app-page-details-value-label"/>
-                            </style>
+                            <property name="row-homogeneous">True</property>
+                            <property name="row-spacing">12</property>
+                            <property name="column-spacing">24</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="margin-top">18</property>
+                                <property name="xalign">0</property>
+                                <property name="label" translatable="yes" comments="Label beside version information on app page">Version</property>
+                                <style>
+                                  <class name="app-page-details-key-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="version_label">
+                                <property name="visible">True</property>
+                                <property name="margin-top">10</property>
+                                <property name="margin-left">10</property>
+                                <property name="xalign">0</property>
+                                <style>
+                                  <class name="app-page-details-value-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="margin-top">18</property>
+                                <property name="xalign">0</property>
+                                <property name="label" translatable="yes" comments="Label beside updated date information on app page">Updated</property>
+                                <style>
+                                  <class name="app-page-details-key-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="updated_label">
+                                <property name="visible">True</property>
+                                <property name="margin-top">10</property>
+                                <property name="margin-left">10</property>
+                                <property name="xalign">0</property>
+                                <style>
+                                  <class name="app-page-details-value-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="margin-top">18</property>
+                                <property name="xalign">0</property>
+                                <property name="label" translatable="yes" comments="Label beside license information on app page">License</property>
+                                <style>
+                                  <class name="app-page-details-key-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="license_label">
+                                <property name="visible">True</property>
+                                <property name="margin-top">10</property>
+                                <property name="margin-left">10</property>
+                                <property name="xalign">0</property>
+                                <style>
+                                  <class name="app-page-details-value-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="margin-top">18</property>
+                                <property name="xalign">0</property>
+                                <property name="label" translatable="yes" comments="Label beside developer information on app page">Developer</property>
+                                <style>
+                                  <class name="app-page-details-key-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="developer_label">
+                                <property name="visible">True</property>
+                                <property name="margin-top">10</property>
+                                <property name="margin-left">10</property>
+                                <property name="xalign">0</property>
+                                <style>
+                                  <class name="app-page-details-value-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="margin-top">18</property>
+                                <property name="xalign">0</property>
+                                <property name="label" translatable="yes" comments="Label beside installed size information on app page">Installed size</property>
+                                <style>
+                                  <class name="app-page-details-key-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">4</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="installed_size_label">
+                                <property name="visible">True</property>
+                                <property name="margin-top">10</property>
+                                <property name="margin-left">10</property>
+                                <property name="xalign">0</property>
+                                <style>
+                                  <class name="app-page-details-value-label"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">4</property>
+                              </packing>
+                            </child>
                           </object>
                         </child>
                       </object>
