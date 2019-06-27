@@ -220,7 +220,6 @@ store_image_set_url (StoreImage *self, const gchar *url)
     soup_session_send_async (self->session, message, self->cancellable, send_cb, self);
 
     /* Load cached version */
-    g_assert (self->cache != NULL);
     if (self->cache != NULL) {
         g_cancellable_cancel (self->cache_cancellable);
         g_clear_object (&self->cache_cancellable);

@@ -18,9 +18,10 @@ struct _StoreWindow
 
     StoreAppPage *app_page;
     GtkButton *back_button;
-    StoreCache *cache;
     StoreHomePage *home_page;
     GtkStack *stack;
+
+    StoreCache *cache;
 };
 
 G_DEFINE_TYPE (StoreWindow, store_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -62,12 +63,6 @@ store_window_init (StoreWindow *self)
     gtk_widget_init_template (GTK_WIDGET (self));
 
     gtk_window_set_default_size (GTK_WINDOW (self), 800, 600); // FIXME: Temp
-
-    self->cache = store_cache_new ();
-    store_app_page_set_cache (self->app_page, self->cache);
-    store_home_page_set_cache (self->home_page, self->cache);
-
-    store_home_page_load (self->home_page);
 }
 
 StoreWindow *
@@ -76,4 +71,23 @@ store_window_new (StoreApplication *application)
     return g_object_new (store_window_get_type (),
                          "application", application,
                          NULL);
+}
+
+void
+store_window_set_cache (StoreWindow *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_WINDOW (self));
+
+    g_set_object (&self->cache, cache);
+
+    store_app_page_set_cache (self->app_page, cache);
+    store_home_page_set_cache (self->home_page, cache);
+}
+
+void
+store_window_load (StoreWindow *self)
+{
+    g_return_if_fail (STORE_IS_WINDOW (self));
+
+    store_home_page_load (self->home_page);
 }

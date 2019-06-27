@@ -11,6 +11,7 @@
 #include <glib/gi18n.h>
 
 #include "store-application.h"
+#include "store-cache.h"
 #include "store-window.h"
 
 struct _StoreApplication
@@ -19,6 +20,7 @@ struct _StoreApplication
 
     StoreWindow *window;
 
+    StoreCache *cache;
     GtkCssProvider *css_provider;
 };
 
@@ -28,6 +30,8 @@ static void
 store_application_dispose (GObject *object)
 {
     StoreApplication *self = STORE_APPLICATION (object);
+
+    g_clear_object (&self->cache);
     g_clear_object (&self->css_provider);
 
     G_OBJECT_CLASS (store_application_parent_class)->dispose (object);
@@ -42,6 +46,11 @@ theme_changed_cb (StoreApplication *self)
 static gint
 store_application_handle_local_options (GApplication *application, GVariantDict *options)
 {
+    StoreApplication *self = STORE_APPLICATION (application);
+
+    if (g_variant_dict_contains (options, "no-cache"))
+        g_clear_object (&self->cache);
+
     if (g_variant_dict_contains (options, "version")) {
         g_print ("snap-store " VERSION "\n");
         return 0;
@@ -58,6 +67,8 @@ store_application_startup (GApplication *application)
     G_APPLICATION_CLASS (store_application_parent_class)->startup (application);
 
     self->window = store_window_new (self);
+    store_window_set_cache (self->window, self->cache);
+    store_window_load (self->window);
 
     self->css_provider = gtk_css_provider_new ();
     gtk_style_context_add_provider_for_screen (gdk_screen_get_default (), GTK_STYLE_PROVIDER (self->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -85,11 +96,18 @@ static void
 store_application_init (StoreApplication *self)
 {
     const GOptionEntry options[] = {
-        { "version", 0, 0, G_OPTION_ARG_NONE, NULL, _("Show version number"), NULL },
+        { "version", 0, 0, G_OPTION_ARG_NONE, NULL,
+           /* Help text for --version command line option */
+           _("Show version number"), NULL },
+        { "no-cache", 0, 0, G_OPTION_ARG_NONE, NULL,
+           /* Help text for --no-cache command line option */
+           _("Disable caching"), NULL },
         { NULL }
     };
 
     g_application_add_main_option_entries (G_APPLICATION (self), options);
+
+    self->cache = store_cache_new ();
 }
 
 StoreApplication *
