@@ -45,9 +45,28 @@
     color: #007aa6;
 }
 
+.app-tile-box {
+    border-radius: 3px;
+    border: solid 1px #e0e0e0;
+    padding: 16px;
+}
+
+.app-tile-name-label {
+    font-family: Ubuntu-Light;
+    font-size: 21px;
+    color: #007aa6;
+}
+
 .app-tile-publisher-label {
     font-family: Ubuntu-Light;
-    opacity: 0.5;
+    font-size: 14px;
+    color: #4a4a4a;
+}
+
+.app-tile-summary-label {
+    font-family: Ubuntu-Light;
+    font-size: 14px;
+    color: #111111;
 }
 
 .category-title-label {
@@ -86,7 +105,15 @@
 }
 
 .review-description-label {
+    font-family: Ubuntu-Light;
+    font-size: 16px;
 }
 
 .review-summary-label {
+    font-family: Ubuntu;
+    font-size: 18px;
+}
+
+.store-window {
+    background: #ffffff;
 }

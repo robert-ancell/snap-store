@@ -26,8 +26,8 @@
             <property name="visible">True</property>
             <property name="min-children-per-line">3</property>
             <property name="max-children-per-line">3</property>
-            <property name="column-spacing">40</property>
-            <property name="row-spacing">40</property>
+            <property name="column-spacing">20</property>
+            <property name="row-spacing">20</property>
             <property name="homogeneous">True</property>
             <property name="activate-on-single-click">True</property>
             <property name="selection-mode">none</property>

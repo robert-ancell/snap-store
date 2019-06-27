@@ -10,6 +10,7 @@
 #include "store-app-tile.h"
 
 #include "store-image.h"
+#include "store-rating-label.h"
 
 struct _StoreAppTile
 {
@@ -19,6 +20,7 @@ struct _StoreAppTile
     GtkLabel *name_label;
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
+    StoreRatingLabel *rating_label;
     GtkLabel *summary_label;
 
     StoreApp *app;
@@ -46,6 +48,7 @@ store_app_tile_class_init (StoreAppTileClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, name_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, publisher_validated_image);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, rating_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, summary_label);
 }
 
@@ -53,6 +56,7 @@ static void
 store_app_tile_init (StoreAppTile *self)
 {
     store_image_get_type ();
+    store_rating_label_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 

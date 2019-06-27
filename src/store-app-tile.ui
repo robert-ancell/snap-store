@@ -6,6 +6,9 @@
         <property name="visible">True</property>
         <property name="orientation">horizontal</property>
         <property name="spacing">16</property>
+        <style>
+          <class name="app-tile-box"/>
+        </style>
         <child>
           <object class="StoreImage" id="icon_image">
             <property name="visible">True</property>
@@ -58,6 +61,12 @@
                         </style>
                       </object>
                     </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="StoreRatingLabel" id="rating_label">
+                    <property name="visible">True</property>
+                    <property name="halign">start</property>
                   </object>
                 </child>
               </object>
