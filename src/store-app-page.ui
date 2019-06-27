@@ -9,7 +9,6 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="expand">True</property>
-            <property name="spacing">36</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -103,103 +102,115 @@
             <child>
               <object class="StoreScreenshotView" id="screenshot_view">
                 <property name="visible">True</property>
+                <style>
+                  <class name="app-page-screenshot-view"/>
+                </style>
               </object>
             </child>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="orientation">horizontal</property>
-                <property name="spacing">18</property>
+                <property name="orientation">vertical</property>
                 <style>
-                  <class name="app-page-details-box"/>
+                  <class name="app-page-content-box"/>
                 </style>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="orientation">vertical</property>
-                    <property name="hexpand">True</property>
-                    <property name="spacing">30</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">18</property>
+                    <style>
+                      <class name="app-page-details-box"/>
+                    </style>
                     <child>
-                      <object class="GtkLabel" id="summary_label">
+                      <object class="GtkBox">
                         <property name="visible">True</property>
-                        <property name="halign">start</property>
-                        <property name="xalign">0</property>
-                        <property name="wrap">True</property>
-                        <style>
-                          <class name="app-page-summary-label"/>
-                        </style>
+                        <property name="orientation">vertical</property>
+                        <property name="hexpand">True</property>
+                        <property name="spacing">30</property>
+                        <child>
+                          <object class="GtkLabel" id="summary_label">
+                            <property name="visible">True</property>
+                            <property name="halign">start</property>
+                            <property name="xalign">0</property>
+                            <property name="wrap">True</property>
+                            <style>
+                              <class name="app-page-summary-label"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="description_label">
+                            <property name="visible">True</property>
+                            <property name="halign">start</property>
+                            <property name="xalign">0</property>
+                            <property name="vexpand">True</property>
+                            <property name="valign">start</property>
+                            <property name="wrap">True</property>
+                            <style>
+                              <class name="app-page-description-label"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="contact_label">
+                            <property name="visible">False</property>
+                            <property name="halign">start</property>
+                            <property name="xalign">0</property>
+                            <property name="use-markup">True</property>
+                            <signal name="activate-link" handler="contact_link_cb" object="StoreAppPage" swapped="yes"/>
+                            <style>
+                              <class name="app-page-contact-label"/>
+                            </style>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="description_label">
+                      <object class="GtkBox">
                         <property name="visible">True</property>
-                        <property name="halign">start</property>
-                        <property name="xalign">0</property>
-                        <property name="vexpand">True</property>
-                        <property name="valign">start</property>
-                        <property name="wrap">True</property>
-                        <style>
-                          <class name="app-page-description-label"/>
-                        </style>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="contact_label">
-                        <property name="visible">False</property>
-                        <property name="halign">start</property>
-                        <property name="xalign">0</property>
-                        <property name="use-markup">True</property>
-                        <signal name="activate-link" handler="contact_link_cb" object="StoreAppPage" swapped="yes"/>
-                        <style>
-                          <class name="app-page-contact-label"/>
-                        </style>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="details_title_label">
+                            <property name="visible">True</property>
+                            <style>
+                              <class name="app-page-details-title-label"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="margin-top">18</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes" comments="Label above license information on app page">License</property>
+                            <style>
+                              <class name="app-page-details-heading-label"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="license_label">
+                            <property name="visible">True</property>
+                            <property name="margin-top">10</property>
+                            <property name="margin-left">10</property>
+                            <property name="xalign">0</property>
+                            <style>
+                              <class name="app-page-details-value-label"/>
+                            </style>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
+                  <object class="GtkBox" id="reviews_box">
+                    <property name="visible">False</property>
                     <property name="orientation">vertical</property>
-                    <child>
-                      <object class="GtkLabel" id="details_title_label">
-                        <property name="visible">True</property>
-                        <style>
-                          <class name="app-page-details-title-label"/>
-                        </style>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="margin-top">18</property>
-                        <property name="xalign">0</property>
-                        <property name="label" translatable="yes" comments="Label above license information on app page">License</property>
-                        <style>
-                          <class name="app-page-details-heading-label"/>
-                        </style>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="license_label">
-                        <property name="visible">True</property>
-                        <property name="margin-top">10</property>
-                        <property name="margin-left">10</property>
-                        <property name="xalign">0</property>
-                        <style>
-                          <class name="app-page-details-value-label"/>
-                        </style>
-                      </object>
-                    </child>
+                    <property name="spacing">24</property>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox" id="reviews_box">
-                <property name="visible">False</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">24</property>
               </object>
             </child>
           </object>

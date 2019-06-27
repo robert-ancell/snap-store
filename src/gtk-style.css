@@ -5,11 +5,14 @@
     font-size: 16px;
 }
 
-.app-page-details-box {
+.app-page-content-box {
     padding-top: 40px;
     padding-bottom: 40px;
     padding-left: 128px;
     padding-right: 128px;
+}
+
+.app-page-details-box {
 }
 
 .app-page-details-heading-label {
@@ -33,6 +36,14 @@
 
 .app-page-publisher-label {
     font-size: 14px;
+}
+
+.app-page-screenshot-view {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 128px;
+    padding-right: 128px;
+    background: #f7f7f7;
 }
 
 .app-page-summary-label {
@@ -90,18 +101,14 @@
 .rating-label {
 }
 
-.review-author-label {
-    opacity: 0.5;
-}
-
 .review-box {
-    padding: 18px;
-    background-color: white;
-    box-shadow: gray 3px 3px 3px;
 }
 
-.review-date-label {
+.review-author-date-label {
+    font-family: Ubuntu-Light;
+    font-size: 14px;
     opacity: 0.5;
+    color: #111111;
 }
 
 .review-description-label {
@@ -111,7 +118,7 @@
 
 .review-summary-label {
     font-family: Ubuntu;
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .store-window {

@@ -9,7 +9,7 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="orientation">horizontal</property>
-        <property name="spacing">20</property>
+        <property name="spacing">32</property>
         <child>
           <object class="StoreRatingLabel" id="rating_label">
             <property name="visible">True</property>
@@ -27,25 +27,16 @@
             </style>
           </object>
         </child>
-        <child>
-          <object class="GtkLabel" id="date_label">
-            <property name="visible">True</property>
-            <property name="halign">end</property>
-            <style>
-              <class name="review-date-label"/>
-            </style>
-          </object>
-        </child>
       </object>
     </child>
     <child>
-      <object class="GtkLabel" id="author_label">
+      <object class="GtkLabel" id="author_date_label">
         <property name="visible">True</property>
         <property name="halign">start</property>
         <property name="ellipsize">end</property>
         <property name="margin-top">5</property>
         <style>
-          <class name="review-author-label"/>
+          <class name="review-author-date-label"/>
         </style>
       </object>
     </child>
