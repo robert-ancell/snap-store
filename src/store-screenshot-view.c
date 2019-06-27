@@ -83,6 +83,7 @@ store_screenshot_view_set_app (StoreScreenshotView *self, StoreApp *app)
     g_set_object (&self->app, app);
 
     GPtrArray *screenshots = store_app_get_screenshots (app);
+    store_image_set_uri (self->selected_image, NULL);
     if (screenshots->len >= 1) {
         StoreMedia *screenshot = g_ptr_array_index (screenshots, 0);
         store_image_set_uri (self->selected_image, store_media_get_uri (screenshot));
