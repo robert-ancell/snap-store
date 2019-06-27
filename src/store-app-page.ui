@@ -101,16 +101,8 @@
               </object>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="StoreScreenshotView" id="screenshot_view">
                 <property name="visible">True</property>
-                <property name="vscrollbar-policy">never</property>
-                <child>
-                  <object class="GtkBox" id="screenshots_box">
-                    <property name="visible">False</property>
-                    <property name="orientation">horizontal</property>
-                    <property name="spacing">20</property>
-                  </object>
-                </child>
               </object>
             </child>
             <child>

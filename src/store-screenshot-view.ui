@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="StoreScreenshotView" parent="GtkBox">
+    <child>
+      <object class="GtkScrolledWindow">
+        <property name="visible">True</property>
+        <property name="vscrollbar-policy">never</property>
+        <child>
+          <object class="GtkBox" id="screenshots_box">
+            <property name="visible">False</property>
+            <property name="orientation">horizontal</property>
+            <property name="hexpand">True</property>
+            <property name="spacing">20</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

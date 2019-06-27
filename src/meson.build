@@ -26,6 +26,7 @@ exe = executable('snap-store',
                    'store-odrs-review.c',
                    'store-rating-label.c',
                    'store-review-view.c',
+                   'store-screenshot-view.c',
                    'store-snap-app.c',
                    'store-snap-pool.c',
                    'store-window.c'

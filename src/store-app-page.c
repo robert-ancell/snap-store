@@ -18,6 +18,7 @@
 #include "store-odrs-client.h"
 #include "store-rating-label.h"
 #include "store-review-view.h"
+#include "store-screenshot-view.h"
 
 struct _StoreAppPage
 {
@@ -34,7 +35,7 @@ struct _StoreAppPage
     GtkImage *publisher_validated_image;
     StoreRatingLabel *rating_label;
     GtkBox *reviews_box;
-    GtkBox *screenshots_box;
+    StoreScreenshotView *screenshot_view;
     GtkLabel *summary_label;
     GtkLabel *title_label;
 
@@ -150,7 +151,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, rating_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshots_box);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshot_view);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, title_label);
 
@@ -164,6 +165,7 @@ store_app_page_init (StoreAppPage *self)
     store_image_get_type ();
     store_install_button_get_type ();
     store_rating_label_get_type ();
+    store_screenshot_view_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 
@@ -190,9 +192,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     if (self->app == app)
         return;
 
-    g_clear_object (&self->app);
-    if (app != NULL)
-        self->app = g_object_ref (app);
+    g_set_object (&self->app, app);
 
     g_cancellable_cancel (self->cancellable);
     self->cancellable = g_cancellable_new ();
@@ -245,27 +245,8 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     store_odrs_client_get_reviews_async (odrs_client, store_app_get_appstream_id (app), NULL, 0, NULL, reviews_cb, self);
     g_steal_pointer (&odrs_client); // FIXME leaks for testing, remove when async call keeps reference
 
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->screenshots_box));
-    for (GList *link = children; link != NULL; link = link->next) {
-        GtkWidget *child = link->data;
-        gtk_container_remove (GTK_CONTAINER (self->screenshots_box), child);
-    }
-    GPtrArray *screenshots = store_app_get_screenshots (app);
-    for (guint i = 0; i < screenshots->len; i++) {
-        StoreMedia *screenshot = g_ptr_array_index (screenshots, i);
-        StoreImage *image = store_image_new ();
-        gtk_widget_show (GTK_WIDGET (image));
-        store_image_set_cache (image, self->cache);
-        store_image_set_uri (image, store_media_get_uri (screenshot));
-        guint width, height = 500;
-        if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)
-            width = store_media_get_width (screenshot) * height / store_media_get_height (screenshot);
-        else
-            width = height;
-        store_image_set_size (image, width, height);
-        gtk_container_add (GTK_CONTAINER (self->screenshots_box), GTK_WIDGET (image));
-    }
-    gtk_widget_set_visible (GTK_WIDGET (self->screenshots_box), screenshots->len > 0);
+    store_screenshot_view_set_app (self->screenshot_view, app);
+    // FXME? gtk_widget_set_visible (GTK_WIDGET (self->screenshot_view), screenshots->len > 0);
 }
 
 StoreApp *
