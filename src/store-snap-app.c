@@ -236,8 +236,8 @@ is_screenshot (SnapdMedia *media)
         return FALSE;
 
     /* Hide special legacy promotion screenshots */
-    const gchar *url = snapd_media_get_url (media);
-    g_autofree gchar *basename = g_path_get_basename (url);
+    const gchar *uri = snapd_media_get_url (media);
+    g_autofree gchar *basename = g_path_get_basename (uri);
     if (g_regex_match_simple ("^banner(?:_[a-zA-Z0-9]{7})?\\.(?:png|jpg)$", basename, 0, 0))
         return FALSE;
     if (g_regex_match_simple ("^banner-icon(?:_[a-zA-Z0-9]{7})?\\.(?:png|jpg)$", basename, 0, 0))
@@ -295,14 +295,14 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
         SnapdMedia *m = g_ptr_array_index (media, i);
         if (g_strcmp0 (snapd_media_get_media_type (m), "icon") == 0 && store_app_get_icon (STORE_APP (self)) == NULL) {
             g_autoptr(StoreMedia) icon = store_media_new ();
-            store_media_set_url (icon, snapd_media_get_url (m));
+            store_media_set_uri (icon, snapd_media_get_url (m));
             store_media_set_width (icon, snapd_media_get_width (m));
             store_media_set_height (icon, snapd_media_get_height (m));
             store_app_set_icon (STORE_APP (self), icon);
         }
         else if (is_screenshot (m)) {
             g_autoptr(StoreMedia) screenshot = store_media_new ();
-            store_media_set_url (screenshot, snapd_media_get_url (m));
+            store_media_set_uri (screenshot, snapd_media_get_url (m));
             store_media_set_width (screenshot, snapd_media_get_width (m));
             store_media_set_height (screenshot, snapd_media_get_height (m));
             g_ptr_array_add (screenshots, g_steal_pointer (&screenshot));

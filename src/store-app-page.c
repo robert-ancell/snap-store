@@ -115,7 +115,7 @@ contact_link_cb (StoreAppPage *self, const gchar *uri)
 {
     g_autoptr(GError) error = NULL;
     if (!gtk_show_uri_on_window (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (self))), uri, GDK_CURRENT_TIME, &error))
-        g_warning ("Failed to show contact URL %s: %s", uri, error->message);
+        g_warning ("Failed to show contact URI %s: %s", uri, error->message);
 }
 
 static void
@@ -203,9 +203,9 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_autofree gchar *details_title = g_strdup_printf (/* Label above details on app page. The %s is replaced with the title of the snap */
                                                        _("Details for %s"), store_app_get_title (app));
     gtk_label_set_label (self->details_title_label, details_title);
-    store_image_set_url (self->icon_image, NULL); // FIXME: Hack to reset icon
+    store_image_set_uri (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
-        store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
+        store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));
 
     if (store_app_get_contact (app) != NULL) {
         g_autofree gchar *contact_label = g_strdup_printf (/* Link shown below app description to contact app publisher. The %s is replaced with the publisher name. */
@@ -252,7 +252,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
         StoreImage *image = store_image_new ();
         gtk_widget_show (GTK_WIDGET (image));
         store_image_set_cache (image, self->cache);
-        store_image_set_url (image, store_media_get_url (screenshot));
+        store_image_set_uri (image, store_media_get_uri (screenshot));
         guint width, height = 500;
         if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)
             width = store_media_get_width (screenshot) * height / store_media_get_height (screenshot);

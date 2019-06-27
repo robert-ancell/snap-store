@@ -30,8 +30,8 @@ void         store_media_set_width     (StoreMedia *media, guint width);
 
 guint        store_media_get_width     (StoreMedia *media);
 
-void         store_media_set_url       (StoreMedia *media, const gchar *url);
+void         store_media_set_uri       (StoreMedia *media, const gchar *uri);
 
-const gchar *store_media_get_url       (StoreMedia *media);
+const gchar *store_media_get_uri       (StoreMedia *media);
 
 G_END_DECLS

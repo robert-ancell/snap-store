@@ -22,7 +22,7 @@ struct _StoreImage
     guint height;
     guint width;
     SoupSession *session;
-    gchar *url;
+    gchar *uri;
 };
 
 G_DEFINE_TYPE (StoreImage, store_image, GTK_TYPE_IMAGE)
@@ -53,7 +53,7 @@ process_image (StoreImage *self, GBytes *data)
     g_autoptr(GError) error = NULL;
     if (!gdk_pixbuf_loader_write_bytes (loader, data, &error) ||
         !gdk_pixbuf_loader_close (loader, &error)) {
-        g_warning ("Failed to decode image %s: %s", self->url, error->message);
+        g_warning ("Failed to decode image %s: %s", self->uri, error->message);
         return FALSE;
     }
 
@@ -71,7 +71,7 @@ read_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     if (data == NULL) {
         if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
             return;
-        g_warning ("Failed to download image %s: %s", self->url, error->message);
+        g_warning ("Failed to download image %s: %s", self->uri, error->message);
         return;
     }
 
@@ -92,7 +92,7 @@ read_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 
     /* Save in cache */
     if (self->cache != NULL && used)
-        store_cache_insert (self->cache, "images", self->url, TRUE, full_data, self->cancellable, NULL); // FIXME: Report error?
+        store_cache_insert (self->cache, "images", self->uri, TRUE, full_data, self->cancellable, NULL); // FIXME: Report error?
 
     g_clear_pointer (&self->buffer, g_byte_array_unref);
 }
@@ -143,7 +143,7 @@ store_image_dispose (GObject *object)
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
     g_clear_object (&self->session);
-    g_clear_pointer (&self->url, g_free);
+    g_clear_pointer (&self->uri, g_free);
 
     G_OBJECT_CLASS (store_image_parent_class)->dispose (object);
 }
@@ -189,17 +189,17 @@ store_image_set_size (StoreImage *self, guint width, guint height)
     g_return_if_fail (STORE_IS_IMAGE (self));
     self->width = width;
     self->height = height;
-    store_image_set_url (self, self->url);
+    store_image_set_uri (self, self->uri);
 }
 
 void
-store_image_set_url (StoreImage *self, const gchar *url)
+store_image_set_uri (StoreImage *self, const gchar *uri)
 {
     g_return_if_fail (STORE_IS_IMAGE (self));
 
-    if (url != self->url) {
-        g_free (self->url);
-        self->url = g_strdup (url);
+    if (uri != self->uri) {
+        g_free (self->uri);
+        self->uri = g_strdup (uri);
     }
 
     /* Cancel existing operation */
@@ -207,7 +207,7 @@ store_image_set_url (StoreImage *self, const gchar *url)
     g_clear_object (&self->cancellable);
     self->cancellable = g_cancellable_new ();
 
-    if (url == NULL || g_strcmp0 (url, "") == 0) {
+    if (uri == NULL || g_strcmp0 (uri, "") == 0) {
         g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/io/snapcraft/Store/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
         gtk_image_set_from_pixbuf (GTK_IMAGE (self), pixbuf);
         return;
@@ -216,7 +216,7 @@ store_image_set_url (StoreImage *self, const gchar *url)
     g_clear_pointer (&self->buffer, g_byte_array_unref);
     self->buffer = g_byte_array_new ();
 
-    g_autoptr(SoupMessage) message = soup_message_new ("GET", url);
+    g_autoptr(SoupMessage) message = soup_message_new ("GET", uri);
     soup_session_send_async (self->session, message, self->cancellable, send_cb, self);
 
     /* Load cached version */
@@ -224,6 +224,6 @@ store_image_set_url (StoreImage *self, const gchar *url)
         g_cancellable_cancel (self->cache_cancellable);
         g_clear_object (&self->cache_cancellable);
         self->cache_cancellable = g_cancellable_new ();
-        store_cache_lookup_async (self->cache, "images", url, TRUE, self->cache_cancellable, cache_cb, self);
+        store_cache_lookup_async (self->cache, "images", uri, TRUE, self->cache_cancellable, cache_cb, self);
     }
 }

@@ -26,6 +26,6 @@ void        store_image_set_session (StoreImage *image, SoupSession *session);
 
 void        store_image_set_size    (StoreImage *image, guint width, guint height);
 
-void        store_image_set_url     (StoreImage *image, const gchar *url);
+void        store_image_set_uri     (StoreImage *image, const gchar *uri);
 
 G_END_DECLS

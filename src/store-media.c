@@ -15,7 +15,7 @@ struct _StoreMedia
 
     guint height;
     guint width;
-    gchar *url;
+    gchar *uri;
 };
 
 G_DEFINE_TYPE (StoreMedia, store_media, G_TYPE_OBJECT)
@@ -25,7 +25,7 @@ store_media_dispose (GObject *object)
 {
     StoreMedia *self = STORE_MEDIA (object);
 
-    g_clear_pointer (&self->url, g_free);
+    g_clear_pointer (&self->uri, g_free);
 
     G_OBJECT_CLASS (store_media_parent_class)->dispose (object);
 }
@@ -39,7 +39,7 @@ store_media_class_init (StoreMediaClass *klass)
 static void
 store_media_init (StoreMedia *self)
 {
-    self->url = g_strdup ("");
+    self->uri = g_strdup ("");
 }
 
 StoreMedia *
@@ -56,7 +56,8 @@ store_media_new_from_json (JsonNode *node)
     JsonObject *object = json_node_get_object (node);
     if (json_object_has_member (object, "height"))
         store_media_set_height (self, json_object_get_int_member (object, "height"));
-    store_media_set_url (self, json_object_get_string_member (object, "url"));
+    if (json_object_has_member (object, "uri"))
+        store_media_set_uri (self, json_object_get_string_member (object, "uri"));
     if (json_object_has_member (object, "width"))
         store_media_set_width (self, json_object_get_int_member (object, "width"));
 
@@ -74,8 +75,8 @@ store_media_to_json (StoreMedia *self)
         json_builder_set_member_name (builder, "height");
         json_builder_add_int_value (builder, self->height);
     }
-    json_builder_set_member_name (builder, "url");
-    json_builder_add_string_value (builder, self->url);
+    json_builder_set_member_name (builder, "uri");
+    json_builder_add_string_value (builder, self->uri);
     if (self->width > 0) {
         json_builder_set_member_name (builder, "width");
         json_builder_add_int_value (builder, self->width);
@@ -114,16 +115,16 @@ store_media_get_width (StoreMedia *self)
 }
 
 void
-store_media_set_url (StoreMedia *self, const gchar *url)
+store_media_set_uri (StoreMedia *self, const gchar *uri)
 {
     g_return_if_fail (STORE_IS_MEDIA (self));
-    g_clear_pointer (&self->url, g_free);
-    self->url = g_strdup (url);
+    g_clear_pointer (&self->uri, g_free);
+    self->uri = g_strdup (uri);
 }
 
 const gchar *
-store_media_get_url (StoreMedia *self)
+store_media_get_uri (StoreMedia *self)
 {
     g_return_val_if_fail (STORE_IS_MEDIA (self), NULL);
-    return self->url;
+    return self->uri;
 }

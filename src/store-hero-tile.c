@@ -108,9 +108,9 @@ store_hero_tile_set_app (StoreHeroTile *self, StoreApp *app)
     g_autofree gchar *title = g_utf8_strup (store_app_get_title (app), -1);
     gtk_label_set_label (self->title_label, title);
     gtk_label_set_label (self->summary_label, store_app_get_summary (app));
-    store_image_set_url (self->icon_image, NULL); // FIXME: Hack to reset icon
+    store_image_set_uri (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
-        store_image_set_url (self->icon_image, store_media_get_url (store_app_get_icon (app)));
+        store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));
 }
 
 StoreApp *
