@@ -7,6 +7,9 @@
  * (at your option) any later version.
  */
 
+#include <config.h>
+#include <glib/gi18n.h>
+
 #include "store-application.h"
 #include "store-window.h"
 
@@ -36,6 +39,17 @@ theme_changed_cb (StoreApplication *self)
     gtk_css_provider_load_from_resource (self->css_provider, "/io/snapcraft/Store/gtk-style.css");
 }
 
+static gint
+store_application_handle_local_options (GApplication *application, GVariantDict *options)
+{
+    if (g_variant_dict_contains (options, "version")) {
+        g_print ("snap-store " VERSION "\n");
+        return 0;
+    }
+
+    return -1;
+}
+
 static void
 store_application_startup (GApplication *application)
 {
@@ -62,13 +76,20 @@ static void
 store_application_class_init (StoreApplicationClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_application_dispose;
+    G_APPLICATION_CLASS (klass)->handle_local_options = store_application_handle_local_options;
     G_APPLICATION_CLASS (klass)->startup = store_application_startup;
     G_APPLICATION_CLASS (klass)->activate = store_application_activate;
 }
 
 static void
-store_application_init (StoreApplication *self G_GNUC_UNUSED)
+store_application_init (StoreApplication *self)
 {
+    const GOptionEntry options[] = {
+        { "version", 0, 0, G_OPTION_ARG_NONE, NULL, _("Show version number"), NULL },
+        { NULL }
+    };
+
+    g_application_add_main_option_entries (G_APPLICATION (self), options);
 }
 
 StoreApplication *

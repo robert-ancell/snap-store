@@ -1,5 +1,6 @@
 src/store-app-page.c
 src/store-app-page.ui
+src/store-application.c
 src/store-home-page.c
 src/store-install-button.ui
 src/store-window.ui
