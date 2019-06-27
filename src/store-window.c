@@ -11,6 +11,7 @@
 
 #include "store-app-page.h"
 #include "store-home-page.h"
+#include "store-snap-pool.h"
 
 struct _StoreWindow
 {
@@ -29,9 +30,7 @@ G_DEFINE_TYPE (StoreWindow, store_window, GTK_TYPE_APPLICATION_WINDOW)
 static void
 app_activated_cb (StoreWindow *self, StoreApp *app)
 {
-    store_app_page_set_app (self->app_page, app);
-    gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->app_page));
-    gtk_widget_show (GTK_WIDGET (self->back_button));
+    store_window_show_app (self, app);
 }
 
 static void
@@ -42,8 +41,20 @@ back_button_clicked_cb (StoreWindow *self)
 }
 
 static void
+store_window_dispose (GObject *object)
+{
+    StoreWindow *self = STORE_WINDOW (object);
+
+    g_clear_object (&self->cache);
+
+    G_OBJECT_CLASS (store_window_parent_class)->dispose (object);
+}
+
+static void
 store_window_class_init (StoreWindowClass *klass)
 {
+    G_OBJECT_CLASS (klass)->dispose = store_window_dispose;
+
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-window.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, app_page);
@@ -85,9 +96,26 @@ store_window_set_cache (StoreWindow *self, StoreCache *cache)
 }
 
 void
+store_window_set_snap_pool (StoreWindow *self, StoreSnapPool *pool)
+{
+    g_return_if_fail (STORE_IS_WINDOW (self));
+    store_home_page_set_snap_pool (self->home_page, pool);
+}
+
+void
 store_window_load (StoreWindow *self)
 {
     g_return_if_fail (STORE_IS_WINDOW (self));
 
     store_home_page_load (self->home_page);
+}
+
+void
+store_window_show_app (StoreWindow *self, StoreApp *app)
+{
+    g_return_if_fail (STORE_IS_WINDOW (self));
+
+    store_app_page_set_app (self->app_page, app);
+    gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->app_page));
+    gtk_widget_show (GTK_WIDGET (self->back_button));
 }

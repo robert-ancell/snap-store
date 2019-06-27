@@ -12,7 +12,6 @@
 
 #include "store-home-page.h"
 
-#include "store-snap-pool.h"
 #include "store-category-view.h"
 
 struct _StoreHomePage
@@ -119,6 +118,7 @@ static void
 store_home_page_dispose (GObject *object)
 {
     StoreHomePage *self = STORE_HOME_PAGE (object);
+
     g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
@@ -417,7 +417,6 @@ static void
 store_home_page_init (StoreHomePage *self)
 {
     self->cancellable = g_cancellable_new ();
-    self->snap_pool = store_snap_pool_new (); // FIXME: Move into application class
 
     store_category_view_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
@@ -443,6 +442,13 @@ store_home_page_set_cache (StoreHomePage *self, StoreCache *cache)
         StoreCategoryView *view = link->data;
         store_category_view_set_cache (view, cache);
     }
+}
+
+void
+store_home_page_set_snap_pool (StoreHomePage *self, StoreSnapPool *pool)
+{
+    g_return_if_fail (STORE_IS_HOME_PAGE (self));
+    g_set_object (&self->snap_pool, pool);
 }
 
 void

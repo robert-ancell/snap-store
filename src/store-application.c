@@ -12,6 +12,7 @@
 
 #include "store-application.h"
 #include "store-cache.h"
+#include "store-snap-pool.h"
 #include "store-window.h"
 
 struct _StoreApplication
@@ -22,6 +23,7 @@ struct _StoreApplication
 
     StoreCache *cache;
     GtkCssProvider *css_provider;
+    StoreSnapPool *snap_pool;
 };
 
 G_DEFINE_TYPE (StoreApplication, store_application, GTK_TYPE_APPLICATION)
@@ -33,6 +35,7 @@ store_application_dispose (GObject *object)
 
     g_clear_object (&self->cache);
     g_clear_object (&self->css_provider);
+    g_clear_object (&self->snap_pool);
 
     G_OBJECT_CLASS (store_application_parent_class)->dispose (object);
 }
@@ -43,10 +46,12 @@ theme_changed_cb (StoreApplication *self)
     gtk_css_provider_load_from_resource (self->css_provider, "/io/snapcraft/Store/gtk-style.css");
 }
 
-static gint
-store_application_handle_local_options (GApplication *application, GVariantDict *options)
+static int
+store_application_command_line (GApplication *application, GApplicationCommandLine *command_line)
 {
     StoreApplication *self = STORE_APPLICATION (application);
+
+    GVariantDict *options = g_application_command_line_get_options_dict (command_line);
 
     if (g_variant_dict_contains (options, "no-cache"))
         g_clear_object (&self->cache);
@@ -55,6 +60,15 @@ store_application_handle_local_options (GApplication *application, GVariantDict 
         g_print ("snap-store " VERSION "\n");
         return 0;
     }
+
+    int args_length;
+    g_auto(GStrv) args = g_application_command_line_get_arguments (command_line, &args_length);
+    if (args_length >= 2) {
+        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, args[1]);
+        store_window_show_app (self->window, STORE_APP (app));
+    }
+
+    gtk_window_present (GTK_WINDOW (self->window));
 
     return -1;
 }
@@ -68,6 +82,7 @@ store_application_startup (GApplication *application)
 
     self->window = store_window_new (self);
     store_window_set_cache (self->window, self->cache);
+    store_window_set_snap_pool (self->window, self->snap_pool);
     store_window_load (self->window);
 
     self->css_provider = gtk_css_provider_new ();
@@ -87,7 +102,7 @@ static void
 store_application_class_init (StoreApplicationClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_application_dispose;
-    G_APPLICATION_CLASS (klass)->handle_local_options = store_application_handle_local_options;
+    G_APPLICATION_CLASS (klass)->command_line = store_application_command_line;
     G_APPLICATION_CLASS (klass)->startup = store_application_startup;
     G_APPLICATION_CLASS (klass)->activate = store_application_activate;
 }
@@ -108,6 +123,7 @@ store_application_init (StoreApplication *self)
     g_application_add_main_option_entries (G_APPLICATION (self), options);
 
     self->cache = store_cache_new ();
+    self->snap_pool = store_snap_pool_new ();
 }
 
 StoreApplication *
@@ -115,5 +131,6 @@ store_application_new (void)
 {
     return g_object_new (store_application_get_type (),
                          "application-id", "io.snapcraft.Store",
+                         "flags", G_APPLICATION_HANDLES_COMMAND_LINE,
                          NULL);
 }
