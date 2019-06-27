@@ -12,11 +12,15 @@
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
+#include "store-cache.h"
+
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreImage, store_image, STORE, IMAGE, GtkImage)
 
 StoreImage *store_image_new         (void);
+
+void        store_image_set_cache   (StoreImage *image, StoreCache *cache);
 
 void        store_image_set_session (StoreImage *image, SoupSession *session);
 

@@ -17,10 +17,12 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreAppTile, store_app_tile, STORE, APP_TILE, GtkFlowBoxChild)
 
-StoreAppTile *store_app_tile_new     (void);
+StoreAppTile *store_app_tile_new       (void);
 
-void          store_app_tile_set_app (StoreAppTile *tile, StoreApp *app);
+void          store_app_tile_set_cache (StoreAppTile *tile, StoreCache *cache);
 
-StoreApp     *store_app_tile_get_app (StoreAppTile *tile);
+void          store_app_tile_set_app   (StoreAppTile *tile, StoreApp *app);
+
+StoreApp     *store_app_tile_get_app   (StoreAppTile *tile);
 
 G_END_DECLS

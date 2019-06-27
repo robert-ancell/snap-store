@@ -28,42 +28,6 @@ struct _StoreImage
 G_DEFINE_TYPE (StoreImage, store_image, GTK_TYPE_IMAGE)
 
 static void
-store_image_dispose (GObject *object)
-{
-    StoreImage *self = STORE_IMAGE (object);
-    g_clear_pointer (&self->buffer, g_byte_array_unref);
-    g_clear_object (&self->cache);
-    g_cancellable_cancel (self->cache_cancellable);
-    g_clear_object (&self->cache_cancellable);
-    g_cancellable_cancel (self->cancellable);
-    g_clear_object (&self->cancellable);
-    g_clear_object (&self->session);
-    g_clear_pointer (&self->url, g_free);
-
-    G_OBJECT_CLASS (store_image_parent_class)->dispose (object);
-}
-
-static void
-store_image_class_init (StoreImageClass *klass)
-{
-    G_OBJECT_CLASS (klass)->dispose = store_image_dispose;
-}
-
-static void
-store_image_init (StoreImage *self)
-{
-    self->cache = store_cache_new (); // FIXME: Make shared?
-    self->session = soup_session_new ();
-    store_image_set_size (self, 64, 64); // FIXME: Hard-coded
-}
-
-StoreImage *
-store_image_new (void)
-{
-    return g_object_new (store_image_get_type (), NULL);
-}
-
-static void
 image_size_cb (StoreImage *self, gint width, gint height, GdkPixbufLoader *loader)
 {
     gint w, h;
@@ -127,7 +91,7 @@ read_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     gboolean used = process_image (self, full_data);
 
     /* Save in cache */
-    if (used)
+    if (self->cache != NULL && used)
         store_cache_insert (self->cache, "images", self->url, TRUE, full_data, self->cancellable, NULL); // FIXME: Report error?
 
     g_clear_pointer (&self->buffer, g_byte_array_unref);
@@ -166,6 +130,48 @@ cache_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
 
     process_image (self, data);
+}
+
+static void
+store_image_dispose (GObject *object)
+{
+    StoreImage *self = STORE_IMAGE (object);
+    g_clear_pointer (&self->buffer, g_byte_array_unref);
+    g_clear_object (&self->cache);
+    g_cancellable_cancel (self->cache_cancellable);
+    g_clear_object (&self->cache_cancellable);
+    g_cancellable_cancel (self->cancellable);
+    g_clear_object (&self->cancellable);
+    g_clear_object (&self->session);
+    g_clear_pointer (&self->url, g_free);
+
+    G_OBJECT_CLASS (store_image_parent_class)->dispose (object);
+}
+
+static void
+store_image_class_init (StoreImageClass *klass)
+{
+    G_OBJECT_CLASS (klass)->dispose = store_image_dispose;
+}
+
+static void
+store_image_init (StoreImage *self)
+{
+    self->session = soup_session_new ();
+    store_image_set_size (self, 64, 64); // FIXME: Hard-coded
+}
+
+StoreImage *
+store_image_new (void)
+{
+    return g_object_new (store_image_get_type (), NULL);
+}
+
+void
+store_image_set_cache (StoreImage *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_IMAGE (self));
+    g_set_object (&self->cache, cache);
 }
 
 void
@@ -214,8 +220,11 @@ store_image_set_url (StoreImage *self, const gchar *url)
     soup_session_send_async (self->session, message, self->cancellable, send_cb, self);
 
     /* Load cached version */
-    g_cancellable_cancel (self->cache_cancellable);
-    g_clear_object (&self->cache_cancellable);
-    self->cache_cancellable = g_cancellable_new ();
-    store_cache_lookup_async (self->cache, "images", url, TRUE, self->cache_cancellable, cache_cb, self);
+    g_assert (self->cache != NULL);
+    if (self->cache != NULL) {
+        g_cancellable_cancel (self->cache_cancellable);
+        g_clear_object (&self->cache_cancellable);
+        self->cache_cancellable = g_cancellable_new ();
+        store_cache_lookup_async (self->cache, "images", url, TRUE, self->cache_cancellable, cache_cb, self);
+    }
 }

@@ -12,12 +12,15 @@
 #include <gtk/gtk.h>
 
 #include "store-app.h"
+#include "store-cache.h"
 
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreCategoryView, store_category_view, STORE, CATEGORY_VIEW, GtkFlowBoxChild)
 
 StoreCategoryView *store_category_view_new       (void);
+
+void               store_category_view_set_cache (StoreCategoryView *view, StoreCache *cache);
 
 void               store_category_view_set_name  (StoreCategoryView *view, const gchar *name);
 

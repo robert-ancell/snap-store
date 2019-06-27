@@ -13,7 +13,6 @@
 #include "store-home-page.h"
 
 #include "store-snap-pool.h"
-#include "store-cache.h"
 #include "store-category-view.h"
 
 struct _StoreHomePage
@@ -67,7 +66,8 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
-        store_app_save_to_cache (STORE_APP (app), self->cache);
+        if (self->cache != NULL)
+            store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
     store_category_view_set_apps (self->search_results_view, apps);
@@ -238,21 +238,24 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
-        store_app_save_to_cache (STORE_APP (app), self->cache);
+        if (self->cache != NULL)
+            store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
     set_category_apps (self, data->section_name, apps);
 
     /* Save in cache */
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-    json_builder_begin_array (builder);
-    for (guint i = 0; i < snaps->len; i++) {
-        SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        json_builder_add_string_value (builder, snapd_snap_get_name (snap));
+    if (self->cache != NULL) {
+        g_autoptr(JsonBuilder) builder = json_builder_new ();
+        json_builder_begin_array (builder);
+        for (guint i = 0; i < snaps->len; i++) {
+            SnapdSnap *snap = g_ptr_array_index (snaps, i);
+            json_builder_add_string_value (builder, snapd_snap_get_name (snap));
+        }
+        json_builder_end_array (builder);
+        g_autoptr(JsonNode) root = json_builder_get_root (builder);
+        store_cache_insert_json (self->cache, "sections", data->section_name, FALSE, root, NULL, NULL);
     }
-    json_builder_end_array (builder);
-    g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    store_cache_insert_json (self->cache, "sections", data->section_name, FALSE, root, NULL, NULL);
 }
 
 static const gchar *
@@ -336,6 +339,7 @@ set_sections (StoreHomePage *self, GStrv sections, gboolean populate)
             view = store_category_view_new ();
             gtk_widget_show (GTK_WIDGET (view));
             store_category_view_set_name (view, sections[i]);
+            store_category_view_set_cache (view, self->cache);
             store_category_view_set_title (view, get_section_title (sections[i]));
             g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
             gtk_container_add_with_properties (GTK_CONTAINER (self->category_box), GTK_WIDGET (view), "position", i, NULL);
@@ -372,13 +376,15 @@ get_sections_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     set_sections (self, sections, TRUE);
 
     /* Save in cache */
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-    json_builder_begin_array (builder);
-    for (int i = 0; sections[i] != NULL; i++)
-        json_builder_add_string_value (builder, sections[i]);
-    json_builder_end_array (builder);
-    g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    store_cache_insert_json (self->cache, "sections", "_index", FALSE, root, NULL, NULL);
+    if (self->cache != NULL) {
+        g_autoptr(JsonBuilder) builder = json_builder_new ();
+        json_builder_begin_array (builder);
+        for (int i = 0; sections[i] != NULL; i++)
+            json_builder_add_string_value (builder, sections[i]);
+        json_builder_end_array (builder);
+        g_autoptr(JsonNode) root = json_builder_get_root (builder);
+        store_cache_insert_json (self->cache, "sections", "_index", FALSE, root, NULL, NULL);
+    }
 }
 
 static void
@@ -410,7 +416,6 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 static void
 store_home_page_init (StoreHomePage *self)
 {
-    self->cache = store_cache_new ();
     self->cancellable = g_cancellable_new ();
     self->snap_pool = store_snap_pool_new (); // FIXME: Move into application class
 
@@ -418,12 +423,31 @@ store_home_page_init (StoreHomePage *self)
     gtk_widget_init_template (GTK_WIDGET (self));
 
     self->installed_view = store_category_view_new (); // FIXME: Move into .ui
+    store_category_view_set_cache (self->installed_view, self->cache);
     store_category_view_set_title (self->installed_view,
                                    /* Title for category showing installed snaps */
                                    _("Installed"));
     g_signal_connect_object (self->installed_view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
     gtk_box_pack_end (self->category_box, GTK_WIDGET (self->installed_view), FALSE, FALSE, 0);
+}
 
+void
+store_home_page_set_cache (StoreHomePage *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_HOME_PAGE (self));
+    g_set_object (&self->cache, cache);
+    store_category_view_set_cache (self->installed_view, cache);
+    store_category_view_set_cache (self->search_results_view, cache);
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        StoreCategoryView *view = link->data;
+        store_category_view_set_cache (view, cache);
+    }
+}
+
+void
+store_home_page_load (StoreHomePage *self)
+{
     g_autoptr(SnapdClient) client = snapd_client_new ();
     snapd_client_get_sections_async (client, self->cancellable, get_sections_cb, self);
 
@@ -431,41 +455,37 @@ store_home_page_init (StoreHomePage *self)
     snapd_client_get_snaps_async (client2, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);
 
     /* Load cached sections */
-    g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", "_index", FALSE, NULL, NULL);
-    if (sections_cache != NULL) {
-        JsonArray *array = json_node_get_array (sections_cache);
-        g_autoptr(GPtrArray) section_array = g_ptr_array_new ();
-        for (guint i = 0; i < json_array_get_length (array); i++) {
-            JsonNode *node = json_array_get_element (array, i);
-            g_ptr_array_add (section_array, (gpointer) json_node_get_string (node));
-        }
-        g_ptr_array_add (section_array, NULL);
-        GStrv sections = (GStrv) section_array->pdata;
-        set_sections (self, sections, FALSE);
+    if (self->cache != NULL) {
+        g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", "_index", FALSE, NULL, NULL);
+        if (sections_cache != NULL) {
+            JsonArray *array = json_node_get_array (sections_cache);
+            g_autoptr(GPtrArray) section_array = g_ptr_array_new ();
+            for (guint i = 0; i < json_array_get_length (array); i++) {
+                JsonNode *node = json_array_get_element (array, i);
+                g_ptr_array_add (section_array, (gpointer) json_node_get_string (node));
+            }
+            g_ptr_array_add (section_array, NULL);
+            GStrv sections = (GStrv) section_array->pdata;
+            set_sections (self, sections, FALSE);
 
-        for (int i = 0; sections[i] != NULL; i++) {
-            g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", sections[i], FALSE, NULL, NULL);
-            if (sections_cache != NULL) {
-                JsonArray *array = json_node_get_array (sections_cache);
-                g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
-                for (guint j = 0; j < json_array_get_length (array); j++) {
-                    JsonNode *node = json_array_get_element (array, j);
+            for (int i = 0; sections[i] != NULL; i++) {
+                g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", sections[i], FALSE, NULL, NULL);
+                if (sections_cache != NULL) {
+                    JsonArray *array = json_node_get_array (sections_cache);
+                    g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
+                    for (guint j = 0; j < json_array_get_length (array); j++) {
+                        JsonNode *node = json_array_get_element (array, j);
 
-                    const gchar *name = json_node_get_string (node);
-                    g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, name);
-                    store_app_set_name (STORE_APP (app), name);
-                    store_app_update_from_cache (STORE_APP (app), self->cache);
-                    g_ptr_array_add (apps, g_object_ref (app));
+                        const gchar *name = json_node_get_string (node);
+                        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, name);
+                        store_app_set_name (STORE_APP (app), name);
+                        store_app_update_from_cache (STORE_APP (app), self->cache);
+                        g_ptr_array_add (apps, g_object_ref (app));
+                    }
+
+                    set_category_apps (self, sections[i], apps);
                 }
-
-                set_category_apps (self, sections[i], apps);
             }
         }
     }
-}
-
-StoreHomePage *
-store_home_page_new (void)
-{
-    return g_object_new (store_home_page_get_type (), NULL);
 }

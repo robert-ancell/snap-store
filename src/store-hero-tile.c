@@ -87,6 +87,13 @@ store_hero_tile_new (void)
 }
 
 void
+store_hero_tile_set_cache (StoreHeroTile *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_HERO_TILE (self));
+    store_image_set_cache (self->icon_image, cache);
+}
+
+void
 store_hero_tile_set_app (StoreHeroTile *self, StoreApp *app)
 {
     g_return_if_fail (STORE_IS_HERO_TILE (self));

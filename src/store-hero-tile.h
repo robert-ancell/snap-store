@@ -17,10 +17,12 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreHeroTile, store_hero_tile, STORE, HERO_TILE, GtkEventBox)
 
-StoreHeroTile *store_hero_tile_new      (void);
+StoreHeroTile *store_hero_tile_new       (void);
 
-void           store_hero_tile_set_app (StoreHeroTile *tile, StoreApp *app);
+void           store_hero_tile_set_cache (StoreHeroTile *tile, StoreCache *cache);
 
-StoreApp      *store_hero_tile_get_app (StoreHeroTile *tile);
+void           store_hero_tile_set_app   (StoreHeroTile *tile, StoreApp *app);
+
+StoreApp      *store_hero_tile_get_app   (StoreHeroTile *tile);
 
 G_END_DECLS

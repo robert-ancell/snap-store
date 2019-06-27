@@ -11,7 +11,6 @@
 
 #include "store-app-page.h"
 
-#include "store-cache.h"
 #include "store-category-view.h"
 #include "store-channel-combo.h"
 #include "store-image.h"
@@ -57,7 +56,8 @@ refresh_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    store_app_save_to_cache (self->app, self->cache);
+    if (self->cache != NULL)
+        store_app_save_to_cache (self->app, self->cache);
 }
 
 static void
@@ -97,15 +97,17 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     set_reviews (self, reviews);
 
     /* Save in cache */
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-    json_builder_begin_array (builder);
-    for (guint i = 0; i < reviews->len; i++) {
-        StoreOdrsReview *review = g_ptr_array_index (reviews, i);
-        json_builder_add_value (builder, store_odrs_review_to_json (review));
+    if (self->cache != NULL) {
+        g_autoptr(JsonBuilder) builder = json_builder_new ();
+        json_builder_begin_array (builder);
+        for (guint i = 0; i < reviews->len; i++) {
+            StoreOdrsReview *review = g_ptr_array_index (reviews, i);
+            json_builder_add_value (builder, store_odrs_review_to_json (review));
+        }
+        json_builder_end_array (builder);
+        g_autoptr(JsonNode) root = json_builder_get_root (builder);
+        store_cache_insert_json (self->cache, "reviews", store_app_get_name (self->app), FALSE, root, NULL, NULL);
     }
-    json_builder_end_array (builder);
-    g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    store_cache_insert_json (self->cache, "reviews", store_app_get_name (self->app), FALSE, root, NULL, NULL);
 }
 
 static void
@@ -159,14 +161,21 @@ store_app_page_init (StoreAppPage *self)
     store_image_get_type ();
     store_install_button_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
-
-    self->cache = store_cache_new (); // FIXME: Make shared?
 }
 
 StoreAppPage *
 store_app_page_new (void)
 {
     return g_object_new (store_app_page_get_type (), NULL);
+}
+
+void
+store_app_page_set_cache (StoreAppPage *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_APP_PAGE (self));
+    g_set_object (&self->cache, cache);
+    store_image_set_cache (self->icon_image, cache);
+    // FIXME: Should apply to children
 }
 
 void
@@ -215,15 +224,17 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     gtk_widget_hide (GTK_WIDGET (self->reviews_box));
 
     /* Load cached reviews */
-    g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (self->cache, "reviews", store_app_get_name (app), FALSE, NULL, NULL);
-    if (reviews_cache != NULL) {
-        g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
-        JsonArray *array = json_node_get_array (reviews_cache);
-        for (guint i = 0; i < json_array_get_length (array); i++) {
-            JsonNode *node = json_array_get_element (array, i);
-            g_ptr_array_add (reviews, store_odrs_review_new_from_json (node));
+    if (self->cache != NULL) {
+        g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (self->cache, "reviews", store_app_get_name (app), FALSE, NULL, NULL);
+        if (reviews_cache != NULL) {
+            g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
+            JsonArray *array = json_node_get_array (reviews_cache);
+            for (guint i = 0; i < json_array_get_length (array); i++) {
+                JsonNode *node = json_array_get_element (array, i);
+                g_ptr_array_add (reviews, store_odrs_review_new_from_json (node));
+            }
+            set_reviews (self, reviews);
         }
-        set_reviews (self, reviews);
     }
 
     g_autoptr(StoreOdrsClient) odrs_client = store_odrs_client_new ();
@@ -240,6 +251,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
         StoreMedia *screenshot = g_ptr_array_index (screenshots, i);
         StoreImage *image = store_image_new ();
         gtk_widget_show (GTK_WIDGET (image));
+        store_image_set_cache (image, self->cache);
         store_image_set_url (image, store_media_get_url (screenshot));
         guint width, height = 500;
         if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)

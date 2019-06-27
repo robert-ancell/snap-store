@@ -11,10 +11,14 @@
 
 #include <gtk/gtk.h>
 
+#include "store-cache.h"
+
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreHomePage, store_home_page, STORE, HOME_PAGE, GtkBox)
 
-StoreHomePage *store_home_page_new (void);
+void store_home_page_set_cache (StoreHomePage *page, StoreCache *cache);
+
+void store_home_page_load      (StoreHomePage *page);
 
 G_END_DECLS

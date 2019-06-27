@@ -18,6 +18,7 @@ struct _StoreWindow
 
     StoreAppPage *app_page;
     GtkButton *back_button;
+    StoreCache *cache;
     StoreHomePage *home_page;
     GtkStack *stack;
 };
@@ -61,6 +62,12 @@ store_window_init (StoreWindow *self)
     gtk_widget_init_template (GTK_WIDGET (self));
 
     gtk_window_set_default_size (GTK_WINDOW (self), 800, 600); // FIXME: Temp
+
+    self->cache = store_cache_new ();
+    store_app_page_set_cache (self->app_page, self->cache);
+    store_home_page_set_cache (self->home_page, self->cache);
+
+    store_home_page_load (self->home_page);
 }
 
 StoreWindow *

@@ -20,6 +20,7 @@ struct _StoreCategoryView
     StoreHeroTile *hero_tile;
     GtkLabel *title_label;
 
+    StoreCache *cache;
     gchar *name;
 };
 
@@ -92,6 +93,20 @@ store_category_view_new (void)
 }
 
 void
+store_category_view_set_cache (StoreCategoryView *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
+
+    g_set_object (&self->cache, cache);
+    store_hero_tile_set_cache (self->hero_tile, cache);
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_flow_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        StoreAppTile *tile = link->data;
+        store_app_tile_set_cache (tile, cache);
+    }
+}
+
+void
 store_category_view_set_name (StoreCategoryView *self, const gchar *name)
 {
     g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
@@ -139,6 +154,7 @@ store_category_view_set_apps (StoreCategoryView *self, GPtrArray *apps)
     while (n_tiles < apps->len) {
         StoreAppTile *tile = store_app_tile_new ();
         gtk_widget_show (GTK_WIDGET (tile));
+        store_app_tile_set_cache (tile, self->cache);
         gtk_container_add (GTK_CONTAINER (self->app_flow_box), GTK_WIDGET (tile));
         n_tiles++;
         children = g_list_append (children, tile);
