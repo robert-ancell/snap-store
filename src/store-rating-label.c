@@ -27,12 +27,8 @@ static void
 store_rating_label_init (StoreRatingLabel *self)
 {
     gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (self)), "rating-label");
-}
 
-StoreRatingLabel *
-store_rating_label_new (void)
-{
-    return g_object_new (store_rating_label_get_type (), NULL);
+    store_rating_label_set_rating (self, 0);
 }
 
 void

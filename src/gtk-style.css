@@ -1,15 +1,38 @@
 .app-page-contact-label {
 }
 
+.app-page-description-label {
+    font-size: 16px;
+}
+
+.app-page-details-box {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 128px;
+    padding-right: 128px;
+}
+
 .app-page-details-heading-label {
-    font-weight: bold;
+    font-size: 24px;
 }
 
 .app-page-details-title-label {
-    font-size: large;
+    font-size: 24px;
 }
 
 .app-page-details-value-label {
+}
+
+.app-page-header-box {
+    padding-top: 52px;
+    padding-bottom: 52px;
+    padding-left: 128px;
+    padding-right: 128px;
+    background: #10d356;
+}
+
+.app-page-publisher-label {
+    font-size: 14px;
 }
 
 .app-page-summary-label {
@@ -17,10 +40,13 @@
 }
 
 .app-page-title-label {
-    font-size: xx-large;
+    font-family: Ubuntu-Light;
+    font-size: 21px;
+    color: #007aa6;
 }
 
 .app-tile-publisher-label {
+    font-family: Ubuntu-Light;
     opacity: 0.5;
 }
 

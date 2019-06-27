@@ -16,6 +16,7 @@
 #include "store-image.h"
 #include "store-install-button.h"
 #include "store-odrs-client.h"
+#include "store-rating-label.h"
 #include "store-review-view.h"
 
 struct _StoreAppPage
@@ -31,6 +32,7 @@ struct _StoreAppPage
     GtkLabel *license_label;
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
+    StoreRatingLabel *rating_label;
     GtkBox *reviews_box;
     GtkBox *screenshots_box;
     GtkLabel *summary_label;
@@ -146,6 +148,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, license_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, rating_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshots_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
@@ -160,6 +163,7 @@ store_app_page_init (StoreAppPage *self)
     store_channel_combo_get_type ();
     store_image_get_type ();
     store_install_button_get_type ();
+    store_rating_label_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 

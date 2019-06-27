@@ -9,13 +9,15 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="expand">True</property>
-            <property name="margin">36</property>
             <property name="spacing">36</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="orientation">horizontal</property>
                 <property name="spacing">24</property>
+                <style>
+                  <class name="app-page-header-box"/>
+                </style>
                 <child>
                   <object class="StoreImage" id="icon_image">
                     <property name="visible">True</property>
@@ -28,7 +30,7 @@
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
                     <property name="hexpand">True</property>
-                    <property name="spacing">16</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="title_label">
                         <property name="visible">True</property>
@@ -64,13 +66,19 @@
                         </child>
                       </object>
                     </child>
+                    <child>
+                      <object class="StoreRatingLabel" id="rating_label">
+                        <property name="visible">True</property>
+                        <property name="halign">start</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
-                    <property name="valign">center</property>
+                    <property name="valign">start</property>
                     <child>
                       <object class="StoreChannelCombo" id="channel_combo">
                         <property name="visible">True</property>
@@ -82,7 +90,7 @@
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
-                    <property name="valign">center</property>
+                    <property name="valign">start</property>
                     <child>
                       <object class="StoreInstallButton" id="install_button">
                         <property name="visible">True</property>
@@ -110,6 +118,9 @@
                 <property name="visible">True</property>
                 <property name="orientation">horizontal</property>
                 <property name="spacing">18</property>
+                <style>
+                  <class name="app-page-details-box"/>
+                </style>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
