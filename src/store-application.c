@@ -113,5 +113,7 @@ store_application_init (StoreApplication *self)
 StoreApplication *
 store_application_new (void)
 {
-    return g_object_new (store_application_get_type (), NULL);
+    return g_object_new (store_application_get_type (),
+                         "application-id", "io.snapcraft.Store",
+                         NULL);
 }
