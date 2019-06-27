@@ -9,6 +9,7 @@
 
 #include <config.h>
 #include <glib/gi18n.h>
+#include <libsoup/soup.h>
 
 #include "store-application.h"
 #include "store-cache.h"
@@ -64,8 +65,26 @@ store_application_command_line (GApplication *application, GApplicationCommandLi
     int args_length;
     g_auto(GStrv) args = g_application_command_line_get_arguments (command_line, &args_length);
     if (args_length >= 2) {
-        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, args[1]);
-        store_window_show_app (self->window, STORE_APP (app));
+        const gchar *arg = args[1];
+        const gchar *name = NULL;
+
+        g_autoptr(SoupURI) uri = soup_uri_new (arg);
+        if (SOUP_URI_IS_VALID (uri)) {
+            if (g_strcmp0 (soup_uri_get_scheme (uri), "snap") == 0) {
+                name = soup_uri_get_host (uri);
+            }
+            else
+                g_warning ("Unsupported URI: %s", arg); // FIXME: Show in GUI
+        }
+        else {
+            // FIXME: Validate characters
+            name = arg;
+        }
+
+        if (name != NULL) {
+            g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, name);
+            store_window_show_app (self->window, STORE_APP (app));
+        }
     }
 
     gtk_window_present (GTK_WINDOW (self->window));
