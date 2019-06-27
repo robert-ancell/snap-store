@@ -221,10 +221,10 @@ store_app_init (StoreApp *self)
 }
 
 void
-store_app_install_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+store_app_install_async (StoreApp *self, StoreChannel *channel, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_return_if_fail (STORE_IS_APP (self));
-    STORE_APP_GET_CLASS (self)->install_async (self, cancellable, callback, callback_data);
+    STORE_APP_GET_CLASS (self)->install_async (self, channel, cancellable, callback, callback_data);
 }
 
 gboolean

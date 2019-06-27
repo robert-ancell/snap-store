@@ -24,8 +24,12 @@ struct _StoreInstallButton
 G_DEFINE_TYPE (StoreInstallButton, store_install_button, GTK_TYPE_BUTTON)
 
 static void
-activate_cb (StoreInstallButton *self)
+clicked_cb (StoreInstallButton *self)
 {
+    if (store_app_get_installed (self->app))
+        store_app_remove_async (self->app, NULL, NULL, NULL);
+    else
+        store_app_install_async (self->app, NULL, NULL, NULL, NULL);
 }
 
 static void
@@ -58,7 +62,7 @@ store_install_button_class_init (StoreInstallButtonClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreInstallButton, label_stack);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreInstallButton, remove_label);
 
-    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), activate_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), clicked_cb);
 }
 
 static void

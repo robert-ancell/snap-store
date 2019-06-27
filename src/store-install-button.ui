@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="StoreInstallButton" parent="GtkButton">
-    <signal name="activate" handler="activate_cb" object="StoreInstallButton" swapped="yes"/>
+    <signal name="clicked" handler="clicked_cb" object="StoreInstallButton" swapped="yes"/>
     <style>
     <class name="install-button"/>
     </style>

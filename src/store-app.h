@@ -23,7 +23,7 @@ struct _StoreAppClass
 {
     GObjectClass parent_class;
 
-    void      (*install_async)     (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+    void      (*install_async)     (StoreApp *app, StoreChannel *channel, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
     gboolean  (*install_finish)    (StoreApp *app, GAsyncResult *result, GError **error);
     void      (*refresh_async)     (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
     gboolean  (*refresh_finish)    (StoreApp *app, GAsyncResult *result, GError **error);
@@ -33,7 +33,7 @@ struct _StoreAppClass
     void      (*update_from_cache) (StoreApp *app, StoreCache *cache);
 };
 
-void         store_app_install_async           (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+void         store_app_install_async           (StoreApp *app, StoreChannel *channel, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
 gboolean     store_app_install_finish          (StoreApp *app, GAsyncResult *result, GError **error);
 
