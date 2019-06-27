@@ -15,7 +15,8 @@ struct _StoreScreenshotView
 {
     GtkBox parent_instance;
 
-    GtkBox *screenshots_box;
+    StoreImage *selected_image;
+    GtkBox *thumbnail_box;
 
     StoreApp *app;
     StoreCache *cache;
@@ -41,7 +42,8 @@ store_screenshot_view_class_init (StoreScreenshotViewClass *klass)
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-screenshot-view.ui");
 
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreScreenshotView, screenshots_box);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreScreenshotView, selected_image);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreScreenshotView, thumbnail_box);
 }
 
 static void
@@ -62,7 +64,8 @@ store_screenshot_view_set_cache (StoreScreenshotView *self, StoreCache *cache)
     g_return_if_fail (STORE_IS_SCREENSHOT_VIEW (self));
 
     g_set_object (&self->cache, cache);
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->screenshots_box));
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->thumbnail_box));
+    store_image_set_cache (self->selected_image, cache);
     for (GList *link = children; link != NULL; link = link->next) {
         StoreImage *image = link->data;
         store_image_set_cache (image, cache);
@@ -79,25 +82,35 @@ store_screenshot_view_set_app (StoreScreenshotView *self, StoreApp *app)
 
     g_set_object (&self->app, app);
 
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->screenshots_box));
+    GPtrArray *screenshots = store_app_get_screenshots (app);
+    if (screenshots->len >= 1) {
+        StoreMedia *screenshot = g_ptr_array_index (screenshots, 0);
+        store_image_set_uri (self->selected_image, store_media_get_uri (screenshot));
+        guint width, height = 420;
+        if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)
+            width = store_media_get_width (screenshot) * height / store_media_get_height (screenshot);
+        else
+            width = height;
+        store_image_set_size (self->selected_image, width, height);
+    }
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->thumbnail_box));
     for (GList *link = children; link != NULL; link = link->next) {
         GtkWidget *child = link->data;
-        gtk_container_remove (GTK_CONTAINER (self->screenshots_box), child);
+        gtk_container_remove (GTK_CONTAINER (self->thumbnail_box), child);
     }
-    GPtrArray *screenshots = store_app_get_screenshots (app);
-    for (guint i = 0; i < screenshots->len; i++) {
+    for (guint i = 1; i < screenshots->len; i++) {
         StoreMedia *screenshot = g_ptr_array_index (screenshots, i);
         StoreImage *image = store_image_new ();
         gtk_widget_show (GTK_WIDGET (image));
         store_image_set_cache (image, self->cache);
         store_image_set_uri (image, store_media_get_uri (screenshot));
-        guint width, height = 500;
+        guint width, height = 90;
         if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)
             width = store_media_get_width (screenshot) * height / store_media_get_height (screenshot);
         else
             width = height;
         store_image_set_size (image, width, height);
-        gtk_container_add (GTK_CONTAINER (self->screenshots_box), GTK_WIDGET (image));
+        gtk_container_add (GTK_CONTAINER (self->thumbnail_box), GTK_WIDGET (image));
     }
-    gtk_widget_set_visible (GTK_WIDGET (self->screenshots_box), screenshots->len > 0);
+    gtk_widget_set_visible (GTK_WIDGET (self->thumbnail_box), screenshots->len > 1);
 }
