@@ -10,6 +10,8 @@
           <object class="StoreImage" id="icon_image">
             <property name="visible">True</property>
             <property name="valign">start</property>
+            <property name="width">72</property>
+            <property name="height">72</property>
           </object>
         </child>
         <child>

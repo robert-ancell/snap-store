@@ -43,6 +43,8 @@
         <child>
           <object class="StoreImage" id="icon_image">
             <property name="visible">True</property>
+            <property name="width">128</property>
+            <property name="height">128</property>
           </object>
         </child>
       </object>

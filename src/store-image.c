@@ -25,6 +25,14 @@ struct _StoreImage
     gchar *uri;
 };
 
+enum
+{
+    PROP_0,
+    PROP_HEIGHT,
+    PROP_WIDTH,
+    PROP_LAST
+};
+
 G_DEFINE_TYPE (StoreImage, store_image, GTK_TYPE_IMAGE)
 
 static void
@@ -149,16 +157,62 @@ store_image_dispose (GObject *object)
 }
 
 static void
+store_image_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+    StoreImage *self = STORE_IMAGE (object);
+
+    switch (prop_id)
+    {
+    case PROP_HEIGHT:
+        g_value_set_int (value, self->height);
+        break;
+    case PROP_WIDTH:
+        g_value_set_int (value, self->width);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_image_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StoreImage *self = STORE_IMAGE (object);
+
+    switch (prop_id)
+    {
+    case PROP_HEIGHT:
+        self->height = g_value_get_int (value);
+        break;
+    case PROP_WIDTH:
+        self->width = g_value_get_int (value);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
 store_image_class_init (StoreImageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_image_dispose;
+    G_OBJECT_CLASS (klass)->get_property = store_image_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_image_set_property;
+
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_HEIGHT,
+                                     g_param_spec_int ("height", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_WIDTH,
+                                     g_param_spec_int ("width", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
 }
 
 static void
 store_image_init (StoreImage *self)
 {
     self->session = soup_session_new ();
-    store_image_set_size (self, 64, 64); // FIXME: Hard-coded
 }
 
 StoreImage *
