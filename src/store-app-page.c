@@ -241,7 +241,8 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_steal_pointer (&odrs_client); // FIXME leaks for testing, remove when async call keeps reference
 
     store_screenshot_view_set_app (self->screenshot_view, app);
-    // FXME? gtk_widget_set_visible (GTK_WIDGET (self->screenshot_view), screenshots->len > 0);
+    GPtrArray *screenshots = store_app_get_screenshots (app);
+    gtk_widget_set_visible (GTK_WIDGET (self->screenshot_view), screenshots->len > 0);
 }
 
 StoreApp *
