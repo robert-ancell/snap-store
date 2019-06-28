@@ -15,8 +15,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreRatingLabel, store_rating_label, STORE, RATING_LABEL, GtkLabel)
 
-void   store_rating_label_set_rating (StoreRatingLabel *label, gint64 rating);
+void store_rating_label_set_rating (StoreRatingLabel *label, gint rating);
 
-gint64 store_rating_label_get_rating (StoreRatingLabel *label);
+gint store_rating_label_get_rating (StoreRatingLabel *label);
 
 G_END_DECLS

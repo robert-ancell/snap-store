@@ -6,12 +6,14 @@
 }
 
 .app-page-description-label {
+    font-family: Ubuntu-Light;
     font-size: 16px;
+    color: #212121;
 }
 
 .app-page-content-box {
-    padding-top: 40px;
-    padding-bottom: 40px;
+    padding-top: 52px;
+    padding-bottom: 52px;
     padding-left: 128px;
     padding-right: 128px;
 }
@@ -55,6 +57,22 @@
     font-size: 14px;
 }
 
+.app-page-reviews-box {
+    padding-bottom: 52px;
+    padding-left: 128px;
+    padding-right: 128px;
+}
+
+.app-page-reviews-summary-grid {
+    margin-top: 24px;
+}
+
+.app-page-reviews-title-label {
+    font-family: Ubuntu-Light;
+    font-size: 24px;
+    color: #111111;
+}
+
 .app-page-screenshot-view {
     padding-top: 40px;
     padding-bottom: 40px;
@@ -73,6 +91,19 @@
     font-family: Ubuntu-Light;
     font-size: 21px;
     color: #007aa6;
+}
+
+.app-page-write-review-button {
+    background-color: #0e8420;
+    margin-top: 40px;
+}
+
+.app-page-write-review-button-label {
+    color: #ffffff;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .app-tile-box {
@@ -120,7 +151,8 @@
 .rating-label {
 }
 
-.review-box {
+.app-page-review-box {
+    margin-top: 40px;
 }
 
 .review-author-date-label {
@@ -128,17 +160,27 @@
     font-size: 14px;
     opacity: 0.5;
     color: #111111;
+    padding-top: 9px;
 }
 
 .review-description-label {
     font-family: Ubuntu-Light;
     font-size: 16px;
     color: #212121;
+    padding-top: 12px;
 }
 
 .review-summary-label {
     font-family: Ubuntu;
     font-size: 16px;
+    color: #111111;
+}
+
+.review-useful-label {
+    font-family: Ubuntu-Light;
+    font-size: 14px;
+    color: #111111;
+    padding-top: 16px;
 }
 
 .store-window {

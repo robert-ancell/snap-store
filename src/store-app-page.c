@@ -11,7 +11,6 @@
 
 #include "store-app-page.h"
 
-#include "store-category-view.h"
 #include "store-channel-combo.h"
 #include "store-image.h"
 #include "store-install-button.h"

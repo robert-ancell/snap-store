@@ -2,9 +2,6 @@
 <interface>
   <template class="StoreReviewView" parent="GtkBox">
     <property name="orientation">vertical</property>
-    <style>
-      <class name="review-box"/>
-    </style>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -34,7 +31,6 @@
         <property name="visible">True</property>
         <property name="halign">start</property>
         <property name="ellipsize">end</property>
-        <property name="margin-top">5</property>
         <style>
           <class name="review-author-date-label"/>
         </style>
@@ -48,10 +44,25 @@
         <property name="wrap">True</property>
         <property name="xalign">0</property>
         <property name="yalign">0</property>
-        <property name="margin-top">20</property>
         <style>
           <class name="review-description-label"/>
         </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="orientation">horizontal</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes" comments="Label at the bottom of each review beside the yes/no/report buttons">Was this review useful to you?</property>
+            <style>
+              <class name="review-useful-label"/>
+            </style>
+          </object>
+        </child>
       </object>
     </child>
   </template>

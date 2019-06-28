@@ -13,14 +13,59 @@ struct _StoreRatingLabel
 {
     GtkLabel parent_instance;
 
-    gint64 rating;
+    gint rating;
+};
+
+enum
+{
+    PROP_0,
+    PROP_RATING,
+    PROP_LAST
 };
 
 G_DEFINE_TYPE (StoreRatingLabel, store_rating_label, GTK_TYPE_LABEL)
 
 static void
-store_rating_label_class_init (StoreRatingLabelClass *klass G_GNUC_UNUSED)
+store_rating_label_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
+    StoreRatingLabel *self = STORE_RATING_LABEL (object);
+
+    switch (prop_id)
+    {
+    case PROP_RATING:
+        g_value_set_int (value, self->rating);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_rating_label_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StoreRatingLabel *self = STORE_RATING_LABEL (object);
+
+    switch (prop_id)
+    {
+    case PROP_RATING:
+        store_rating_label_set_rating (self, g_value_get_int (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_rating_label_class_init (StoreRatingLabelClass *klass)
+{
+    G_OBJECT_CLASS (klass)->get_property = store_rating_label_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_rating_label_set_property;
+
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_RATING,
+                                     g_param_spec_int ("rating", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
 }
 
 static void
@@ -32,7 +77,7 @@ store_rating_label_init (StoreRatingLabel *self)
 }
 
 void
-store_rating_label_set_rating (StoreRatingLabel *self, gint64 rating)
+store_rating_label_set_rating (StoreRatingLabel *self, gint rating)
 {
     g_return_if_fail (STORE_IS_RATING_LABEL (self));
 
@@ -54,7 +99,7 @@ store_rating_label_set_rating (StoreRatingLabel *self, gint64 rating)
     gtk_label_set_label (GTK_LABEL (self), stars);
 }
 
-gint64
+gint
 store_rating_label_get_rating (StoreRatingLabel *self)
 {
     g_return_val_if_fail (STORE_IS_RATING_LABEL (self), -1);

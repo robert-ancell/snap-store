@@ -344,11 +344,186 @@
                     </child>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <style>
+                  <class name="app-page-reviews-box"/>
+                </style>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                    <property name="label" translatable="yes" comments="Label above reviews on app page">Reviews</property>
+                    <style>
+                      <class name="app-page-reviews-title-label"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkGrid" id="reviews_summary_grid">
+                    <property name="visible">True</property>
+                    <property name="row-spacing">12</property>
+                    <property name="column-spacing">12</property>
+                    <style>
+                      <class name="app-page-reviews-summary-grid"/>
+                    </style>
+                    <child>
+                      <object class="GtkLabel" id="five_star_count_label">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="label">0</property>
+                        <style>
+                          <class name="app-page-star-count-label"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="StoreRatingLabel">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="rating">100</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="four_star_count_label">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="label">0</property>
+                        <style>
+                          <class name="app-page-star-count-label"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="StoreRatingLabel">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="rating">80</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="three_star_count_label">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="label">0</property>
+                        <style>
+                          <class name="app-page-star-count-label"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="StoreRatingLabel">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="rating">60</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="two_star_count_label">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="label">0</property>
+                        <style>
+                          <class name="app-page-star-count-label"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="StoreRatingLabel">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="rating">40</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="one_star_count_label">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="label">0</property>
+                        <style>
+                          <class name="app-page-star-count-label"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="StoreRatingLabel">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="rating">20</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">4</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="write_review_button">
+                    <property name="visible">True</property>
+                    <property name="halign">start</property>
+                    <style>
+                      <class name="app-page-write-review-button"/>
+                    </style>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes" comments="Label on write review">Write Review</property>
+                        <style>
+                          <class name="app-page-write-review-button-label"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
                 <child>
                   <object class="GtkBox" id="reviews_box">
                     <property name="visible">False</property>
                     <property name="orientation">vertical</property>
-                    <property name="spacing">24</property>
+                    <property name="spacing">40</property>
+                    <style>
+                      <class name="app-page-review-box"/>
+                    </style>
                   </object>
                 </child>
               </object>
