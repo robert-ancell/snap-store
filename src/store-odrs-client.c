@@ -32,6 +32,7 @@ static void
 store_odrs_client_dispose (GObject *object)
 {
     StoreOdrsClient *self = STORE_ODRS_CLIENT (object);
+
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
     g_clear_pointer (&self->distro, g_free);

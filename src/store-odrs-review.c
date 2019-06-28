@@ -26,6 +26,7 @@ static void
 store_odrs_review_dispose (GObject *object)
 {
     StoreOdrsReview *self = STORE_ODRS_REVIEW (object);
+
     g_clear_pointer (&self->author, g_free);
     g_clear_pointer (&self->date_created, g_date_time_unref);
     g_clear_pointer (&self->description, g_free);

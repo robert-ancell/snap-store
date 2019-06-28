@@ -32,6 +32,7 @@ static void
 store_app_tile_dispose (GObject *object)
 {
     StoreAppTile *self = STORE_APP_TILE (object);
+
     g_clear_object (&self->app);
 
     G_OBJECT_CLASS (store_app_tile_parent_class)->dispose (object);

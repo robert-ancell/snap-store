@@ -43,6 +43,7 @@ static void
 store_hero_tile_dispose (GObject *object)
 {
     StoreHeroTile *self = STORE_HERO_TILE (object);
+
     g_clear_object (&self->app);
 
     G_OBJECT_CLASS (store_hero_tile_parent_class)->dispose (object);

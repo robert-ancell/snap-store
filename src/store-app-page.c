@@ -123,6 +123,7 @@ static void
 store_app_page_dispose (GObject *object)
 {
     StoreAppPage *self = STORE_APP_PAGE (object);
+
     g_clear_object (&self->app);
     g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);

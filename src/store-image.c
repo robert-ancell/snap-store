@@ -144,6 +144,7 @@ static void
 store_image_dispose (GObject *object)
 {
     StoreImage *self = STORE_IMAGE (object);
+
     g_clear_pointer (&self->buffer, g_byte_array_unref);
     g_clear_object (&self->cache);
     g_cancellable_cancel (self->cache_cancellable);
