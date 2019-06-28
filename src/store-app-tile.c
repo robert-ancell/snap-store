@@ -86,10 +86,10 @@ store_app_tile_set_app (StoreAppTile *self, StoreApp *app)
     if (app != NULL)
         self->app = g_object_ref (app);
 
-    gtk_label_set_label (self->name_label, store_app_get_title (app));
-    gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));
-    gtk_widget_set_visible (GTK_WIDGET (self->publisher_validated_image), store_app_get_publisher_validated (app));
-    gtk_label_set_label (self->summary_label, store_app_get_summary (app));
+    g_object_bind_property (app, "title", self->name_label, "label", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "publisher", self->publisher_label, "label", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "publisher-validated", self->publisher_validated_image, "visible", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "summary", self->summary_label, "label", G_BINDING_SYNC_CREATE);
     store_image_set_uri (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
         store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));

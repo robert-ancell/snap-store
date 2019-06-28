@@ -20,6 +20,17 @@ struct _StoreOdrsReview
     gchar *summary;
 };
 
+enum
+{
+    PROP_0,
+    PROP_AUTHOR,
+    PROP_DATE_CREATED,
+    PROP_DESCRIPTION,
+    PROP_RATING,
+    PROP_SUMMARY,
+    PROP_LAST
+};
+
 G_DEFINE_TYPE (StoreOdrsReview, store_odrs_review, G_TYPE_OBJECT)
 
 static void
@@ -36,9 +47,83 @@ store_odrs_review_dispose (GObject *object)
 }
 
 static void
+store_odrs_review_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+    StoreOdrsReview *self = STORE_ODRS_REVIEW (object);
+
+    switch (prop_id)
+    {
+    case PROP_AUTHOR:
+        g_value_set_string (value, self->author);
+        break;
+    case PROP_DATE_CREATED:
+        g_value_set_boxed (value, self->date_created);
+        break;
+    case PROP_DESCRIPTION:
+        g_value_set_string (value, self->description);
+        break;
+    case PROP_RATING:
+        g_value_set_int64 (value, self->rating);
+        break;
+    case PROP_SUMMARY:
+        g_value_set_string (value, self->summary);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_odrs_review_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StoreOdrsReview *self = STORE_ODRS_REVIEW (object);
+
+    switch (prop_id)
+    {
+    case PROP_AUTHOR:
+        store_odrs_review_set_author (self, g_value_get_string (value));
+        break;
+    case PROP_DATE_CREATED:
+        store_odrs_review_set_date_created (self, g_value_get_boxed (value));
+        break;
+    case PROP_DESCRIPTION:
+        store_odrs_review_set_description (self, g_value_get_string (value));
+        break;
+    case PROP_RATING:
+        store_odrs_review_set_rating (self, g_value_get_int64 (value));
+        break;
+    case PROP_SUMMARY:
+        store_odrs_review_set_summary (self, g_value_get_string (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
 store_odrs_review_class_init (StoreOdrsReviewClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_odrs_review_dispose;
+    G_OBJECT_CLASS (klass)->get_property = store_odrs_review_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_odrs_review_set_property;
+
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_AUTHOR,
+                                     g_param_spec_string ("author", NULL, NULL, NULL, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_DATE_CREATED,
+                                     g_param_spec_boxed ("date-created", NULL, NULL, G_TYPE_DATE_TIME, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_DESCRIPTION,
+                                     g_param_spec_string ("description", NULL, NULL, NULL, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_RATING,
+                                     g_param_spec_int64 ("rating", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_SUMMARY,
+                                     g_param_spec_string ("summary", NULL, NULL, NULL, G_PARAM_READWRITE));
 }
 
 static void
@@ -101,8 +186,11 @@ void
 store_odrs_review_set_author (StoreOdrsReview *self, const gchar *author)
 {
     g_return_if_fail (STORE_IS_ODRS_REVIEW (self));
+
     g_clear_pointer (&self->author, g_free);
     self->author = g_strdup (author);
+
+    g_object_notify (G_OBJECT (self), "author");
 }
 
 const gchar *
@@ -116,8 +204,13 @@ void
 store_odrs_review_set_date_created (StoreOdrsReview *self, GDateTime *date_created)
 {
     g_return_if_fail (STORE_IS_ODRS_REVIEW (self));
+
+    if (self->date_created == date_created)
+        return;
     g_clear_pointer (&self->date_created, g_date_time_unref);
     self->date_created = g_date_time_ref (date_created);
+
+    g_object_notify (G_OBJECT (self), "date-created");
 }
 
 GDateTime *
@@ -131,8 +224,11 @@ void
 store_odrs_review_set_description (StoreOdrsReview *self, const gchar *description)
 {
     g_return_if_fail (STORE_IS_ODRS_REVIEW (self));
+
     g_clear_pointer (&self->description, g_free);
     self->description = g_strdup (description);
+
+    g_object_notify (G_OBJECT (self), "description");
 }
 
 const gchar *
@@ -146,7 +242,12 @@ void
 store_odrs_review_set_rating (StoreOdrsReview *self, gint64 rating)
 {
     g_return_if_fail (STORE_IS_ODRS_REVIEW (self));
+
+    if (self->rating == rating)
+        return;
     self->rating = rating;
+
+    g_object_notify (G_OBJECT (self), "rating");
 }
 
 gint64
@@ -160,8 +261,11 @@ void
 store_odrs_review_set_summary (StoreOdrsReview *self, const gchar *summary)
 {
     g_return_if_fail (STORE_IS_ODRS_REVIEW (self));
+
     g_clear_pointer (&self->summary, g_free);
     self->summary = g_strdup (summary);
+
+    g_object_notify (G_OBJECT (self), "summary");
 }
 
 const gchar *

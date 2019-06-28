@@ -30,6 +30,7 @@ enum
     PROP_0,
     PROP_HEIGHT,
     PROP_WIDTH,
+    PROP_URI,
     PROP_LAST
 };
 
@@ -170,6 +171,9 @@ store_image_get_property (GObject *object, guint prop_id, GValue *value, GParamS
     case PROP_WIDTH:
         g_value_set_int (value, self->width);
         break;
+    case PROP_URI:
+        g_value_set_string (value, self->uri);
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -188,6 +192,9 @@ store_image_set_property (GObject *object, guint prop_id, const GValue *value, G
         break;
     case PROP_WIDTH:
         self->width = g_value_get_int (value);
+        break;
+    case PROP_URI:
+        store_image_set_uri (self, g_value_get_string (value));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -208,6 +215,9 @@ store_image_class_init (StoreImageClass *klass)
     g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_WIDTH,
                                      g_param_spec_int ("width", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_URI,
+                                     g_param_spec_string ("uri", NULL, NULL, NULL, G_PARAM_READWRITE));
 }
 
 static void

@@ -73,8 +73,8 @@ store_review_view_set_review (StoreReviewView *self, StoreOdrsReview *review)
     if (review != NULL)
         self->review = g_object_ref (review);
 
-    store_rating_label_set_rating (self->rating_label, store_odrs_review_get_rating (review));
-    gtk_label_set_label (self->summary_label, store_odrs_review_get_summary (review));
+    g_object_bind_property (review, "rating", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (review, "summary", self->summary_label, "label", G_BINDING_SYNC_CREATE);
     g_autofree gchar *author_date_text = NULL;
     GDateTime *date_created = store_odrs_review_get_date_created (review);
     if (date_created != NULL) {
@@ -84,7 +84,7 @@ store_review_view_set_review (StoreReviewView *self, StoreOdrsReview *review)
     else
        author_date_text = g_strdup (store_odrs_review_get_author (review));
     gtk_label_set_label (self->author_date_label, author_date_text);
-    gtk_label_set_label (self->description_label, store_odrs_review_get_description (review));
+    g_object_bind_property (review, "description", self->description_label, "label", G_BINDING_SYNC_CREATE);
 }
 
 StoreOdrsReview *

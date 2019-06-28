@@ -26,9 +26,13 @@ struct _StoreAppPage
     StoreChannelCombo *channel_combo;
     GtkLabel *contact_label;
     GtkLabel *description_label;
+    GtkLabel *details_installed_size_label;
+    GtkLabel *details_license_label;
+    GtkLabel *details_publisher_label;
+    GtkLabel *details_updated_label;
+    GtkLabel *details_version_label;
     StoreImage *icon_image;
     StoreInstallButton *install_button;
-    GtkLabel *license_label;
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
     StoreRatingLabel *rating_label;
@@ -142,9 +146,13 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, channel_combo);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, contact_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, description_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_installed_size_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_license_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_publisher_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_updated_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_version_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, license_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, rating_label);
@@ -196,15 +204,20 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     self->cancellable = g_cancellable_new ();
     store_app_refresh_async (app, self->cancellable, refresh_cb, self);
 
-    gtk_label_set_label (self->title_label, store_app_get_title (app));
-    gtk_label_set_label (self->license_label, store_app_get_license (app));
-    gtk_label_set_label (self->publisher_label, store_app_get_publisher (app));
-    gtk_widget_set_visible (GTK_WIDGET (self->publisher_validated_image), store_app_get_publisher_validated (app));
-    gtk_label_set_label (self->summary_label, store_app_get_summary (app));
-    gtk_label_set_label (self->description_label, store_app_get_description (app));
+    g_object_bind_property (app, "title", self->title_label, "label", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "publisher", self->publisher_label, "label", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "publisher-validated", self->publisher_validated_image, "visible", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "summary", self->summary_label, "label", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "description", self->description_label, "label", G_BINDING_SYNC_CREATE);
     store_image_set_uri (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
         store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));
+
+    //gtk_label_set_label (self->details_version_label, store_app_get_version (app));
+    //gtk_label_set_label (self->details_updated_label, store_app_get_updated (app));
+    g_object_bind_property (app, "license", self->details_license_label, "label", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "publisher", self->details_publisher_label, "label", G_BINDING_SYNC_CREATE);
+    //gtk_label_set_label (self->details_installed_size_label, store_app_get_installed_size (app));
 
     if (store_app_get_contact (app) != NULL) {
         /* Link shown below app description to contact app publisher. */

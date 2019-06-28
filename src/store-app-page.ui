@@ -204,7 +204,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="version_label">
+                              <object class="GtkLabel" id="details_version_label">
                                 <property name="visible">True</property>
                                 <property name="margin-top">10</property>
                                 <property name="margin-left">10</property>
@@ -234,7 +234,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="updated_label">
+                              <object class="GtkLabel" id="details_updated_label">
                                 <property name="visible">True</property>
                                 <property name="margin-top">10</property>
                                 <property name="margin-left">10</property>
@@ -264,7 +264,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="license_label">
+                              <object class="GtkLabel" id="details_license_label">
                                 <property name="visible">True</property>
                                 <property name="margin-top">10</property>
                                 <property name="margin-left">10</property>
@@ -294,7 +294,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="developer_label">
+                              <object class="GtkLabel" id="details_publisher_label">
                                 <property name="visible">True</property>
                                 <property name="margin-top">10</property>
                                 <property name="margin-left">10</property>
@@ -324,7 +324,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="installed_size_label">
+                              <object class="GtkLabel" id="details_installed_size_label">
                                 <property name="visible">True</property>
                                 <property name="margin-top">10</property>
                                 <property name="margin-left">10</property>

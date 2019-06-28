@@ -106,7 +106,7 @@ store_hero_tile_set_app (StoreHeroTile *self, StoreApp *app)
 
     g_autofree gchar *title = g_utf8_strup (store_app_get_title (app), -1);
     gtk_label_set_label (self->title_label, title);
-    gtk_label_set_label (self->summary_label, store_app_get_summary (app));
+    g_object_bind_property (app, "summary", self->summary_label, "label", G_BINDING_SYNC_CREATE);
     store_image_set_uri (self->icon_image, NULL); // FIXME: Hack to reset icon
     if (store_app_get_icon (app) != NULL)
         store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));

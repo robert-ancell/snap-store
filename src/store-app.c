@@ -37,6 +37,7 @@ enum
     PROP_LICENSE,
     PROP_NAME,
     PROP_PUBLISHER,
+    PROP_PUBLISHER_VALIDATED,
     PROP_SCREENSHOTS,
     PROP_SUMMARY,
     PROP_TITLE,
@@ -98,6 +99,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
     case PROP_PUBLISHER:
         g_value_set_string (value, priv->publisher);
         break;
+    case PROP_PUBLISHER_VALIDATED:
+        g_value_set_boolean (value, priv->publisher_validated);
+        break;
     case PROP_SCREENSHOTS:
         g_value_set_boxed (value, priv->screenshots);
         break;
@@ -143,6 +147,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
         break;
     case PROP_PUBLISHER:
         store_app_set_publisher (self, g_value_get_string (value));
+        break;
+    case PROP_PUBLISHER_VALIDATED:
+        store_app_set_publisher_validated (self, g_value_get_boolean (value));
         break;
     case PROP_SCREENSHOTS:
         store_app_set_screenshots (self, g_value_get_boxed (value));
@@ -203,9 +210,10 @@ store_app_class_init (StoreAppClass *klass)
     install_string_property (klass, PROP_DESCRIPTION, "description");
     install_object_property (klass, PROP_ICON, "icon", store_media_get_type ());
     install_boolean_property (klass, PROP_INSTALLED, "installed");
-    install_string_property (klass, PROP_NAME, "license");
+    install_string_property (klass, PROP_LICENSE, "license");
     install_string_property (klass, PROP_NAME, "name");
     install_string_property (klass, PROP_PUBLISHER, "publisher");
+    install_boolean_property (klass, PROP_PUBLISHER_VALIDATED, "publisher-validated");
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
     install_string_property (klass, PROP_SUMMARY, "summary");
     install_string_property (klass, PROP_TITLE, "title");
