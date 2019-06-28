@@ -14,5 +14,6 @@
     <file>default-snap-icon.svg</file>
     <file>developer-verified.svg</file>
     <file>gtk-style.css</file>
+    <file>snap-background.png</file>
   </gresource>
 </gresources>
