@@ -62,7 +62,10 @@ store_odrs_review_new_from_json (JsonNode *node)
 
     JsonObject *object = json_node_get_object (node);
     store_odrs_review_set_author (self, json_object_get_string_member (object, "author"));
-    //store_odrs_review_set_date_created (self, json_object_get_string_member (object, "date-created"));
+    if (json_object_has_member (object, "date-created")) {
+        g_autoptr(GDateTime) date_created = g_date_time_new_from_unix_utc (json_object_get_int_member (object, "date-created"));
+        store_odrs_review_set_date_created (self, date_created);
+    }
     store_odrs_review_set_description (self, json_object_get_string_member (object, "description"));
     store_odrs_review_set_rating (self, json_object_get_int_member (object, "rating"));
     store_odrs_review_set_summary (self, json_object_get_string_member (object, "summary"));
@@ -79,8 +82,10 @@ store_odrs_review_to_json (StoreOdrsReview *self)
     json_builder_begin_object (builder);
     json_builder_set_member_name (builder, "author");
     json_builder_add_string_value (builder, self->author);
-    //json_builder_set_member_name (builder, "date-created");
-    //json_builder_add_string_value (builder, self->date_created);
+    if (self->date_created) {
+        json_builder_set_member_name (builder, "date-created");
+        json_builder_add_int_value (builder, g_date_time_to_unix (self->date_created));
+    }
     json_builder_set_member_name (builder, "description");
     json_builder_add_string_value (builder, self->description);
     json_builder_set_member_name (builder, "rating");
