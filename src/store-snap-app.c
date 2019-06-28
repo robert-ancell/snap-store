@@ -357,7 +357,9 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
             else
                 name = g_strdup_printf ("%s/%s", snapd_channel_get_track (c), snapd_channel_get_risk (c));
             store_channel_set_name (channel, name);
+            store_channel_set_size (channel, snapd_channel_get_size (c));
             store_channel_set_version (channel, snapd_channel_get_version (c));
+            store_channel_set_release_date (channel, snapd_channel_get_released_at (c));
             g_ptr_array_add (store_channels, g_steal_pointer (&channel));
         }
         store_app_set_channels (STORE_APP (self), store_channels);

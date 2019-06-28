@@ -14,6 +14,8 @@ struct _StoreChannel
     GObject parent_instance;
 
     gchar *name;
+    GDateTime *release_date;
+    gint64 size;
     gchar *version;
 };
 
@@ -25,6 +27,7 @@ store_channel_dispose (GObject *object)
     StoreChannel *self = STORE_CHANNEL (object);
 
     g_clear_pointer (&self->name, g_free);
+    g_clear_pointer (&self->release_date, g_date_time_unref);
     g_clear_pointer (&self->version, g_free);
 
     G_OBJECT_CLASS (store_channel_parent_class)->dispose (object);
@@ -56,6 +59,11 @@ store_channel_new_from_json (JsonNode *node)
 
     JsonObject *object = json_node_get_object (node);
     store_channel_set_name (self, json_object_get_string_member (object, "name"));
+    if (json_object_has_member (object, "release-date")) {
+        g_autoptr(GDateTime) release_date = g_date_time_new_from_unix_utc (json_object_get_int_member (object, "release-date"));
+        store_channel_set_release_date (self, release_date);
+    }
+    store_channel_set_size (self, json_object_get_int_member (object, "size"));
     store_channel_set_version (self, json_object_get_string_member (object, "version"));
 
     return self;
@@ -70,6 +78,12 @@ store_channel_to_json (StoreChannel *self)
     json_builder_begin_object (builder);
     json_builder_set_member_name (builder, "name");
     json_builder_add_string_value (builder, self->name);
+    if (self->release_date != NULL) {
+        json_builder_set_member_name (builder, "release-date");
+        json_builder_add_int_value (builder, g_date_time_to_unix (self->release_date));
+    }
+    json_builder_set_member_name (builder, "size");
+    json_builder_add_int_value (builder, self->size);
     json_builder_set_member_name (builder, "version");
     json_builder_add_string_value (builder, self->version);
     json_builder_end_object (builder);
@@ -90,6 +104,39 @@ store_channel_get_name (StoreChannel *self)
 {
     g_return_val_if_fail (STORE_IS_CHANNEL (self), NULL);
     return self->name;
+}
+
+void
+store_channel_set_release_date (StoreChannel *self, GDateTime *release_date)
+{
+    g_return_if_fail (STORE_IS_CHANNEL (self));
+
+    if (self->release_date == release_date)
+        return;
+    g_clear_pointer (&self->release_date, g_date_time_unref);
+    if (release_date != NULL)
+        self->release_date = g_date_time_ref (release_date);
+}
+
+GDateTime *
+store_channel_get_release_date (StoreChannel *self)
+{
+    g_return_val_if_fail (STORE_IS_CHANNEL (self), NULL);
+    return self->release_date;
+}
+
+void
+store_channel_set_size (StoreChannel *self, gint64 size)
+{
+    g_return_if_fail (STORE_IS_CHANNEL (self));
+    self->size = size;
+}
+
+gint64
+store_channel_get_size (StoreChannel *self)
+{
+    g_return_val_if_fail (STORE_IS_CHANNEL (self), 0);
+    return self->size;
 }
 
 void
