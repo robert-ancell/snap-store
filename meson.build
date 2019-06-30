@@ -13,6 +13,8 @@ configure_file(output: 'config.h', configuration: conf)
 
 top_inc = include_directories('.')
 
+cc = meson.get_compiler('c')
+m_dep = cc.find_library('m', required : false)
 gtk_dep = dependency('gtk+-3.0')
 snapd_glib_dep = dependency('snapd-glib')
 soup_dep = dependency('libsoup-2.4')

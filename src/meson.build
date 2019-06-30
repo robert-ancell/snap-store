@@ -32,6 +32,6 @@ exe = executable('snap-store',
                    'store-snap-pool.c',
                    'store-window.c'
                  ],
-                 dependencies : [ gtk_dep, snapd_glib_dep ],
+                 dependencies : [ m_dep, gtk_dep, snapd_glib_dep ],
                  include_directories : [ top_inc ],
                  install : true)

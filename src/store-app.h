@@ -53,6 +53,8 @@ void          store_app_set_appstream_id        (StoreApp *app, const gchar *app
 
 const gchar  *store_app_get_appstream_id        (StoreApp *app);
 
+gint          store_app_get_average_rating      (StoreApp *app);
+
 void          store_app_set_channels            (StoreApp *app, GPtrArray *channels);
 
 GPtrArray    *store_app_get_channels            (StoreApp *app);

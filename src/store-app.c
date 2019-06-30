@@ -7,6 +7,8 @@
  * (at your option) any later version.
  */
 
+#include <math.h>
+
 #include "store-app.h"
 
 typedef struct
@@ -30,6 +32,7 @@ typedef struct
 enum
 {
     PROP_0,
+    PROP_AVERAGE_RATING,
     PROP_CHANNELS,
     PROP_CONTACT,
     PROP_DESCRIPTION,
@@ -78,6 +81,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 
     switch (prop_id)
     {
+    case PROP_AVERAGE_RATING:
+        g_value_set_int (value, store_app_get_average_rating (self));
+        break;
     case PROP_CHANNELS:
         g_value_set_boxed (value, priv->channels);
         break;
@@ -214,6 +220,9 @@ store_app_class_init (StoreAppClass *klass)
     G_OBJECT_CLASS (klass)->get_property = store_app_get_property;
     G_OBJECT_CLASS (klass)->set_property = store_app_set_property;
 
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_AVERAGE_RATING,
+                                     g_param_spec_int ("average-rating", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
     install_array_property (klass, PROP_CHANNELS, "channels");
     install_string_property (klass, PROP_CONTACT, "contact");
     install_string_property (klass, PROP_DESCRIPTION, "description");
@@ -316,6 +325,66 @@ store_app_get_appstream_id (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
     return priv->appstream_id;
+}
+
+static gdouble
+pnormaldist (gdouble qn)
+{
+    static gdouble b[11] = {
+        1.570796288,      0.03706987906,   -0.8364353589e-3,
+       -0.2250947176e-3,  0.6841218299e-5,  0.5824238515e-5,
+       -0.104527497e-5,   0.8360937017e-7, -0.3231081277e-8,
+        0.3657763036e-10, 0.6936233982e-12 };
+    gdouble w1, w3;
+    guint i;
+
+    if (qn < 0 || qn > 1)
+        return 0; // This is an error case
+    if (qn == 0.5)
+        return 0;
+
+    w1 = qn;
+    if (qn > 0.5)
+        w1 = 1.0 - w1;
+    w3 = -log (4.0 * w1 * (1.0 - w1));
+    w1 = b[0];
+    for (i = 1; i < 11; i++)
+        w1 = w1 + (b[i] * pow (w3, i));
+
+    if (qn > 0.5)
+        return sqrt (w1 * w3);
+    else
+        return -sqrt (w1 * w3);
+}
+
+static gdouble
+wilson_score (gdouble value, gdouble n, gdouble power)
+{
+    if (value == 0)
+        return 0;
+
+    gdouble z = pnormaldist (1 - power / 2);
+    gdouble phat = value / n;
+    return (phat + z * z / (2 * n) - z * sqrt ((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n);
+}
+
+gint
+store_app_get_average_rating (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), -1);
+
+    gdouble sum = priv->ratings[0] + priv->ratings[1] + priv->ratings[2] + priv->ratings[3] + priv->ratings[4];
+    if (sum == 0)
+         return -1;
+
+    gdouble val = wilson_score (priv->ratings[0], sum, 0.2) * -2 +
+                  wilson_score (priv->ratings[1], sum, 0.2) * -1 +
+                  wilson_score (priv->ratings[3], sum, 0.2) *  1 +
+                  wilson_score (priv->ratings[4], sum, 0.2) *  2;
+
+    return ceil (20 * (val + 3));
 }
 
 void
@@ -534,6 +603,7 @@ store_app_set_ratings (StoreApp *self, const gint64 *ratings)
         priv->ratings[i] = ratings[i];
 
     g_object_notify (G_OBJECT (self), "ratings");
+    g_object_notify (G_OBJECT (self), "average-rating");
 }
 
 const gint64 *

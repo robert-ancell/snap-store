@@ -215,6 +215,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_object_bind_property (app, "publisher", self->details_publisher_label, "label", G_BINDING_SYNC_CREATE);
     //gtk_label_set_label (self->details_installed_size_label, store_app_get_installed_size (app));
 
+    g_object_bind_property (app, "average-rating", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "ratings", self->ratings_view, "ratings", G_BINDING_SYNC_CREATE);
 
     if (store_app_get_contact (app) != NULL) {
