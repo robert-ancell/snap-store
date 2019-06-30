@@ -17,8 +17,10 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreSnapPool, store_snap_pool, STORE, SNAP_POOL, GObject)
 
-StoreSnapPool *store_snap_pool_new      (void);
+StoreSnapPool *store_snap_pool_new       (void);
 
-StoreSnapApp  *store_snap_pool_get_snap (StoreSnapPool *pool, const gchar *name);
+StoreSnapApp  *store_snap_pool_get_snap  (StoreSnapPool *pool, const gchar *name);
+
+GPtrArray     *store_snap_pool_get_snaps (StoreSnapPool *pool);
 
 G_END_DECLS

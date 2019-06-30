@@ -25,6 +25,7 @@ struct _StoreHomePage
 
     StoreCache *cache;
     GCancellable *cancellable;
+    StoreOdrsClient *odrs_client;
     GCancellable *search_cancellable;
     GSource *search_timeout;
     StoreSnapPool *snap_pool;
@@ -65,6 +66,8 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
+        if (self->odrs_client != NULL)
+            store_app_set_ratings (STORE_APP (app), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (app))));
         if (self->cache != NULL)
             store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
@@ -122,6 +125,7 @@ store_home_page_dispose (GObject *object)
     g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
+    g_clear_object (&self->odrs_client);
     g_cancellable_cancel (self->search_cancellable);
     g_clear_object (&self->search_cancellable);
     if (self->search_timeout)
@@ -238,6 +242,8 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
+        if (self->odrs_client != NULL)
+            store_app_set_ratings (STORE_APP (app), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (app))));
         if (self->cache != NULL)
             store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
@@ -407,6 +413,8 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_app_set_installed (STORE_APP (app), TRUE);
         store_snap_app_update_from_search (app, snap);
+        if (self->odrs_client != NULL)
+            store_app_set_ratings (STORE_APP (app), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (app))));
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
     store_category_view_set_apps (self->installed_view, apps);
@@ -442,6 +450,13 @@ store_home_page_set_cache (StoreHomePage *self, StoreCache *cache)
         StoreCategoryView *view = link->data;
         store_category_view_set_cache (view, cache);
     }
+}
+
+void
+store_home_page_set_odrs_client (StoreHomePage *self, StoreOdrsClient *odrs_client)
+{
+    g_return_if_fail (STORE_IS_HOME_PAGE (self));
+    g_set_object (&self->odrs_client, odrs_client);
 }
 
 void
@@ -485,6 +500,8 @@ store_home_page_load (StoreHomePage *self)
                         const gchar *name = json_node_get_string (node);
                         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, name);
                         store_app_set_name (STORE_APP (app), name);
+                        if (self->odrs_client != NULL)
+                            store_app_set_ratings (STORE_APP (app), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (app))));
                         store_app_update_from_cache (STORE_APP (app), self->cache);
                         g_ptr_array_add (apps, g_object_ref (app));
                     }

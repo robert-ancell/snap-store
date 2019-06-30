@@ -119,8 +119,8 @@ get_ratings_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
 
     JsonNode *root = json_parser_get_root (parser);
-    if (json_node_get_node_type (root) != JSON_NODE_ARRAY) {
-        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to get ratinngs, server returned non JSON array");
+    if (json_node_get_node_type (root) != JSON_NODE_OBJECT) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to get ratings, server returned non JSON object");
         return;
     }
 
@@ -247,6 +247,10 @@ gint64 *
 store_odrs_client_get_ratings (StoreOdrsClient *self, const gchar *app_id)
 {
     g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), FALSE);
+
+    if (self->ratings == NULL)
+        return NULL;
+
     return g_hash_table_lookup (self->ratings, app_id);
 }
 

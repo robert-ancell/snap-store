@@ -600,7 +600,7 @@ store_app_set_ratings (StoreApp *self, const gint64 *ratings)
     g_return_if_fail (STORE_IS_APP (self));
 
     for (int i = 0; i < 5; i++)
-        priv->ratings[i] = ratings[i];
+        priv->ratings[i] = ratings != NULL ? ratings[i] : 0;
 
     g_object_notify (G_OBJECT (self), "ratings");
     g_object_notify (G_OBJECT (self), "average-rating");

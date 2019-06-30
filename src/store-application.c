@@ -96,6 +96,28 @@ store_application_command_line (GApplication *application, GApplicationCommandLi
 }
 
 static void
+ratings_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    StoreApplication *self = user_data;
+
+    g_autoptr(GError) error = NULL;
+    if (!store_odrs_client_update_ratings_finish (STORE_ODRS_CLIENT (object), result, &error)) {
+        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+            return;
+        g_warning ("Failed to get ratings: %s", error->message);
+        // FIXME: Retry?
+        return;
+    }
+
+    /* Update existing apps */
+    g_autoptr(GPtrArray) snaps = store_snap_pool_get_snaps (self->snap_pool);
+    for (guint i = 0; i < snaps->len; i++) {
+        StoreSnapApp *snap = g_ptr_array_index (snaps, i);
+        store_app_set_ratings (STORE_APP (snap), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (snap))));
+    }
+}
+
+static void
 store_application_startup (GApplication *application)
 {
     StoreApplication *self = STORE_APPLICATION (application);
@@ -107,6 +129,8 @@ store_application_startup (GApplication *application)
     store_window_set_odrs_client (self->window, self->odrs_client);
     store_window_set_snap_pool (self->window, self->snap_pool);
     store_window_load (self->window);
+
+    store_odrs_client_update_ratings_async (self->odrs_client, NULL, ratings_cb, self);
 
     self->css_provider = gtk_css_provider_new ();
     gtk_style_context_add_provider_for_screen (gdk_screen_get_default (), GTK_STYLE_PROVIDER (self->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);

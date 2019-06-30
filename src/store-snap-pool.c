@@ -60,3 +60,20 @@ store_snap_pool_get_snap (StoreSnapPool *self, const gchar *name)
 
     return g_object_ref (snap);
 }
+
+GPtrArray *
+store_snap_pool_get_snaps (StoreSnapPool *self)
+{
+    g_return_val_if_fail (STORE_IS_SNAP_POOL (self), NULL);
+
+    g_autoptr(GPtrArray) snaps = g_ptr_array_new_with_free_func (g_object_unref);
+    GHashTableIter iter;
+    g_hash_table_iter_init (&iter, self->snaps);
+    gpointer key, value;
+    while (g_hash_table_iter_next (&iter, &key, &value)) {
+        StoreSnapApp *snap = value;
+        g_ptr_array_add (snaps, g_object_ref (snap));
+    }
+
+    return g_steal_pointer (&snaps);
+}

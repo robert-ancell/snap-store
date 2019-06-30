@@ -105,6 +105,7 @@ store_window_set_odrs_client (StoreWindow *self, StoreOdrsClient *odrs_client)
     g_set_object (&self->odrs_client, odrs_client);
 
     store_app_page_set_odrs_client (self->app_page, odrs_client);
+    store_home_page_set_odrs_client (self->home_page, odrs_client);
 }
 
 void
