@@ -23,6 +23,7 @@ struct _StoreWindow
     GtkStack *stack;
 
     StoreCache *cache;
+    StoreOdrsClient *odrs_client;
 };
 
 G_DEFINE_TYPE (StoreWindow, store_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -46,6 +47,7 @@ store_window_dispose (GObject *object)
     StoreWindow *self = STORE_WINDOW (object);
 
     g_clear_object (&self->cache);
+    g_clear_object (&self->odrs_client);
 
     G_OBJECT_CLASS (store_window_parent_class)->dispose (object);
 }
@@ -93,6 +95,16 @@ store_window_set_cache (StoreWindow *self, StoreCache *cache)
 
     store_app_page_set_cache (self->app_page, cache);
     store_home_page_set_cache (self->home_page, cache);
+}
+
+void
+store_window_set_odrs_client (StoreWindow *self, StoreOdrsClient *odrs_client)
+{
+    g_return_if_fail (STORE_IS_WINDOW (self));
+
+    g_set_object (&self->odrs_client, odrs_client);
+
+    store_app_page_set_odrs_client (self->app_page, odrs_client);
 }
 
 void

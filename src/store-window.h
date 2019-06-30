@@ -14,20 +14,23 @@
 #include "store-app.h"
 #include "store-application.h"
 #include "store-cache.h"
+#include "store-odrs-client.h"
 #include "store-snap-pool.h"
 
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreWindow, store_window, STORE, WINDOW, GtkApplicationWindow)
 
-StoreWindow *store_window_new           (StoreApplication *application);
+StoreWindow *store_window_new             (StoreApplication *application);
 
-void         store_window_set_cache     (StoreWindow *window, StoreCache *cache);
+void         store_window_set_cache       (StoreWindow *window, StoreCache *cache);
 
-void         store_window_set_snap_pool (StoreWindow *window, StoreSnapPool *pool);
+void         store_window_set_odrs_client (StoreWindow *window, StoreOdrsClient *client);
 
-void         store_window_load          (StoreWindow *self);
+void         store_window_set_snap_pool   (StoreWindow *window, StoreSnapPool *pool);
 
-void         store_window_show_app      (StoreWindow *self, StoreApp *app);
+void         store_window_load            (StoreWindow *self);
+
+void         store_window_show_app        (StoreWindow *self, StoreApp *app);
 
 G_END_DECLS

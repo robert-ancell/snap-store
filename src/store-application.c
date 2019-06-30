@@ -13,6 +13,7 @@
 
 #include "store-application.h"
 #include "store-cache.h"
+#include "store-odrs-client.h"
 #include "store-snap-pool.h"
 #include "store-window.h"
 
@@ -24,6 +25,7 @@ struct _StoreApplication
 
     StoreCache *cache;
     GtkCssProvider *css_provider;
+    StoreOdrsClient *odrs_client;
     StoreSnapPool *snap_pool;
 };
 
@@ -36,6 +38,7 @@ store_application_dispose (GObject *object)
 
     g_clear_object (&self->cache);
     g_clear_object (&self->css_provider);
+    g_clear_object (&self->odrs_client);
     g_clear_object (&self->snap_pool);
 
     G_OBJECT_CLASS (store_application_parent_class)->dispose (object);
@@ -101,6 +104,7 @@ store_application_startup (GApplication *application)
 
     self->window = store_window_new (self);
     store_window_set_cache (self->window, self->cache);
+    store_window_set_odrs_client (self->window, self->odrs_client);
     store_window_set_snap_pool (self->window, self->snap_pool);
     store_window_load (self->window);
 
@@ -142,6 +146,7 @@ store_application_init (StoreApplication *self)
     g_application_add_main_option_entries (G_APPLICATION (self), options);
 
     self->cache = store_cache_new ();
+    self->odrs_client = store_odrs_client_new ();
     self->snap_pool = store_snap_pool_new ();
 }
 

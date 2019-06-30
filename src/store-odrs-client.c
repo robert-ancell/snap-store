@@ -21,6 +21,7 @@ struct _StoreOdrsClient
     GCancellable *cancellable;
     gchar *distro;
     gchar *locale;
+    GHashTable *ratings;
     gchar *server_uri;
     SoupSession *soup_session;
     gchar *user_hash;
@@ -37,6 +38,7 @@ store_odrs_client_dispose (GObject *object)
     g_clear_object (&self->cancellable);
     g_clear_pointer (&self->distro, g_free);
     g_clear_pointer (&self->locale, g_free);
+    g_clear_pointer (&self->ratings, g_hash_table_unref);
     g_clear_object (&self->soup_session);
     g_clear_pointer (&self->user_hash, g_free);
 
@@ -104,9 +106,7 @@ get_ratings_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GError) error = NULL;
     g_autoptr(GInputStream) stream = soup_session_send_finish (SOUP_SESSION (object), result, &error);
     if (stream == NULL) {
-        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-            return;
-        g_warning ("Failed to download image: %s", error->message);
+        g_task_return_error (task, g_steal_pointer (&error));
         return;
     }
 
@@ -114,17 +114,47 @@ get_ratings_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 
     g_autoptr(JsonParser) parser = json_parser_new ();
     if (!json_parser_load_from_stream (parser, stream, self->cancellable, &error)) {
-        g_warning ("Failed to parse ODRS response: %s", error->message);
+        g_task_return_error (task, g_steal_pointer (&error));
         return;
     }
 
     JsonNode *root = json_parser_get_root (parser);
     if (json_node_get_node_type (root) != JSON_NODE_ARRAY) {
-        g_warning ("Failed to get reviews, server returned non JSON array");
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to get ratinngs, server returned non JSON array");
         return;
     }
 
-    g_task_return_pointer (task, NULL, NULL); // FIXME
+    g_clear_pointer (&self->ratings, g_hash_table_unref);
+    self->ratings = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+
+    if (json_node_get_node_type (root) != JSON_NODE_OBJECT) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "ODRS server returned non-object ratings");
+        return;
+    }
+    JsonObject *ratings_object = json_node_get_object (root);
+    JsonObjectIter iter;
+    json_object_iter_init (&iter, ratings_object);
+    const gchar *app_id;
+    JsonNode *node;
+    while (json_object_iter_next (&iter, &app_id, &node)) {
+        if (json_node_get_node_type (node) != JSON_NODE_OBJECT)
+            continue;
+        JsonObject *o = json_node_get_object (node);
+        gint64 *values = g_new0 (gint64, 5);
+        if (json_object_has_member (o, "star1"))
+            values[0] = json_object_get_int_member (o, "star1");
+        if (json_object_has_member (o, "star2"))
+            values[1] = json_object_get_int_member (o, "star2");
+        if (json_object_has_member (o, "star3"))
+            values[2] = json_object_get_int_member (o, "star3");
+        if (json_object_has_member (o, "star4"))
+            values[3] = json_object_get_int_member (o, "star4");
+        if (json_object_has_member (o, "star5"))
+            values[4] = json_object_get_int_member (o, "star5");
+        g_hash_table_insert (self->ratings, g_strdup (app_id), values);
+    }
+
+    g_task_return_boolean (task, TRUE);
 }
 
 static void
@@ -135,9 +165,7 @@ get_reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GError) error = NULL;
     g_autoptr(GInputStream) stream = soup_session_send_finish (SOUP_SESSION (object), result, &error);
     if (stream == NULL) {
-        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-            return;
-        g_warning ("Failed to download image: %s", error->message);
+        g_task_return_error (task, g_steal_pointer (&error));
         return;
     }
 
@@ -145,13 +173,13 @@ get_reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 
     g_autoptr(JsonParser) parser = json_parser_new ();
     if (!json_parser_load_from_stream (parser, stream, self->cancellable, &error)) {
-        g_warning ("Failed to parse ODRS response: %s", error->message);
+        g_task_return_error (task, g_steal_pointer (&error));
         return;
     }
 
     JsonNode *root = json_parser_get_root (parser);
     if (json_node_get_node_type (root) != JSON_NODE_ARRAY) {
-        g_warning ("Failed to get reviews, server returned non JSON array");
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to get reviews, server returned non JSON array");
         return;
     }
 
@@ -200,9 +228,7 @@ submit_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GError) error = NULL;
     g_autoptr(GInputStream) stream = soup_session_send_finish (SOUP_SESSION (object), result, &error);
     if (stream == NULL) {
-        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-            return;
-        g_warning ("Failed to download image: %s", error->message);
+        g_task_return_error (task, g_steal_pointer (&error));
         return;
     }
 
@@ -210,16 +236,23 @@ submit_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 
     g_autoptr(JsonParser) parser = json_parser_new ();
     if (!json_parser_load_from_stream (parser, stream, self->cancellable, &error)) {
-        g_warning ("Failed to parse ODRS response: %s", error->message);
+        g_task_return_error (task, g_steal_pointer (&error));
         return;
     }
 
     g_task_return_boolean (task, TRUE);
 }
 
+gint64 *
+store_odrs_client_get_ratings (StoreOdrsClient *self, const gchar *app_id)
+{
+    g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), FALSE);
+    return g_hash_table_lookup (self->ratings, app_id);
+}
+
 void
-store_odrs_client_get_ratings_async (StoreOdrsClient *self,
-                                     GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+store_odrs_client_update_ratings_async (StoreOdrsClient *self,
+                                        GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
 
@@ -230,13 +263,13 @@ store_odrs_client_get_ratings_async (StoreOdrsClient *self,
     soup_session_send_async (self->soup_session, message, self->cancellable, get_ratings_cb, task);
 }
 
-GPtrArray *
-store_odrs_client_get_ratings_finish (StoreOdrsClient *self, GAsyncResult *result, GError **error)
+gboolean
+store_odrs_client_update_ratings_finish (StoreOdrsClient *self, GAsyncResult *result, GError **error)
 {
     g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), FALSE);
     g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), FALSE);
 
-    return g_task_propagate_pointer (G_TASK (result), error);
+    return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 void

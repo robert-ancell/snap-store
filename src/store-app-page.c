@@ -14,7 +14,6 @@
 #include "store-channel-combo.h"
 #include "store-image.h"
 #include "store-install-button.h"
-#include "store-odrs-client.h"
 #include "store-rating-label.h"
 #include "store-review-view.h"
 #include "store-screenshot-view.h"
@@ -44,6 +43,7 @@ struct _StoreAppPage
     StoreApp *app;
     StoreCache *cache;
     GCancellable *cancellable;
+    StoreOdrsClient *odrs_client;
 };
 
 G_DEFINE_TYPE (StoreAppPage, store_app_page, GTK_TYPE_BOX)
@@ -132,6 +132,7 @@ store_app_page_dispose (GObject *object)
     g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     self->cancellable = g_cancellable_new ();
+    g_clear_object (&self->odrs_client);
 
     G_OBJECT_CLASS (store_app_page_parent_class)->dispose (object);
 }
@@ -182,15 +183,6 @@ store_app_page_new (void)
 }
 
 void
-store_app_page_set_cache (StoreAppPage *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_APP_PAGE (self));
-    g_set_object (&self->cache, cache);
-    store_image_set_cache (self->icon_image, cache);
-    // FIXME: Should apply to children
-}
-
-void
 store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 {
     g_return_if_fail (STORE_IS_APP_PAGE (self));
@@ -235,23 +227,23 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 
     gtk_widget_hide (GTK_WIDGET (self->reviews_box));
 
-    /* Load cached reviews */
-    if (self->cache != NULL) {
-        g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (self->cache, "reviews", store_app_get_name (app), FALSE, NULL, NULL);
-        if (reviews_cache != NULL) {
-            g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
-            JsonArray *array = json_node_get_array (reviews_cache);
-            for (guint i = 0; i < json_array_get_length (array); i++) {
-                JsonNode *node = json_array_get_element (array, i);
-                g_ptr_array_add (reviews, store_odrs_review_new_from_json (node));
+    if (self->odrs_client != NULL) {
+        /* Load cached reviews */
+        if (self->cache != NULL) {
+            g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (self->cache, "reviews", store_app_get_name (app), FALSE, NULL, NULL);
+            if (reviews_cache != NULL) {
+                g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
+                JsonArray *array = json_node_get_array (reviews_cache);
+                for (guint i = 0; i < json_array_get_length (array); i++) {
+                    JsonNode *node = json_array_get_element (array, i);
+                    g_ptr_array_add (reviews, store_odrs_review_new_from_json (node));
+                }
+                set_reviews (self, reviews);
             }
-            set_reviews (self, reviews);
         }
-    }
 
-    g_autoptr(StoreOdrsClient) odrs_client = store_odrs_client_new ();
-    store_odrs_client_get_reviews_async (odrs_client, store_app_get_appstream_id (app), NULL, 0, NULL, reviews_cb, self);
-    g_steal_pointer (&odrs_client); // FIXME leaks for testing, remove when async call keeps reference
+        store_odrs_client_get_reviews_async (self->odrs_client, store_app_get_appstream_id (app), NULL, 0, NULL, reviews_cb, self);
+    }
 
     store_screenshot_view_set_app (self->screenshot_view, app);
     GPtrArray *screenshots = store_app_get_screenshots (app);
@@ -263,4 +255,20 @@ store_app_page_get_app (StoreAppPage *self)
 {
     g_return_val_if_fail (STORE_IS_APP_PAGE (self), NULL);
     return self->app;
+}
+
+void
+store_app_page_set_cache (StoreAppPage *self, StoreCache *cache)
+{
+    g_return_if_fail (STORE_IS_APP_PAGE (self));
+    g_set_object (&self->cache, cache);
+    store_image_set_cache (self->icon_image, cache);
+    // FIXME: Should apply to children
+}
+
+void
+store_app_page_set_odrs_client (StoreAppPage *self, StoreOdrsClient *odrs_client)
+{
+    g_return_if_fail (STORE_IS_APP_PAGE (self));
+    g_set_object (&self->odrs_client, odrs_client);
 }
