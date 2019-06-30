@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="StoreRatingsView" parent="GtkGrid">
+    <property name="row-spacing">12</property>
+    <property name="column-spacing">12</property>
+    <style>
+      <class name="ratings-view-grid"/>
+    </style>
+    <child>
+      <object class="GtkLabel" id="five_star_count_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label">0</property>
+        <style>
+          <class name="ratings-view-star-count-label"/>
+        </style>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="StoreRatingLabel">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="rating">100</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="four_star_count_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label">0</property>
+        <style>
+          <class name="ratings-view-star-count-label"/>
+        </style>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="StoreRatingLabel">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="rating">80</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="three_star_count_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label">0</property>
+        <style>
+          <class name="ratings-view-star-count-label"/>
+        </style>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="StoreRatingLabel">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="rating">60</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="two_star_count_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label">0</property>
+        <style>
+          <class name="ratings-view-star-count-label"/>
+        </style>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="StoreRatingLabel">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="rating">40</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="one_star_count_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label">0</property>
+        <style>
+          <class name="ratings-view-star-count-label"/>
+        </style>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="StoreRatingLabel">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="rating">20</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">4</property>
+      </packing>
+    </child>
+  </template>
+</interface>

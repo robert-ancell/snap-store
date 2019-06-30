@@ -21,6 +21,7 @@ typedef struct
     gchar *name;
     gchar *publisher;
     gboolean publisher_validated;
+    gint64 *ratings;
     GPtrArray *screenshots;
     gchar *summary;
     gchar *title;
@@ -38,6 +39,7 @@ enum
     PROP_NAME,
     PROP_PUBLISHER,
     PROP_PUBLISHER_VALIDATED,
+    PROP_RATINGS,
     PROP_SCREENSHOTS,
     PROP_SUMMARY,
     PROP_TITLE,
@@ -60,6 +62,7 @@ store_app_dispose (GObject *object)
     g_clear_pointer (&priv->license, g_free);
     g_clear_pointer (&priv->name, g_free);
     g_clear_pointer (&priv->publisher, g_free);
+    g_clear_pointer (&priv->ratings, g_free);
     g_clear_pointer (&priv->screenshots, g_ptr_array_unref);
     g_clear_pointer (&priv->summary, g_free);
     g_clear_pointer (&priv->title, g_free);
@@ -101,6 +104,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
         break;
     case PROP_PUBLISHER_VALIDATED:
         g_value_set_boolean (value, priv->publisher_validated);
+        break;
+    case PROP_RATINGS:
+        g_value_set_pointer (value, priv->ratings);
         break;
     case PROP_SCREENSHOTS:
         g_value_set_boxed (value, priv->screenshots);
@@ -150,6 +156,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
         break;
     case PROP_PUBLISHER_VALIDATED:
         store_app_set_publisher_validated (self, g_value_get_boolean (value));
+        break;
+    case PROP_RATINGS:
+        store_app_set_ratings (self, g_value_get_pointer (value));
         break;
     case PROP_SCREENSHOTS:
         store_app_set_screenshots (self, g_value_get_boxed (value));
@@ -214,6 +223,9 @@ store_app_class_init (StoreAppClass *klass)
     install_string_property (klass, PROP_NAME, "name");
     install_string_property (klass, PROP_PUBLISHER, "publisher");
     install_boolean_property (klass, PROP_PUBLISHER_VALIDATED, "publisher-validated");
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_RATINGS,
+                                     g_param_spec_pointer ("ratings", NULL, NULL, G_PARAM_READWRITE));
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
     install_string_property (klass, PROP_SUMMARY, "summary");
     install_string_property (klass, PROP_TITLE, "title");
@@ -225,6 +237,7 @@ store_app_init (StoreApp *self)
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
     priv->channels = g_ptr_array_new ();
+    priv->ratings = g_new0 (gint64, 5);
     priv->screenshots = g_ptr_array_new ();
 }
 
@@ -508,6 +521,29 @@ store_app_get_publisher_validated (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), FALSE);
 
     return priv->publisher_validated;
+}
+
+void
+store_app_set_ratings (StoreApp *self, const gint64 *ratings)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    for (int i = 0; i < 5; i++)
+        priv->ratings[i] = ratings[i];
+
+    g_object_notify (G_OBJECT (self), "ratings");
+}
+
+const gint64 *
+store_app_get_ratings (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    return priv->ratings;
 }
 
 void

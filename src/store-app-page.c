@@ -15,6 +15,7 @@
 #include "store-image.h"
 #include "store-install-button.h"
 #include "store-rating-label.h"
+#include "store-ratings-view.h"
 #include "store-review-view.h"
 #include "store-screenshot-view.h"
 
@@ -35,6 +36,7 @@ struct _StoreAppPage
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
     StoreRatingLabel *rating_label;
+    StoreRatingsView *ratings_view;
     GtkBox *reviews_box;
     StoreScreenshotView *screenshot_view;
     GtkLabel *summary_label;
@@ -157,6 +159,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, rating_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, ratings_view);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshot_view);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
@@ -172,6 +175,7 @@ store_app_page_init (StoreAppPage *self)
     store_image_get_type ();
     store_install_button_get_type ();
     store_rating_label_get_type ();
+    store_ratings_view_get_type ();
     store_screenshot_view_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
@@ -210,6 +214,8 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_object_bind_property (app, "license", self->details_license_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "publisher", self->details_publisher_label, "label", G_BINDING_SYNC_CREATE);
     //gtk_label_set_label (self->details_installed_size_label, store_app_get_installed_size (app));
+
+    g_object_bind_property (app, "ratings", self->ratings_view, "ratings", G_BINDING_SYNC_CREATE);
 
     if (store_app_get_contact (app) != NULL) {
         /* Link shown below app description to contact app publisher. */
