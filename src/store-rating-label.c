@@ -26,19 +26,9 @@ enum
 G_DEFINE_TYPE (StoreRatingLabel, store_rating_label, GTK_TYPE_LABEL)
 
 static void
-store_rating_label_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+store_rating_label_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
 {
-    StoreRatingLabel *self = STORE_RATING_LABEL (object);
-
-    switch (prop_id)
-    {
-    case PROP_RATING:
-        g_value_set_int (value, self->rating);
-        break;
-    default:
-        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-        break;
-    }
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 }
 
 static void
@@ -65,7 +55,7 @@ store_rating_label_class_init (StoreRatingLabelClass *klass)
 
     g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_RATING,
-                                     g_param_spec_int ("rating", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
+                                     g_param_spec_int ("rating", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_WRITABLE));
 }
 
 static void
@@ -97,11 +87,4 @@ store_rating_label_set_rating (StoreRatingLabel *self, gint rating)
     else
         stars = "☆☆☆☆☆";
     gtk_label_set_label (GTK_LABEL (self), stars);
-}
-
-gint
-store_rating_label_get_rating (StoreRatingLabel *self)
-{
-    g_return_val_if_fail (STORE_IS_RATING_LABEL (self), -1);
-    return self->rating;
 }
