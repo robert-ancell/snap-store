@@ -13,7 +13,6 @@
 
 #include "store-channel-combo.h"
 #include "store-image.h"
-#include "store-install-button.h"
 #include "store-rating-label.h"
 #include "store-review-summary.h"
 #include "store-review-view.h"
@@ -32,10 +31,12 @@ struct _StoreAppPage
     GtkLabel *details_updated_label;
     GtkLabel *details_version_label;
     StoreImage *icon_image;
-    StoreInstallButton *install_button;
+    GtkButton *install_button;
+    GtkButton *launch_button;
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
     StoreRatingLabel *rating_label;
+    GtkButton *remove_button;
     GtkBox *review_count_label;
     StoreReviewSummary *review_summary;
     GtkBox *reviews_box;
@@ -140,6 +141,24 @@ contact_link_cb (StoreAppPage *self, const gchar *uri)
 }
 
 static void
+install_cb (StoreAppPage *self)
+{
+    store_app_install_async (self->app, NULL, NULL, NULL, NULL);
+}
+
+static void
+launch_cb (StoreAppPage *self)
+{
+    //store_app_launch_async (self->app, NULL, NULL, NULL, NULL);
+}
+
+static void
+remove_cb (StoreAppPage *self)
+{
+    store_app_remove_async (self->app, NULL, NULL, NULL);
+}
+
+static void
 store_app_page_dispose (GObject *object)
 {
     StoreAppPage *self = STORE_APP_PAGE (object);
@@ -170,9 +189,11 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, details_version_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, icon_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, install_button);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, launch_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, rating_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, remove_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, review_count_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, review_summary);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
@@ -181,6 +202,9 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, title_label);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), contact_link_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), install_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), launch_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), remove_cb);
 }
 
 static void
@@ -188,7 +212,6 @@ store_app_page_init (StoreAppPage *self)
 {
     store_channel_combo_get_type ();
     store_image_get_type ();
-    store_install_button_get_type ();
     store_rating_label_get_type ();
     store_review_summary_get_type ();
     store_screenshot_view_get_type ();
@@ -250,7 +273,10 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 
     store_channel_combo_set_app (self->channel_combo, app);
 
-    store_install_button_set_app (self->install_button, app);
+    g_object_bind_property (app, "installed", self->channel_combo, "visible", G_BINDING_SYNC_CREATE | G_BINDING_INVERT_BOOLEAN);
+    g_object_bind_property (app, "installed", self->launch_button, "visible", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "installed", self->remove_button, "visible", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "installed", self->install_button, "visible", G_BINDING_SYNC_CREATE | G_BINDING_INVERT_BOOLEAN);
 
     gtk_widget_hide (GTK_WIDGET (self->reviews_box));
 

@@ -54,12 +54,48 @@
     background-size: cover;
 }
 
+.app-page-install-button {
+    background-color: #0e8420;
+}
+
+.app-page-install-button-label {
+    color: #ffffff;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.app-page-launch-button {
+    background-color: #0e8420;
+}
+
+.app-page-launch-button-label {
+    color: #ffffff;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
 .app-page-publisher-label {
     font-size: 14px;
 }
 
 .app-page-rating-label {
     font-size: 14px;
+}
+
+.app-page-remove-button {
+    background-color: #c7162b;
+}
+
+.app-page-remove-button-label {
+    color: #ffffff;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .app-page-review-box {
@@ -159,9 +195,6 @@
 
 .hero-tile {
     background: #10d356;
-}
-
-.install-button {
 }
 
 .review-summary-bar {
