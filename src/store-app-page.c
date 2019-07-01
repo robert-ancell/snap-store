@@ -79,13 +79,13 @@ installed_size_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_val
 
     g_autofree gchar *text = NULL;
     if (size >= 1000000000)
-        text = g_strdup_printf ("%.0fGB", round (size / 1000000000.0));
+        text = g_strdup_printf ("%.0f GB", round (size / 1000000000.0));
     else if (size >= 1000000)
-        text = g_strdup_printf ("%.0fMB", round (size / 1000000.0));
+        text = g_strdup_printf ("%.0f MB", round (size / 1000000.0));
     else if (size >= 1000)
-        text = g_strdup_printf ("%.0fkB", round (size / 1000.0));
+        text = g_strdup_printf ("%.0f kB", round (size / 1000.0));
     else
-        text = g_strdup_printf ("%" G_GINT64_FORMAT "B", size);
+        text = g_strdup_printf ("%" G_GINT64_FORMAT " B", size);
 
     g_value_set_string (to_value, text);
 
