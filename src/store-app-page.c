@@ -230,13 +230,13 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_object_bind_property (app, "publisher", self->details_publisher_label, "label", G_BINDING_SYNC_CREATE);
     //gtk_label_set_label (self->details_installed_size_label, store_app_get_installed_size (app));
 
-    g_object_bind_property (app, "ratings-average", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
-    g_object_bind_property_full (app, "ratings-total", self->review_count_label, "label", G_BINDING_SYNC_CREATE, ratings_total_to_label, NULL, NULL, NULL);
-    g_object_bind_property (app, "one-star-review-count", self->ratings_view, "one-star-review-count", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "two-star-review-count", self->ratings_view, "two-star-review-count", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "three-star-review-count", self->ratings_view, "three-star-review-count", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "four-star-review-count", self->ratings_view, "four-star-review-count", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "five-star-review-count", self->ratings_view, "five-star-review-count", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-average", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
+    g_object_bind_property_full (app, "review-count", self->review_count_label, "label", G_BINDING_SYNC_CREATE, ratings_total_to_label, NULL, NULL, NULL);
+    g_object_bind_property (app, "review-count-one-star", self->ratings_view, "review-count-one-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-two-star", self->ratings_view, "review-count-two-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-three-star", self->ratings_view, "review-count-three-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-four-star", self->ratings_view, "review-count-four-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-five-star", self->ratings_view, "review-count-five-star", G_BINDING_SYNC_CREATE);
 
     if (store_app_get_contact (app) != NULL) {
         /* Link shown below app description to contact app publisher. */

@@ -37,11 +37,11 @@ struct _StoreRatingsView
 enum
 {
     PROP_0,
-    PROP_ONE_STAR_REVIEW_COUNT,
-    PROP_TWO_STAR_REVIEW_COUNT,
-    PROP_THREE_STAR_REVIEW_COUNT,
-    PROP_FOUR_STAR_REVIEW_COUNT,
-    PROP_FIVE_STAR_REVIEW_COUNT,
+    PROP_REVIEW_COUNT_ONE_STAR,
+    PROP_REVIEW_COUNT_TWO_STAR,
+    PROP_REVIEW_COUNT_THREE_STAR,
+    PROP_REVIEW_COUNT_FOUR_STAR,
+    PROP_REVIEW_COUNT_FIVE_STAR,
     PROP_LAST
 };
 
@@ -74,20 +74,20 @@ store_ratings_view_set_property (GObject *object, guint prop_id, const GValue *v
 
     switch (prop_id)
     {
-    case PROP_ONE_STAR_REVIEW_COUNT:
-        store_ratings_view_set_one_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_ONE_STAR:
+        store_ratings_view_set_review_count_one_star (self, g_value_get_int64 (value));
         break;
-    case PROP_TWO_STAR_REVIEW_COUNT:
-        store_ratings_view_set_two_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_TWO_STAR:
+        store_ratings_view_set_review_count_two_star (self, g_value_get_int64 (value));
         break;
-    case PROP_THREE_STAR_REVIEW_COUNT:
-        store_ratings_view_set_three_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_THREE_STAR:
+        store_ratings_view_set_review_count_three_star (self, g_value_get_int64 (value));
         break;
-    case PROP_FOUR_STAR_REVIEW_COUNT:
-        store_ratings_view_set_four_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_FOUR_STAR:
+        store_ratings_view_set_review_count_four_star (self, g_value_get_int64 (value));
         break;
-    case PROP_FIVE_STAR_REVIEW_COUNT:
-        store_ratings_view_set_five_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_FIVE_STAR:
+        store_ratings_view_set_review_count_five_star (self, g_value_get_int64 (value));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -102,20 +102,20 @@ store_ratings_view_class_init (StoreRatingsViewClass *klass)
     G_OBJECT_CLASS (klass)->set_property = store_ratings_view_set_property;
 
     g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_ONE_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("one-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+                                     PROP_REVIEW_COUNT_ONE_STAR,
+                                     g_param_spec_int64 ("review-count-one-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_TWO_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("two-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+                                     PROP_REVIEW_COUNT_TWO_STAR,
+                                     g_param_spec_int64 ("review-count-two-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_THREE_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("three-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+                                     PROP_REVIEW_COUNT_THREE_STAR,
+                                     g_param_spec_int64 ("review-count-three-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_FOUR_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("four-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+                                     PROP_REVIEW_COUNT_FOUR_STAR,
+                                     g_param_spec_int64 ("review-count-four-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_FIVE_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("five-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+                                     PROP_REVIEW_COUNT_FIVE_STAR,
+                                     g_param_spec_int64 ("review-count-five-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-ratings-view.ui");
 
@@ -140,7 +140,7 @@ store_ratings_view_init (StoreRatingsView *self)
 }
 
 void
-store_ratings_view_set_one_star_review_count (StoreRatingsView *self, gint64 count)
+store_ratings_view_set_review_count_one_star (StoreRatingsView *self, gint64 count)
 {
     g_return_if_fail (STORE_IS_RATINGS_VIEW (self));
 
@@ -151,7 +151,7 @@ store_ratings_view_set_one_star_review_count (StoreRatingsView *self, gint64 cou
 }
 
 void
-store_ratings_view_set_two_star_review_count (StoreRatingsView *self, gint64 count)
+store_ratings_view_set_review_count_two_star (StoreRatingsView *self, gint64 count)
 {
     g_return_if_fail (STORE_IS_RATINGS_VIEW (self));
 
@@ -162,7 +162,7 @@ store_ratings_view_set_two_star_review_count (StoreRatingsView *self, gint64 cou
 }
 
 void
-store_ratings_view_set_three_star_review_count (StoreRatingsView *self, gint64 count)
+store_ratings_view_set_review_count_three_star (StoreRatingsView *self, gint64 count)
 {
     g_return_if_fail (STORE_IS_RATINGS_VIEW (self));
 
@@ -173,7 +173,7 @@ store_ratings_view_set_three_star_review_count (StoreRatingsView *self, gint64 c
 }
 
 void
-store_ratings_view_set_four_star_review_count (StoreRatingsView *self, gint64 count)
+store_ratings_view_set_review_count_four_star (StoreRatingsView *self, gint64 count)
 {
     g_return_if_fail (STORE_IS_RATINGS_VIEW (self));
 
@@ -184,7 +184,7 @@ store_ratings_view_set_four_star_review_count (StoreRatingsView *self, gint64 co
 }
 
 void
-store_ratings_view_set_five_star_review_count (StoreRatingsView *self, gint64 count)
+store_ratings_view_set_review_count_five_star (StoreRatingsView *self, gint64 count)
 {
     g_return_if_fail (STORE_IS_RATINGS_VIEW (self));
 

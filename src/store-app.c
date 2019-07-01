@@ -23,12 +23,12 @@ typedef struct
     gchar *name;
     gchar *publisher;
     gboolean publisher_validated;
+    gint64 review_count_one_star;
+    gint64 review_count_two_star;
+    gint64 review_count_three_star;
+    gint64 review_count_four_star;
+    gint64 review_count_five_star;
     GPtrArray *screenshots;
-    gint64 one_star_review_count;
-    gint64 two_star_review_count;
-    gint64 three_star_review_count;
-    gint64 four_star_review_count;
-    gint64 five_star_review_count;
     gchar *summary;
     gchar *title;
 } StoreAppPrivate;
@@ -45,14 +45,14 @@ enum
     PROP_NAME,
     PROP_PUBLISHER,
     PROP_PUBLISHER_VALIDATED,
-    PROP_RATINGS_AVERAGE,
-    PROP_RATINGS_TOTAL,
+    PROP_REVIEW_AVERAGE,
+    PROP_REVIEW_COUNT,
+    PROP_REVIEW_COUNT_ONE_STAR,
+    PROP_REVIEW_COUNT_TWO_STAR,
+    PROP_REVIEW_COUNT_THREE_STAR,
+    PROP_REVIEW_COUNT_FOUR_STAR,
+    PROP_REVIEW_COUNT_FIVE_STAR,
     PROP_SCREENSHOTS,
-    PROP_ONE_STAR_REVIEW_COUNT,
-    PROP_TWO_STAR_REVIEW_COUNT,
-    PROP_THREE_STAR_REVIEW_COUNT,
-    PROP_FOUR_STAR_REVIEW_COUNT,
-    PROP_FIVE_STAR_REVIEW_COUNT,
     PROP_SUMMARY,
     PROP_TITLE,
     PROP_LAST
@@ -116,29 +116,29 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
     case PROP_PUBLISHER_VALIDATED:
         g_value_set_boolean (value, priv->publisher_validated);
         break;
-    case PROP_RATINGS_AVERAGE:
-        g_value_set_int (value, store_app_get_ratings_average (self));
-        break;
-    case PROP_RATINGS_TOTAL:
-        g_value_set_int64 (value, store_app_get_ratings_total (self));
-        break;
     case PROP_SCREENSHOTS:
         g_value_set_boxed (value, priv->screenshots);
         break;
-    case PROP_ONE_STAR_REVIEW_COUNT:
-        g_value_set_int64 (value, priv->one_star_review_count);
+    case PROP_REVIEW_AVERAGE:
+        g_value_set_int (value, store_app_get_review_average (self));
         break;
-    case PROP_TWO_STAR_REVIEW_COUNT:
-        g_value_set_int64 (value, priv->two_star_review_count);
+    case PROP_REVIEW_COUNT:
+        g_value_set_int64 (value, store_app_get_review_count (self));
         break;
-    case PROP_THREE_STAR_REVIEW_COUNT:
-        g_value_set_int64 (value, priv->three_star_review_count);
+    case PROP_REVIEW_COUNT_ONE_STAR:
+        g_value_set_int64 (value, priv->review_count_one_star);
         break;
-    case PROP_FOUR_STAR_REVIEW_COUNT:
-        g_value_set_int64 (value, priv->four_star_review_count);
+    case PROP_REVIEW_COUNT_TWO_STAR:
+        g_value_set_int64 (value, priv->review_count_two_star);
         break;
-    case PROP_FIVE_STAR_REVIEW_COUNT:
-        g_value_set_int64 (value, priv->five_star_review_count);
+    case PROP_REVIEW_COUNT_THREE_STAR:
+        g_value_set_int64 (value, priv->review_count_three_star);
+        break;
+    case PROP_REVIEW_COUNT_FOUR_STAR:
+        g_value_set_int64 (value, priv->review_count_four_star);
+        break;
+    case PROP_REVIEW_COUNT_FIVE_STAR:
+        g_value_set_int64 (value, priv->review_count_five_star);
         break;
     case PROP_SUMMARY:
         g_value_set_string (value, priv->summary);
@@ -189,20 +189,20 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
     case PROP_SCREENSHOTS:
         store_app_set_screenshots (self, g_value_get_boxed (value));
         break;
-    case PROP_ONE_STAR_REVIEW_COUNT:
-        store_app_set_one_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_ONE_STAR:
+        store_app_set_review_count_one_star (self, g_value_get_int64 (value));
         break;
-    case PROP_TWO_STAR_REVIEW_COUNT:
-        store_app_set_two_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_TWO_STAR:
+        store_app_set_review_count_two_star (self, g_value_get_int64 (value));
         break;
-    case PROP_THREE_STAR_REVIEW_COUNT:
-        store_app_set_three_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_THREE_STAR:
+        store_app_set_review_count_three_star (self, g_value_get_int64 (value));
         break;
-    case PROP_FOUR_STAR_REVIEW_COUNT:
-        store_app_set_four_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_FOUR_STAR:
+        store_app_set_review_count_four_star (self, g_value_get_int64 (value));
         break;
-    case PROP_FIVE_STAR_REVIEW_COUNT:
-        store_app_set_five_star_review_count (self, g_value_get_int64 (value));
+    case PROP_REVIEW_COUNT_FIVE_STAR:
+        store_app_set_review_count_five_star (self, g_value_get_int64 (value));
         break;
     case PROP_SUMMARY:
         store_app_set_summary (self, g_value_get_string (value));
@@ -265,27 +265,27 @@ store_app_class_init (StoreAppClass *klass)
     install_string_property (klass, PROP_PUBLISHER, "publisher");
     install_boolean_property (klass, PROP_PUBLISHER_VALIDATED, "publisher-validated");
     g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_RATINGS_AVERAGE,
-                                     g_param_spec_int ("ratings-average", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
+                                     PROP_REVIEW_AVERAGE,
+                                     g_param_spec_int ("review-average", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_RATINGS_TOTAL,
-                                     g_param_spec_int64 ("ratings-total", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
+                                     PROP_REVIEW_COUNT,
+                                     g_param_spec_int64 ("review-count", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_REVIEW_COUNT_ONE_STAR,
+                                     g_param_spec_int64 ("review-count-one-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_REVIEW_COUNT_TWO_STAR,
+                                     g_param_spec_int64 ("review-count-two-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_REVIEW_COUNT_THREE_STAR,
+                                     g_param_spec_int64 ("review-count-three-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_REVIEW_COUNT_FOUR_STAR,
+                                     g_param_spec_int64 ("review-count-four-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_REVIEW_COUNT_FIVE_STAR,
+                                     g_param_spec_int64 ("review-count-five-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
-    g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_ONE_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("one-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
-    g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_TWO_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("two-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
-    g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_THREE_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("three-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
-    g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_FOUR_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("four-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
-    g_object_class_install_property (G_OBJECT_CLASS (klass),
-                                     PROP_FIVE_STAR_REVIEW_COUNT,
-                                     g_param_spec_int64 ("five-star-review-count", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
     install_string_property (klass, PROP_SUMMARY, "summary");
     install_string_property (klass, PROP_TITLE, "title");
 }
@@ -623,32 +623,102 @@ wilson_score (gdouble value, gdouble n, gdouble power)
 }
 
 gint
-store_app_get_ratings_average (StoreApp *self)
+store_app_get_review_average (StoreApp *self)
 {
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
     g_return_val_if_fail (STORE_IS_APP (self), -1);
 
-    gdouble total = store_app_get_ratings_total (self);
+    gdouble total = store_app_get_review_count (self);
     if (total == 0)
          return -1;
 
-    gdouble val = wilson_score (priv->one_star_review_count, total, 0.2) * -2 +
-                  wilson_score (priv->two_star_review_count, total, 0.2) * -1 +
-                  wilson_score (priv->four_star_review_count, total, 0.2) *  1 +
-                  wilson_score (priv->five_star_review_count, total, 0.2) *  2;
+    gdouble val = wilson_score (priv->review_count_one_star, total, 0.2) * -2 +
+                  wilson_score (priv->review_count_two_star, total, 0.2) * -1 +
+                  wilson_score (priv->review_count_four_star, total, 0.2) *  1 +
+                  wilson_score (priv->review_count_five_star, total, 0.2) *  2;
 
     return ceil (20 * (val + 3));
 }
 
 gint64
-store_app_get_ratings_total (StoreApp *self)
+store_app_get_review_count (StoreApp *self)
 {
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
     g_return_val_if_fail (STORE_IS_APP (self), -1);
 
-    return priv->one_star_review_count + priv->two_star_review_count + priv->three_star_review_count + priv->four_star_review_count + priv->five_star_review_count;
+    return priv->review_count_one_star + priv->review_count_two_star + priv->review_count_three_star + priv->review_count_four_star + priv->review_count_five_star;
+}
+
+void
+store_app_set_review_count_one_star (StoreApp *self, gint64 count)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    priv->review_count_one_star = count;
+
+    g_object_notify (G_OBJECT (self), "review-count-one-star");
+    g_object_notify (G_OBJECT (self), "review-count");
+    g_object_notify (G_OBJECT (self), "review-average");
+}
+
+void
+store_app_set_review_count_two_star (StoreApp *self, gint64 count)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    priv->review_count_two_star = count;
+
+    g_object_notify (G_OBJECT (self), "review-count-two-star");
+    g_object_notify (G_OBJECT (self), "review-count");
+    g_object_notify (G_OBJECT (self), "review-average");
+}
+
+void
+store_app_set_review_count_three_star (StoreApp *self, gint64 count)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    priv->review_count_three_star = count;
+
+    g_object_notify (G_OBJECT (self), "review-count-three-star");
+    g_object_notify (G_OBJECT (self), "review-count");
+    g_object_notify (G_OBJECT (self), "review-average");
+}
+
+void
+store_app_set_review_count_four_star (StoreApp *self, gint64 count)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    priv->review_count_four_star = count;
+
+    g_object_notify (G_OBJECT (self), "review-count-four-star");
+    g_object_notify (G_OBJECT (self), "review-count");
+    g_object_notify (G_OBJECT (self), "review-average");
+}
+
+void
+store_app_set_review_count_five_star (StoreApp *self, gint64 count)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    priv->review_count_five_star = count;
+
+    g_object_notify (G_OBJECT (self), "review-count-five-star");
+    g_object_notify (G_OBJECT (self), "review-count");
+    g_object_notify (G_OBJECT (self), "review-average");
 }
 
 void
@@ -673,76 +743,6 @@ store_app_get_screenshots (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
     return priv->screenshots;
-}
-
-void
-store_app_set_one_star_review_count (StoreApp *self, gint64 count)
-{
-    StoreAppPrivate *priv = store_app_get_instance_private (self);
-
-    g_return_if_fail (STORE_IS_APP (self));
-
-    priv->one_star_review_count = count;
-
-    g_object_notify (G_OBJECT (self), "one-star-review-count");
-    g_object_notify (G_OBJECT (self), "ratings-average");
-    g_object_notify (G_OBJECT (self), "ratings-total");
-}
-
-void
-store_app_set_two_star_review_count (StoreApp *self, gint64 count)
-{
-    StoreAppPrivate *priv = store_app_get_instance_private (self);
-
-    g_return_if_fail (STORE_IS_APP (self));
-
-    priv->two_star_review_count = count;
-
-    g_object_notify (G_OBJECT (self), "two-star-review-count");
-    g_object_notify (G_OBJECT (self), "ratings-average");
-    g_object_notify (G_OBJECT (self), "ratings-total");
-}
-
-void
-store_app_set_three_star_review_count (StoreApp *self, gint64 count)
-{
-    StoreAppPrivate *priv = store_app_get_instance_private (self);
-
-    g_return_if_fail (STORE_IS_APP (self));
-
-    priv->three_star_review_count = count;
-
-    g_object_notify (G_OBJECT (self), "three-star-review-count");
-    g_object_notify (G_OBJECT (self), "ratings-average");
-    g_object_notify (G_OBJECT (self), "ratings-total");
-}
-
-void
-store_app_set_four_star_review_count (StoreApp *self, gint64 count)
-{
-    StoreAppPrivate *priv = store_app_get_instance_private (self);
-
-    g_return_if_fail (STORE_IS_APP (self));
-
-    priv->four_star_review_count = count;
-
-    g_object_notify (G_OBJECT (self), "four-star-review-count");
-    g_object_notify (G_OBJECT (self), "ratings-average");
-    g_object_notify (G_OBJECT (self), "ratings-total");
-}
-
-void
-store_app_set_five_star_review_count (StoreApp *self, gint64 count)
-{
-    StoreAppPrivate *priv = store_app_get_instance_private (self);
-
-    g_return_if_fail (STORE_IS_APP (self));
-
-    priv->five_star_review_count = count;
-
-    g_object_notify (G_OBJECT (self), "five-star-review-count");
-    g_object_notify (G_OBJECT (self), "ratings-average");
-    g_object_notify (G_OBJECT (self), "ratings-total");
 }
 
 void

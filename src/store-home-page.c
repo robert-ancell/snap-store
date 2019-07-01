@@ -48,11 +48,11 @@ set_review_counts (StoreHomePage *self, StoreApp *app)
         return;
 
     gint64 *ratings = store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (app));
-    store_app_set_one_star_review_count (app, ratings != NULL ? ratings[0] : 0);
-    store_app_set_two_star_review_count (app, ratings != NULL ? ratings[1] : 0);
-    store_app_set_three_star_review_count (app, ratings != NULL ? ratings[2] : 0);
-    store_app_set_four_star_review_count (app, ratings != NULL ? ratings[3] : 0);
-    store_app_set_five_star_review_count (app, ratings != NULL ? ratings[4] : 0);
+    store_app_set_review_count_one_star (app, ratings != NULL ? ratings[0] : 0);
+    store_app_set_review_count_two_star (app, ratings != NULL ? ratings[1] : 0);
+    store_app_set_review_count_three_star (app, ratings != NULL ? ratings[2] : 0);
+    store_app_set_review_count_four_star (app, ratings != NULL ? ratings[3] : 0);
+    store_app_set_review_count_five_star (app, ratings != NULL ? ratings[4] : 0);
 }
 
 static void

@@ -89,19 +89,19 @@ void          store_app_set_publisher_validated     (StoreApp *app, gboolean val
 
 gboolean      store_app_get_publisher_validated     (StoreApp *app);
 
-void          store_app_set_one_star_review_count   (StoreApp *app, const gint64 count);
+gint          store_app_get_review_average          (StoreApp *app);
 
-void          store_app_set_two_star_review_count   (StoreApp *app, const gint64 count);
+gint64        store_app_get_review_count            (StoreApp *app);
 
-void          store_app_set_three_star_review_count (StoreApp *app, const gint64 count);
+void          store_app_set_review_count_one_star   (StoreApp *app, const gint64 count);
 
-void          store_app_set_four_star_review_count  (StoreApp *app, const gint64 count);
+void          store_app_set_review_count_two_star   (StoreApp *app, const gint64 count);
 
-void          store_app_set_five_star_review_count  (StoreApp *app, const gint64 count);
+void          store_app_set_review_count_three_star (StoreApp *app, const gint64 count);
 
-gint          store_app_get_ratings_average         (StoreApp *app);
+void          store_app_set_review_count_four_star  (StoreApp *app, const gint64 count);
 
-gint64        store_app_get_ratings_total           (StoreApp *app);
+void          store_app_set_review_count_five_star  (StoreApp *app, const gint64 count);
 
 void          store_app_set_screenshots             (StoreApp *app, GPtrArray *screenshots);
 
