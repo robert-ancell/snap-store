@@ -37,6 +37,7 @@ struct _StoreAppPage
     GtkImage *publisher_validated_image;
     StoreRatingLabel *rating_label;
     StoreRatingsView *ratings_view;
+    GtkBox *review_count_label;
     GtkBox *reviews_box;
     StoreScreenshotView *screenshot_view;
     GtkLabel *summary_label;
@@ -49,6 +50,19 @@ struct _StoreAppPage
 };
 
 G_DEFINE_TYPE (StoreAppPage, store_app_page, GTK_TYPE_BOX)
+
+static gboolean
+ratings_total_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue *to_value, gpointer user_data G_GNUC_UNUSED)
+{
+    gint64 count = g_value_get_int64 (from_value);
+    if (count > 0) {
+        g_autofree gchar *text = g_strdup_printf ("(%" G_GINT64_FORMAT ")", count);
+        g_value_set_string (to_value, text);
+    }
+    else
+        g_value_set_string (to_value, "");
+    return TRUE;
+}
 
 static void
 refresh_cb (GObject *object, GAsyncResult *result, gpointer user_data)
@@ -160,6 +174,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, rating_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, ratings_view);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, review_count_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshot_view);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
@@ -216,6 +231,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     //gtk_label_set_label (self->details_installed_size_label, store_app_get_installed_size (app));
 
     g_object_bind_property (app, "ratings-average", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
+    g_object_bind_property_full (app, "ratings-total", self->review_count_label, "label", G_BINDING_SYNC_CREATE, ratings_total_to_label, NULL, NULL, NULL);
     g_object_bind_property (app, "one-star-review-count", self->ratings_view, "one-star-review-count", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "two-star-review-count", self->ratings_view, "two-star-review-count", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "three-star-review-count", self->ratings_view, "three-star-review-count", G_BINDING_SYNC_CREATE);

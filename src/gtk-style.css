@@ -58,6 +58,13 @@
     font-size: 14px;
 }
 
+.app-page-review-count-label {
+    padding-left: 8px;
+    font-family: Ubuntu-Light;
+    font-size: 14px;
+    color: #60625d;
+}
+
 .app-page-reviews-box {
     padding-bottom: 52px;
     padding-left: 128px;

@@ -120,7 +120,7 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
         g_value_set_int (value, store_app_get_ratings_average (self));
         break;
     case PROP_RATINGS_TOTAL:
-        g_value_set_int (value, store_app_get_ratings_total (self));
+        g_value_set_int64 (value, store_app_get_ratings_total (self));
         break;
     case PROP_SCREENSHOTS:
         g_value_set_boxed (value, priv->screenshots);
@@ -269,7 +269,7 @@ store_app_class_init (StoreAppClass *klass)
                                      g_param_spec_int ("ratings-average", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_RATINGS_TOTAL,
-                                     g_param_spec_int ("ratings-total", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
+                                     g_param_spec_int64 ("ratings-total", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
     g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_ONE_STAR_REVIEW_COUNT,
@@ -641,7 +641,7 @@ store_app_get_ratings_average (StoreApp *self)
     return ceil (20 * (val + 3));
 }
 
-gint
+gint64
 store_app_get_ratings_total (StoreApp *self)
 {
     StoreAppPrivate *priv = store_app_get_instance_private (self);

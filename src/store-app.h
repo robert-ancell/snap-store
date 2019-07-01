@@ -101,7 +101,7 @@ void          store_app_set_five_star_review_count  (StoreApp *app, const gint64
 
 gint          store_app_get_ratings_average         (StoreApp *app);
 
-gint          store_app_get_ratings_total           (StoreApp *app);
+gint64        store_app_get_ratings_total           (StoreApp *app);
 
 void          store_app_set_screenshots             (StoreApp *app, GPtrArray *screenshots);
 
