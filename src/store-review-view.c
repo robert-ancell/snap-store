@@ -17,6 +17,7 @@ struct _StoreReviewView
 
     GtkLabel *author_date_label;
     GtkLabel *description_label;
+    GtkLabel *feedback_label;
     StoreRatingLabel *rating_label;
     GtkLabel *summary_label;
 
@@ -24,6 +25,20 @@ struct _StoreReviewView
 };
 
 G_DEFINE_TYPE (StoreReviewView, store_review_view, GTK_TYPE_BOX)
+
+static void
+feedback_cb (StoreReviewView *self, const gchar *type)
+{
+    if (g_strcmp0 (type, "y") == 0) {
+        // FIXME
+    }
+    else if (g_strcmp0 (type, "n") == 0) {
+        // FIXME
+    }
+    else if (g_strcmp0 (type, "r") == 0) {
+        // FIXME
+    }
+}
 
 static void
 store_review_view_dispose (GObject *object)
@@ -44,8 +59,11 @@ store_review_view_class_init (StoreReviewViewClass *klass)
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, author_date_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, description_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, feedback_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, rating_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreReviewView, summary_label);
+
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), feedback_cb);
 }
 
 static void
@@ -53,6 +71,10 @@ store_review_view_init (StoreReviewView *self)
 {
     store_rating_label_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
+
+    gtk_label_set_label (self->feedback_label,
+                         /* Text shown under each review. Don't translate the href values */
+                         "Was this review useful to you?\t<a href=\"y\">Yes</a> | <a href=\"n\">No</a> | <a href=\"r\">Report…</a>");
 }
 
 StoreReviewView *

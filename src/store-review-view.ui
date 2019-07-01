@@ -57,12 +57,14 @@
         <property name="visible">True</property>
         <property name="orientation">horizontal</property>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="feedback_label">
             <property name="visible">True</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes" comments="Label at the bottom of each review beside the yes/no/report buttons">Was this review useful to you?</property>
+            <property name="use-markup">True</property>
+            <property name="track-visited-links">False</property>
+            <signal name="activate-link" handler="feedback_cb" object="StoreReviewView" swapped="yes"/>
             <style>
-              <class name="review-useful-label"/>
+              <class name="review-feedback-label"/>
             </style>
           </object>
         </child>

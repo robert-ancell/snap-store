@@ -226,17 +226,17 @@
     padding-top: 12px;
 }
 
-.review-summary-label {
-    font-family: Ubuntu;
-    font-size: 16px;
-    color: #111111;
-}
-
-.review-useful-label {
+.review-feedback-label {
     font-family: Ubuntu-Light;
     font-size: 14px;
     color: #111111;
     padding-top: 16px;
+}
+
+.review-summary-label {
+    font-family: Ubuntu;
+    font-size: 16px;
+    color: #111111;
 }
 
 .review-view-rating-label {
