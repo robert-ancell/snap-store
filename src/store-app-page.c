@@ -54,6 +54,21 @@ struct _StoreAppPage
 G_DEFINE_TYPE (StoreAppPage, store_app_page, GTK_TYPE_BOX)
 
 static gboolean
+date_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue *to_value, gpointer user_data G_GNUC_UNUSED)
+{
+    GDateTime *date = g_value_get_boxed (from_value);
+    if (date == NULL) {
+        g_value_set_string (to_value, "");
+        return TRUE;
+    }
+
+    g_autofree gchar *text = g_date_time_format (date, "%e %B %Y");
+    g_value_set_string (to_value, text);
+
+    return TRUE;
+}
+
+static gboolean
 installed_size_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue *to_value, gpointer user_data G_GNUC_UNUSED)
 {
     gint64 size = g_value_get_int64 (from_value);
@@ -273,7 +288,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
         store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));
 
     g_object_bind_property (app, "version", self->details_version_label, "label", G_BINDING_SYNC_CREATE);
-    //gtk_label_set_label (self->details_updated_label, store_app_get_updated (app));
+    g_object_bind_property_full (app, "updated-date", self->details_updated_label, "label", G_BINDING_SYNC_CREATE, date_to_label, NULL, NULL, NULL); // FIXME: Support updated for uninstalled snaps
     g_object_bind_property (app, "license", self->details_license_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "publisher", self->details_publisher_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property_full (app, "installed-size", self->details_installed_size_label, "label", G_BINDING_SYNC_CREATE, installed_size_to_label, NULL, NULL, NULL); // FIXME: Support download size for uninstalled snaps

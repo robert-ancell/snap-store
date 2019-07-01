@@ -345,6 +345,8 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
     store_app_set_description (STORE_APP (self), snapd_snap_get_description (snap));
     store_app_set_contact (STORE_APP (self), snapd_snap_get_contact (snap));
 
+    if (snapd_snap_get_install_date (snap) != NULL)
+        store_app_set_updated_date (STORE_APP (self), snapd_snap_get_install_date (snap));
     if (snapd_snap_get_installed_size (snap) != 0)
         store_app_set_installed_size (STORE_APP (self), snapd_snap_get_installed_size (snap));
 

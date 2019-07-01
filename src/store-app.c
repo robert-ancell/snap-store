@@ -32,6 +32,7 @@ typedef struct
     GPtrArray *screenshots;
     gchar *summary;
     gchar *title;
+    GDateTime *updated_date;
     gchar *version;
 } StoreAppPrivate;
 
@@ -58,6 +59,7 @@ enum
     PROP_SCREENSHOTS,
     PROP_SUMMARY,
     PROP_TITLE,
+    PROP_UPDATED_DATE,
     PROP_VERSION,
     PROP_LAST
 };
@@ -81,6 +83,7 @@ store_app_dispose (GObject *object)
     g_clear_pointer (&priv->screenshots, g_ptr_array_unref);
     g_clear_pointer (&priv->summary, g_free);
     g_clear_pointer (&priv->title, g_free);
+    g_clear_pointer (&priv->updated_date, g_date_time_unref);
     g_clear_pointer (&priv->version, g_free);
 
     G_OBJECT_CLASS (store_app_parent_class)->dispose (object);
@@ -157,6 +160,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
     case PROP_VERSION:
         g_value_set_string (value, priv->version);
         break;
+    case PROP_UPDATED_DATE:
+        g_value_set_boxed (value, priv->updated_date);
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -223,6 +229,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
         break;
     case PROP_TITLE:
         store_app_set_title (self, g_value_get_string (value));
+        break;
+    case PROP_UPDATED_DATE:
+        store_app_set_updated_date (self, g_value_get_boxed (value));
         break;
     case PROP_VERSION:
         store_app_set_version (self, g_value_get_string (value));
@@ -308,6 +317,9 @@ store_app_class_init (StoreAppClass *klass)
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
     install_string_property (klass, PROP_SUMMARY, "summary");
     install_string_property (klass, PROP_TITLE, "title");
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_UPDATED_DATE,
+                                     g_param_spec_boxed ("updated-date", NULL, NULL, G_TYPE_DATE_TIME, G_PARAM_READWRITE));
     install_string_property (klass, PROP_VERSION, "version");
 }
 
@@ -832,6 +844,30 @@ store_app_get_title (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
     return priv->title;
+}
+
+void
+store_app_set_updated_date (StoreApp *self, GDateTime *date)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    g_clear_pointer (&priv->updated_date, g_date_time_unref);
+    if (date != NULL)
+        priv->updated_date = g_date_time_ref (date);
+
+    g_object_notify (G_OBJECT (self), "updated-date");
+}
+
+GDateTime *
+store_app_get_updated_date (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    return priv->updated_date;
 }
 
 void
