@@ -31,6 +31,7 @@ typedef struct
     GPtrArray *screenshots;
     gchar *summary;
     gchar *title;
+    gchar *version;
 } StoreAppPrivate;
 
 enum
@@ -55,6 +56,7 @@ enum
     PROP_SCREENSHOTS,
     PROP_SUMMARY,
     PROP_TITLE,
+    PROP_VERSION,
     PROP_LAST
 };
 
@@ -77,6 +79,7 @@ store_app_dispose (GObject *object)
     g_clear_pointer (&priv->screenshots, g_ptr_array_unref);
     g_clear_pointer (&priv->summary, g_free);
     g_clear_pointer (&priv->title, g_free);
+    g_clear_pointer (&priv->version, g_free);
 
     G_OBJECT_CLASS (store_app_parent_class)->dispose (object);
 }
@@ -146,6 +149,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
     case PROP_TITLE:
         g_value_set_string (value, priv->title);
         break;
+    case PROP_VERSION:
+        g_value_set_string (value, priv->version);
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -209,6 +215,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
         break;
     case PROP_TITLE:
         store_app_set_title (self, g_value_get_string (value));
+        break;
+    case PROP_VERSION:
+        store_app_set_version (self, g_value_get_string (value));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -288,6 +297,7 @@ store_app_class_init (StoreAppClass *klass)
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
     install_string_property (klass, PROP_SUMMARY, "summary");
     install_string_property (klass, PROP_TITLE, "title");
+    install_string_property (klass, PROP_VERSION, "version");
 }
 
 static void
@@ -789,4 +799,27 @@ store_app_get_title (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
     return priv->title;
+}
+
+void
+store_app_set_version (StoreApp *self, const gchar *version)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    g_clear_pointer (&priv->version, g_free);
+    priv->version = g_strdup (version);
+
+    g_object_notify (G_OBJECT (self), "version");
+}
+
+const gchar *
+store_app_get_version (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    return priv->version;
 }

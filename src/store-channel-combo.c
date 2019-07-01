@@ -77,6 +77,7 @@ store_channel_combo_set_channels (StoreChannelCombo *self, GPtrArray *channels)
 {
     g_return_if_fail (STORE_IS_CHANNEL_COMBO (self));
 
+    // FIXME: Update existing
     gtk_list_store_clear (self->channel_model);
 
     for (guint i = 0; i < channels->len; i++) {
@@ -86,4 +87,6 @@ store_channel_combo_set_channels (StoreChannelCombo *self, GPtrArray *channels)
         g_autofree gchar *label = g_strdup_printf ("%s %s", store_channel_get_name (channel), store_channel_get_version (channel));
         gtk_list_store_set (self->channel_model, &iter, 0, label, -1);
     }
+
+    gtk_combo_box_set_active (GTK_COMBO_BOX (self), 0);
 }

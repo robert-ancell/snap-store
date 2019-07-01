@@ -229,6 +229,8 @@ store_snap_app_save_to_cache (StoreApp *self, StoreCache *cache)
     json_builder_add_string_value (builder, store_app_get_summary (self));
     json_builder_set_member_name (builder, "title");
     json_builder_add_string_value (builder, store_app_get_title (self));
+    json_builder_set_member_name (builder, "version");
+    json_builder_add_string_value (builder, store_app_get_version (self));
     json_builder_end_object (builder);
 
     g_autoptr(JsonNode) node = json_builder_get_root (builder);
@@ -277,6 +279,8 @@ store_snap_app_update_from_cache (StoreApp *self, StoreCache *cache)
     store_app_set_screenshots (STORE_APP (self), screenshots);
     store_app_set_summary (STORE_APP (self), json_object_get_string_member (object, "summary"));
     store_app_set_title (STORE_APP (self), json_object_get_string_member (object, "title"));
+    if (json_object_has_member (object, "version"))
+        store_app_set_version (STORE_APP (self), json_object_get_string_member (object, "version"));
 }
 
 static void
@@ -330,6 +334,7 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
         store_app_set_title (STORE_APP (self), snapd_snap_get_title (snap));
     else
         store_app_set_title (STORE_APP (self), snapd_snap_get_name (snap));
+    store_app_set_version (STORE_APP (self), snapd_snap_get_version (snap));
     store_app_set_license (STORE_APP (self), snapd_snap_get_license (snap));
     if (snapd_snap_get_publisher_display_name (snap) != NULL)
         store_app_set_publisher (STORE_APP (self), snapd_snap_get_publisher_display_name (snap));

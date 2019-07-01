@@ -115,4 +115,8 @@ void          store_app_set_title                   (StoreApp *app, const gchar 
 
 const gchar  *store_app_get_title                   (StoreApp *app);
 
+void          store_app_set_version                 (StoreApp *app, const gchar *version);
+
+const gchar  *store_app_get_version                 (StoreApp *app);
+
 G_END_DECLS

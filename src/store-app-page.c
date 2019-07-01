@@ -247,7 +247,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     if (store_app_get_icon (app) != NULL)
         store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));
 
-    //gtk_label_set_label (self->details_version_label, store_app_get_version (app));
+    g_object_bind_property (app, "version", self->details_version_label, "label", G_BINDING_SYNC_CREATE);
     //gtk_label_set_label (self->details_updated_label, store_app_get_updated (app));
     g_object_bind_property (app, "license", self->details_license_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "publisher", self->details_publisher_label, "label", G_BINDING_SYNC_CREATE);
