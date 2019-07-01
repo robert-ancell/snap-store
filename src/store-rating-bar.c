@@ -36,14 +36,17 @@ store_rating_bar_draw (GtkWidget *widget, cairo_t *cr)
 {
     StoreRatingBar *self = STORE_RATING_BAR (widget);
 
-    cairo_set_source_rgb (cr, 0xea / 255.0, 0xea / 255.0, 0xea / 255.0); // FIXME: Use colour out of CSS
-    cairo_paint (cr);
+    int width = gtk_widget_get_allocated_width (widget);
+    int height = gtk_widget_get_allocated_height (widget);
+    gtk_render_background (gtk_widget_get_style_context (widget), cr, 0, 0, width, height);
 
     gdouble w = 0;
     if (self->total != 0)
-        w = gtk_widget_get_allocated_width (widget) * self->count / self->total; // FIXME round
-    cairo_rectangle (cr, 0, 0, w, gtk_widget_get_allocated_height (widget));
-    cairo_set_source_rgb (cr, 0x60 / 255.0, 0x62 / 255.0, 0x5d / 255.0); // FIXME: Use colour out of CSS
+        w = width * self->count / self->total; // FIXME round
+    cairo_rectangle (cr, 0, 0, w, height);
+    GdkRGBA color;
+    gtk_style_context_get_color (gtk_widget_get_style_context (widget), gtk_widget_get_state_flags (widget), &color);
+    gdk_cairo_set_source_rgba (cr, &color);
     cairo_fill (cr);
 
     return TRUE;

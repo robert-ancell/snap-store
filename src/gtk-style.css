@@ -153,6 +153,8 @@
 }
 
 .ratings-view-bar {
+    background: #eaeaea;
+    color: #60625d;
 }
 
 .ratings-view-star-count-label {
