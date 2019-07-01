@@ -345,6 +345,9 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
     store_app_set_description (STORE_APP (self), snapd_snap_get_description (snap));
     store_app_set_contact (STORE_APP (self), snapd_snap_get_contact (snap));
 
+    if (snapd_snap_get_installed_size (snap) != 0)
+        store_app_set_installed_size (STORE_APP (self), snapd_snap_get_installed_size (snap));
+
     /* Channels are only returned on searches for a particular snap */
     GPtrArray *channels = snapd_snap_get_channels (snap);
     if (channels->len > 0) {

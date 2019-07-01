@@ -8,6 +8,7 @@
  */
 
 #include <glib/gi18n.h>
+#include <math.h>
 
 #include "store-app-page.h"
 
@@ -51,6 +52,30 @@ struct _StoreAppPage
 };
 
 G_DEFINE_TYPE (StoreAppPage, store_app_page, GTK_TYPE_BOX)
+
+static gboolean
+installed_size_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue *to_value, gpointer user_data G_GNUC_UNUSED)
+{
+    gint64 size = g_value_get_int64 (from_value);
+    if (size <= 0) {
+        g_value_set_string (to_value, "");
+        return TRUE;
+    }
+
+    g_autofree gchar *text = NULL;
+    if (size >= 1000000000)
+        text = g_strdup_printf ("%.0fGB", round (size / 1000000000.0));
+    else if (size >= 1000000)
+        text = g_strdup_printf ("%.0fMB", round (size / 1000000.0));
+    else if (size >= 1000)
+        text = g_strdup_printf ("%.0fkB", round (size / 1000.0));
+    else
+        text = g_strdup_printf ("%" G_GINT64_FORMAT "B", size);
+
+    g_value_set_string (to_value, text);
+
+    return TRUE;
+}
 
 static gboolean
 ratings_total_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue *to_value, gpointer user_data G_GNUC_UNUSED)
@@ -251,7 +276,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     //gtk_label_set_label (self->details_updated_label, store_app_get_updated (app));
     g_object_bind_property (app, "license", self->details_license_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "publisher", self->details_publisher_label, "label", G_BINDING_SYNC_CREATE);
-    //gtk_label_set_label (self->details_installed_size_label, store_app_get_installed_size (app));
+    g_object_bind_property_full (app, "installed-size", self->details_installed_size_label, "label", G_BINDING_SYNC_CREATE, installed_size_to_label, NULL, NULL, NULL); // FIXME: Support download size for uninstalled snaps
 
     g_object_bind_property (app, "review-average", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
     g_object_bind_property_full (app, "review-count", self->review_count_label, "label", G_BINDING_SYNC_CREATE, ratings_total_to_label, NULL, NULL, NULL);

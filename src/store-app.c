@@ -19,6 +19,7 @@ typedef struct
     gchar *description;
     StoreMedia *icon;
     gboolean installed;
+    gint64 installed_size;
     gchar *license;
     gchar *name;
     gchar *publisher;
@@ -42,6 +43,7 @@ enum
     PROP_DESCRIPTION,
     PROP_ICON,
     PROP_INSTALLED,
+    PROP_INSTALLED_SIZE,
     PROP_LICENSE,
     PROP_NAME,
     PROP_PUBLISHER,
@@ -106,6 +108,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
         break;
     case PROP_INSTALLED:
         g_value_set_boolean (value, priv->installed);
+        break;
+    case PROP_INSTALLED_SIZE:
+        g_value_set_int64 (value, priv->installed_size);
         break;
     case PROP_LICENSE:
         g_value_set_string (value, priv->license);
@@ -179,6 +184,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
         break;
     case PROP_INSTALLED:
         store_app_set_installed (self, g_value_get_boolean (value));
+        break;
+    case PROP_INSTALLED_SIZE:
+        store_app_set_installed_size (self, g_value_get_int64 (value));
         break;
     case PROP_LICENSE:
         store_app_set_license (self, g_value_get_string (value));
@@ -269,6 +277,9 @@ store_app_class_init (StoreAppClass *klass)
     install_string_property (klass, PROP_DESCRIPTION, "description");
     install_object_property (klass, PROP_ICON, "icon", store_media_get_type ());
     install_boolean_property (klass, PROP_INSTALLED, "installed");
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_INSTALLED_SIZE,
+                                     g_param_spec_int64 ("installed-size", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
     install_string_property (klass, PROP_LICENSE, "license");
     install_string_property (klass, PROP_NAME, "name");
     install_string_property (klass, PROP_PUBLISHER, "publisher");
@@ -500,6 +511,28 @@ store_app_get_installed (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), FALSE);
 
     return priv->installed;
+}
+
+void
+store_app_set_installed_size (StoreApp *self, gint64 size)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    priv->installed_size = size;
+
+    g_object_notify (G_OBJECT (self), "installed-size");
+}
+
+gint64
+store_app_get_installed_size (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), FALSE);
+
+    return priv->installed_size;
 }
 
 void

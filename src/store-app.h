@@ -73,6 +73,10 @@ void          store_app_set_installed               (StoreApp *app, gboolean ins
 
 gboolean      store_app_get_installed               (StoreApp *app);
 
+void          store_app_set_installed_size          (StoreApp *app, gint64 size);
+
+gint64        store_app_get_installed_size          (StoreApp *app);
+
 void          store_app_set_license                 (StoreApp *app, const gchar *license);
 
 const gchar  *store_app_get_license                 (StoreApp *app);
