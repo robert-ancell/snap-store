@@ -58,6 +58,14 @@
     font-size: 14px;
 }
 
+.app-page-rating-label {
+    font-size: 14px;
+}
+
+.app-page-review-box {
+    margin-top: 40px;
+}
+
 .app-page-review-count-label {
     padding-left: 8px;
     font-family: Ubuntu-Light;
@@ -156,19 +164,16 @@
 .install-button {
 }
 
-.rating-label {
-}
-
 .ratings-view-bar {
     background: #eaeaea;
     color: #60625d;
 }
 
-.ratings-view-star-count-label {
+.ratings-view-rating-label {
+    font-size: 20px;
 }
 
-.app-page-review-box {
-    margin-top: 40px;
+.ratings-view-star-count-label {
 }
 
 .review-author-date-label {
@@ -197,6 +202,10 @@
     font-size: 14px;
     color: #111111;
     padding-top: 16px;
+}
+
+.review-view-rating-label {
+    font-size: 20px;
 }
 
 .store-window {

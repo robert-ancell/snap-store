@@ -73,6 +73,9 @@
                         <child>
                           <object class="StoreRatingLabel" id="rating_label">
                             <property name="visible">True</property>
+                            <style>
+                              <class name="app-page-rating-label"/>
+                            </style>
                           </object>
                         </child>
                         <child>

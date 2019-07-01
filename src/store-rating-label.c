@@ -61,8 +61,6 @@ store_rating_label_class_init (StoreRatingLabelClass *klass)
 static void
 store_rating_label_init (StoreRatingLabel *self)
 {
-    gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (self)), "rating-label");
-
     store_rating_label_set_rating (self, 0);
 }
 

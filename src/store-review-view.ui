@@ -11,6 +11,9 @@
           <object class="StoreRatingLabel" id="rating_label">
             <property name="visible">True</property>
             <property name="halign">start</property>
+            <style>
+              <class name="review-view-rating-label"/>
+            </style>
           </object>
         </child>
         <child>
