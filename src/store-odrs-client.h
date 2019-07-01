@@ -30,7 +30,7 @@ void             store_odrs_client_update_ratings_async (StoreOdrsClient *client
 
 gboolean         store_odrs_client_update_ratings_finish (StoreOdrsClient *client, GAsyncResult *result, GError **error);
 
-void             store_odrs_client_get_reviews_async    (StoreOdrsClient *client, const gchar *app_id, const gchar *version, gint64 limit,
+void             store_odrs_client_get_reviews_async    (StoreOdrsClient *client, const gchar *app_id, GStrv compat_ids, const gchar *version, gint64 limit,
                                                          GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
 GPtrArray       *store_odrs_client_get_reviews_finish   (StoreOdrsClient *client, GAsyncResult *result, gchar **user_skey, GError **error);

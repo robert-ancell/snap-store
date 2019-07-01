@@ -335,7 +335,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
             }
         }
 
-        store_odrs_client_get_reviews_async (self->odrs_client, store_app_get_appstream_id (app), NULL, 0, NULL, reviews_cb, self);
+        store_odrs_client_get_reviews_async (self->odrs_client, store_app_get_appstream_id (app), NULL, NULL, 0, NULL, reviews_cb, self);
     }
 
     store_screenshot_view_set_app (self->screenshot_view, app);

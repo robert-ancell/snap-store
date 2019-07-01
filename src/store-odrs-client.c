@@ -277,7 +277,7 @@ store_odrs_client_update_ratings_finish (StoreOdrsClient *self, GAsyncResult *re
 }
 
 void
-store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id, const gchar *version, gint64 limit, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id, GStrv compat_ids, const gchar *version, gint64 limit, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
     g_return_if_fail (app_id != NULL);
@@ -294,6 +294,13 @@ store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id,
     json_builder_add_string_value (builder, self->user_hash);
     json_builder_set_member_name (builder, "app_id");
     json_builder_add_string_value (builder, app_id);
+    if (compat_ids != NULL) {
+        json_builder_set_member_name (builder, "compat_ids");
+        json_builder_begin_array (builder);
+        for (int i = 0; compat_ids[i] != NULL; i++)
+            json_builder_add_string_value (builder, compat_ids[i]);
+        json_builder_end_array (builder);
+    }
     json_builder_set_member_name (builder, "locale");
     json_builder_add_string_value (builder, self->locale);
     json_builder_set_member_name (builder, "distro");
