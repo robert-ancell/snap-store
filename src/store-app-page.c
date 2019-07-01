@@ -271,7 +271,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     else
         gtk_widget_hide (GTK_WIDGET (self->contact_label));
 
-    store_channel_combo_set_app (self->channel_combo, app);
+    g_object_bind_property (app, "channels", self->channel_combo, "channels", G_BINDING_SYNC_CREATE);
 
     g_object_bind_property (app, "installed", self->channel_combo, "visible", G_BINDING_SYNC_CREATE | G_BINDING_INVERT_BOOLEAN);
     g_object_bind_property (app, "installed", self->launch_button, "visible", G_BINDING_SYNC_CREATE);

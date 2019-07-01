@@ -11,12 +11,12 @@
 
 #include <gtk/gtk.h>
 
-#include "store-app.h"
+#include "store-channel.h"
 
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreChannelCombo, store_channel_combo, STORE, CHANNEL_COMBO, GtkComboBox)
 
-void store_channel_combo_set_app (StoreChannelCombo *combo, StoreApp *app);
+void store_channel_combo_set_channels (StoreChannelCombo *combo, GPtrArray *channels);
 
 G_END_DECLS

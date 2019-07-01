@@ -183,7 +183,9 @@
 }
 
 .category-title-label {
-    font-size: xx-large;
+    font-family: Ubuntu-Light;
+    font-size: 28px;
+    color: #212121;
 }
 
 .hero-title-label {

@@ -15,45 +15,48 @@ struct _StoreChannelCombo
 
     GtkCellRendererText *renderer;
     GtkListStore *channel_model;
+};
 
-    StoreApp *app;
-    gulong channels_handler;
+enum
+{
+    PROP_0,
+    PROP_CHANNELS,
+    PROP_LAST
 };
 
 G_DEFINE_TYPE (StoreChannelCombo, store_channel_combo, GTK_TYPE_COMBO_BOX)
 
 static void
-update_channels (StoreChannelCombo *self)
+store_channel_combo_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
 {
-    gtk_list_store_clear (self->channel_model);
-
-    if (self->app == NULL)
-        return;
-
-    GPtrArray *channels = store_app_get_channels (self->app);
-    for (guint i = 0; i < channels->len; i++) {
-        StoreChannel *channel = g_ptr_array_index (channels, i);
-        GtkTreeIter iter;
-        gtk_list_store_append (self->channel_model, &iter);
-        g_autofree gchar *label = g_strdup_printf ("%s %s", store_channel_get_name (channel), store_channel_get_version (channel));
-        gtk_list_store_set (self->channel_model, &iter, 0, label, -1);
-    }
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 }
 
 static void
-store_channel_combo_dispose (GObject *object)
+store_channel_combo_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
     StoreChannelCombo *self = STORE_CHANNEL_COMBO (object);
 
-    g_clear_object (&self->app);
-
-    G_OBJECT_CLASS (store_channel_combo_parent_class)->dispose (object);
+    switch (prop_id)
+    {
+    case PROP_CHANNELS:
+        store_channel_combo_set_channels (self, g_value_get_boxed (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
 }
 
 static void
 store_channel_combo_class_init (StoreChannelComboClass *klass)
 {
-    G_OBJECT_CLASS (klass)->dispose = store_channel_combo_dispose;
+    G_OBJECT_CLASS (klass)->get_property = store_channel_combo_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_channel_combo_set_property;
+
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_CHANNELS,
+                                     g_param_spec_boxed ("channels", NULL, NULL, G_TYPE_PTR_ARRAY, G_PARAM_WRITABLE));
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-channel-combo.ui");
 
@@ -70,21 +73,17 @@ store_channel_combo_init (StoreChannelCombo *self)
 }
 
 void
-store_channel_combo_set_app (StoreChannelCombo *self, StoreApp *app)
+store_channel_combo_set_channels (StoreChannelCombo *self, GPtrArray *channels)
 {
     g_return_if_fail (STORE_IS_CHANNEL_COMBO (self));
 
-    if (self->app == app)
-        return;
+    gtk_list_store_clear (self->channel_model);
 
-    if (self->channels_handler != 0) {
-        g_signal_handler_disconnect (self->app, self->channels_handler);
-        self->channels_handler = 0;
+    for (guint i = 0; i < channels->len; i++) {
+        StoreChannel *channel = g_ptr_array_index (channels, i);
+        GtkTreeIter iter;
+        gtk_list_store_append (self->channel_model, &iter);
+        g_autofree gchar *label = g_strdup_printf ("%s %s", store_channel_get_name (channel), store_channel_get_version (channel));
+        gtk_list_store_set (self->channel_model, &iter, 0, label, -1);
     }
-
-    g_set_object (&self->app, app);
-
-    if (app != NULL)
-        self->channels_handler = g_signal_connect_object (app, "notify::channels", G_CALLBACK (update_channels), self, G_CONNECT_SWAPPED);
-    update_channels (self);
 }
