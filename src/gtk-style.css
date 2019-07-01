@@ -79,7 +79,7 @@
     padding-right: 128px;
 }
 
-.app-page-ratings-view {
+.app-page-review-summary {
     margin-top: 24px;
 }
 
@@ -164,16 +164,16 @@
 .install-button {
 }
 
-.ratings-view-bar {
+.review-summary-bar {
     background: #eaeaea;
     color: #60625d;
 }
 
-.ratings-view-rating-label {
+.review-summary-rating-label {
     font-size: 20px;
 }
 
-.ratings-view-star-count-label {
+.review-summary-star-count-label {
 }
 
 .review-author-date-label {

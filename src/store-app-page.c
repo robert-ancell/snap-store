@@ -15,7 +15,7 @@
 #include "store-image.h"
 #include "store-install-button.h"
 #include "store-rating-label.h"
-#include "store-ratings-view.h"
+#include "store-review-summary.h"
 #include "store-review-view.h"
 #include "store-screenshot-view.h"
 
@@ -36,8 +36,8 @@ struct _StoreAppPage
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
     StoreRatingLabel *rating_label;
-    StoreRatingsView *ratings_view;
     GtkBox *review_count_label;
+    StoreReviewSummary *review_summary;
     GtkBox *reviews_box;
     StoreScreenshotView *screenshot_view;
     GtkLabel *summary_label;
@@ -173,8 +173,8 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, rating_label);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, ratings_view);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, review_count_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, review_summary);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, reviews_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshot_view);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
@@ -190,7 +190,7 @@ store_app_page_init (StoreAppPage *self)
     store_image_get_type ();
     store_install_button_get_type ();
     store_rating_label_get_type ();
-    store_ratings_view_get_type ();
+    store_review_summary_get_type ();
     store_screenshot_view_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
@@ -232,11 +232,11 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 
     g_object_bind_property (app, "review-average", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
     g_object_bind_property_full (app, "review-count", self->review_count_label, "label", G_BINDING_SYNC_CREATE, ratings_total_to_label, NULL, NULL, NULL);
-    g_object_bind_property (app, "review-count-one-star", self->ratings_view, "review-count-one-star", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "review-count-two-star", self->ratings_view, "review-count-two-star", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "review-count-three-star", self->ratings_view, "review-count-three-star", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "review-count-four-star", self->ratings_view, "review-count-four-star", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "review-count-five-star", self->ratings_view, "review-count-five-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-one-star", self->review_summary, "review-count-one-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-two-star", self->review_summary, "review-count-two-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-three-star", self->review_summary, "review-count-three-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-four-star", self->review_summary, "review-count-four-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "review-count-five-star", self->review_summary, "review-count-five-star", G_BINDING_SYNC_CREATE);
 
     if (store_app_get_contact (app) != NULL) {
         /* Link shown below app description to contact app publisher. */

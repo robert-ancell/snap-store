@@ -8,7 +8,7 @@
     <file preprocess="xml-stripblanks">store-hero-tile.ui</file>
     <file preprocess="xml-stripblanks">store-home-page.ui</file>
     <file preprocess="xml-stripblanks">store-install-button.ui</file>
-    <file preprocess="xml-stripblanks">store-ratings-view.ui</file>
+    <file preprocess="xml-stripblanks">store-review-summary.ui</file>
     <file preprocess="xml-stripblanks">store-review-view.ui</file>
     <file preprocess="xml-stripblanks">store-screenshot-view.ui</file>
     <file preprocess="xml-stripblanks">store-window.ui</file>

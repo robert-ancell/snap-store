@@ -381,10 +381,10 @@
                   </object>
                 </child>
                 <child>
-                  <object class="StoreRatingsView" id="ratings_view">
+                  <object class="StoreReviewSummary" id="review_summary">
                     <property name="visible">True</property>
                     <style>
-                      <class name="app-page-ratings-view"/>
+                      <class name="app-page-review-summary"/>
                     </style>
                   </object>
                 </child>
