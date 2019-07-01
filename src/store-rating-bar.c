@@ -71,6 +71,8 @@ store_rating_bar_set_count (StoreRatingBar *self, gint count)
 {
     g_return_if_fail (STORE_IS_RATING_BAR (self));
 
+    if (self->count == count)
+        return;
     self->count = count;
 
     gtk_widget_queue_draw (GTK_WIDGET (self));
@@ -81,6 +83,8 @@ store_rating_bar_set_total (StoreRatingBar *self, gint total)
 {
     g_return_if_fail (STORE_IS_RATING_BAR (self));
 
+    if (self->total == total)
+        return;
     self->total = total;
 
     gtk_widget_queue_draw (GTK_WIDGET (self));

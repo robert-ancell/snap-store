@@ -48,10 +48,15 @@ enum
 
 G_DEFINE_TYPE (StoreRatingsView, store_ratings_view, GTK_TYPE_GRID)
 
-static gint64
-get_review_count_total (StoreRatingsView *self)
+static void
+update_total (StoreRatingsView *self)
 {
-    return self->one_star_review_count + self->two_star_review_count + self->three_star_review_count + self->four_star_review_count + self->five_star_review_count;
+    gint64 total = self->one_star_review_count + self->two_star_review_count + self->three_star_review_count + self->four_star_review_count + self->five_star_review_count;
+    store_rating_bar_set_total (self->one_star_bar, total);
+    store_rating_bar_set_total (self->two_star_bar, total);
+    store_rating_bar_set_total (self->three_star_bar, total);
+    store_rating_bar_set_total (self->four_star_bar, total);
+    store_rating_bar_set_total (self->five_star_bar, total);
 }
 
 static void
@@ -147,7 +152,7 @@ store_ratings_view_set_review_count_one_star (StoreRatingsView *self, gint64 cou
     self->one_star_review_count = count;
     set_label_int64 (self->one_star_count_label, count);
     store_rating_bar_set_count (self->one_star_bar, count);
-    store_rating_bar_set_total (self->one_star_bar, get_review_count_total (self));
+    update_total (self);
 }
 
 void
@@ -158,7 +163,7 @@ store_ratings_view_set_review_count_two_star (StoreRatingsView *self, gint64 cou
     self->two_star_review_count = count;
     set_label_int64 (self->two_star_count_label, count);
     store_rating_bar_set_count (self->two_star_bar, count);
-    store_rating_bar_set_total (self->two_star_bar, get_review_count_total (self));
+    update_total (self);
 }
 
 void
@@ -169,7 +174,7 @@ store_ratings_view_set_review_count_three_star (StoreRatingsView *self, gint64 c
     self->three_star_review_count = count;
     set_label_int64 (self->three_star_count_label, count);
     store_rating_bar_set_count (self->three_star_bar, count);
-    store_rating_bar_set_total (self->three_star_bar, get_review_count_total (self));
+    update_total (self);
 }
 
 void
@@ -180,7 +185,7 @@ store_ratings_view_set_review_count_four_star (StoreRatingsView *self, gint64 co
     self->four_star_review_count = count;
     set_label_int64 (self->four_star_count_label, count);
     store_rating_bar_set_count (self->four_star_bar, count);
-    store_rating_bar_set_total (self->four_star_bar, get_review_count_total (self));
+    update_total (self);
 }
 
 void
@@ -191,5 +196,5 @@ store_ratings_view_set_review_count_five_star (StoreRatingsView *self, gint64 co
     self->five_star_review_count = count;
     set_label_int64 (self->five_star_count_label, count);
     store_rating_bar_set_count (self->five_star_bar, count);
-    store_rating_bar_set_total (self->five_star_bar, get_review_count_total (self));
+    update_total (self);
 }
