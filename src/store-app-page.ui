@@ -253,12 +253,11 @@
                           <object class="GtkGrid">
                             <property name="visible">True</property>
                             <property name="row-homogeneous">True</property>
-                            <property name="row-spacing">12</property>
+                            <property name="row-spacing">20</property>
                             <property name="column-spacing">24</property>
                             <child>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
-                                <property name="margin-top">18</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes" comments="Label beside version information on app page">Version</property>
                                 <style>
@@ -273,8 +272,6 @@
                             <child>
                               <object class="GtkLabel" id="details_version_label">
                                 <property name="visible">True</property>
-                                <property name="margin-top">10</property>
-                                <property name="margin-left">10</property>
                                 <property name="xalign">0</property>
                                 <style>
                                   <class name="app-page-details-value-label"/>
@@ -288,7 +285,6 @@
                             <child>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
-                                <property name="margin-top">18</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes" comments="Label beside updated date information on app page">Updated</property>
                                 <style>
@@ -303,8 +299,6 @@
                             <child>
                               <object class="GtkLabel" id="details_updated_label">
                                 <property name="visible">True</property>
-                                <property name="margin-top">10</property>
-                                <property name="margin-left">10</property>
                                 <property name="xalign">0</property>
                                 <style>
                                   <class name="app-page-details-value-label"/>
@@ -318,7 +312,6 @@
                             <child>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
-                                <property name="margin-top">18</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes" comments="Label beside license information on app page">License</property>
                                 <style>
@@ -333,8 +326,6 @@
                             <child>
                               <object class="GtkLabel" id="details_license_label">
                                 <property name="visible">True</property>
-                                <property name="margin-top">10</property>
-                                <property name="margin-left">10</property>
                                 <property name="xalign">0</property>
                                 <style>
                                   <class name="app-page-details-value-label"/>
@@ -348,7 +339,6 @@
                             <child>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
-                                <property name="margin-top">18</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes" comments="Label beside developer information on app page">Developer</property>
                                 <style>
@@ -363,8 +353,6 @@
                             <child>
                               <object class="GtkLabel" id="details_publisher_label">
                                 <property name="visible">True</property>
-                                <property name="margin-top">10</property>
-                                <property name="margin-left">10</property>
                                 <property name="xalign">0</property>
                                 <style>
                                   <class name="app-page-details-value-label"/>
@@ -378,7 +366,6 @@
                             <child>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
-                                <property name="margin-top">18</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes" comments="Label beside installed size information on app page">Installed size</property>
                                 <style>
@@ -393,8 +380,6 @@
                             <child>
                               <object class="GtkLabel" id="details_installed_size_label">
                                 <property name="visible">True</property>
-                                <property name="margin-top">10</property>
-                                <property name="margin-left">10</property>
                                 <property name="xalign">0</property>
                                 <style>
                                   <class name="app-page-details-value-label"/>
