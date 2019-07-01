@@ -78,7 +78,7 @@ store_review_view_set_review (StoreReviewView *self, StoreOdrsReview *review)
     g_autofree gchar *author_date_text = NULL;
     GDateTime *date_created = store_odrs_review_get_date_created (review);
     if (date_created != NULL) {
-        g_autofree gchar *date_text = g_date_time_format (date_created, "%e %B %Y");
+        g_autofree gchar *date_text = g_date_time_format (date_created, "%-e %B %Y");
         author_date_text = g_strdup_printf ("%s - %s", store_odrs_review_get_author (review), date_text);
     }
     else

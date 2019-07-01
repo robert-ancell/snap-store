@@ -62,7 +62,7 @@ date_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue
         return TRUE;
     }
 
-    g_autofree gchar *text = g_date_time_format (date, "%e %B %Y");
+    g_autofree gchar *text = g_date_time_format (date, "%-e %B %Y");
     g_value_set_string (to_value, text);
 
     return TRUE;
