@@ -33,78 +33,86 @@ struct _StoreAppClass
     void      (*update_from_cache) (StoreApp *app, StoreCache *cache);
 };
 
-void          store_app_install_async           (StoreApp *app, StoreChannel *channel, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+void          store_app_install_async               (StoreApp *app, StoreChannel *channel, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
-gboolean      store_app_install_finish          (StoreApp *app, GAsyncResult *result, GError **error);
+gboolean      store_app_install_finish              (StoreApp *app, GAsyncResult *result, GError **error);
 
-void          store_app_refresh_async           (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+void          store_app_refresh_async               (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
-gboolean      store_app_refresh_finish          (StoreApp *app, GAsyncResult *result, GError **error);
+gboolean      store_app_refresh_finish              (StoreApp *app, GAsyncResult *result, GError **error);
 
-void          store_app_remove_async            (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+void          store_app_remove_async                (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
-gboolean      store_app_remove_finish           (StoreApp *app, GAsyncResult *result, GError **error);
+gboolean      store_app_remove_finish               (StoreApp *app, GAsyncResult *result, GError **error);
 
-void          store_app_save_to_cache           (StoreApp *app, StoreCache *cache);
+void          store_app_save_to_cache               (StoreApp *app, StoreCache *cache);
 
-void          store_app_update_from_cache       (StoreApp *app, StoreCache *cache);
+void          store_app_update_from_cache           (StoreApp *app, StoreCache *cache);
 
-void          store_app_set_appstream_id        (StoreApp *app, const gchar *appstream_id);
+void          store_app_set_appstream_id            (StoreApp *app, const gchar *appstream_id);
 
-const gchar  *store_app_get_appstream_id        (StoreApp *app);
+const gchar  *store_app_get_appstream_id            (StoreApp *app);
 
-gint          store_app_get_average_rating      (StoreApp *app);
+void          store_app_set_channels                (StoreApp *app, GPtrArray *channels);
 
-void          store_app_set_channels            (StoreApp *app, GPtrArray *channels);
+GPtrArray    *store_app_get_channels                (StoreApp *app);
 
-GPtrArray    *store_app_get_channels            (StoreApp *app);
+void          store_app_set_contact                 (StoreApp *app, const gchar *contact);
 
-void          store_app_set_contact             (StoreApp *app, const gchar *contact);
+const gchar  *store_app_get_contact                 (StoreApp *app);
 
-const gchar  *store_app_get_contact             (StoreApp *app);
+void          store_app_set_description             (StoreApp *app, const gchar *description);
 
-void          store_app_set_description         (StoreApp *app, const gchar *description);
+const gchar  *store_app_get_description             (StoreApp *app);
 
-const gchar  *store_app_get_description         (StoreApp *app);
+void          store_app_set_icon                    (StoreApp *app, StoreMedia *icon);
 
-void          store_app_set_icon                (StoreApp *app, StoreMedia *icon);
+StoreMedia   *store_app_get_icon                    (StoreApp *app);
 
-StoreMedia   *store_app_get_icon                (StoreApp *app);
+void          store_app_set_installed               (StoreApp *app, gboolean installed);
 
-void          store_app_set_installed           (StoreApp *app, gboolean installed);
+gboolean      store_app_get_installed               (StoreApp *app);
 
-gboolean      store_app_get_installed           (StoreApp *app);
+void          store_app_set_license                 (StoreApp *app, const gchar *license);
 
-void          store_app_set_license             (StoreApp *app, const gchar *license);
+const gchar  *store_app_get_license                 (StoreApp *app);
 
-const gchar  *store_app_get_license             (StoreApp *app);
+void          store_app_set_name                    (StoreApp *app, const gchar *name);
 
-void          store_app_set_name                (StoreApp *app, const gchar *name);
+const gchar  *store_app_get_name                    (StoreApp *app);
 
-const gchar  *store_app_get_name                (StoreApp *app);
+void          store_app_set_publisher               (StoreApp *app, const gchar *publisher);
 
-void          store_app_set_publisher           (StoreApp *app, const gchar *publisher);
+const gchar  *store_app_get_publisher               (StoreApp *app);
 
-const gchar  *store_app_get_publisher           (StoreApp *app);
+void          store_app_set_publisher_validated     (StoreApp *app, gboolean validated);
 
-void          store_app_set_publisher_validated (StoreApp *app, gboolean validated);
+gboolean      store_app_get_publisher_validated     (StoreApp *app);
 
-gboolean      store_app_get_publisher_validated (StoreApp *app);
+void          store_app_set_one_star_review_count   (StoreApp *app, const gint64 count);
 
-void          store_app_set_ratings             (StoreApp *app, const gint64 *ratings);
+void          store_app_set_two_star_review_count   (StoreApp *app, const gint64 count);
 
-const gint64 *store_app_get_ratings             (StoreApp *app);
+void          store_app_set_three_star_review_count (StoreApp *app, const gint64 count);
 
-void          store_app_set_screenshots         (StoreApp *app, GPtrArray *screenshots);
+void          store_app_set_four_star_review_count  (StoreApp *app, const gint64 count);
 
-GPtrArray    *store_app_get_screenshots         (StoreApp *app);
+void          store_app_set_five_star_review_count  (StoreApp *app, const gint64 count);
 
-void          store_app_set_summary             (StoreApp *app, const gchar *summary);
+gint          store_app_get_ratings_average         (StoreApp *app);
 
-const gchar  *store_app_get_summary             (StoreApp *app);
+gint          store_app_get_ratings_total           (StoreApp *app);
 
-void          store_app_set_title               (StoreApp *app, const gchar *title);
+void          store_app_set_screenshots             (StoreApp *app, GPtrArray *screenshots);
 
-const gchar  *store_app_get_title               (StoreApp *app);
+GPtrArray    *store_app_get_screenshots             (StoreApp *app);
+
+void          store_app_set_summary                 (StoreApp *app, const gchar *summary);
+
+const gchar  *store_app_get_summary                 (StoreApp *app);
+
+void          store_app_set_title                   (StoreApp *app, const gchar *title);
+
+const gchar  *store_app_get_title                   (StoreApp *app);
 
 G_END_DECLS

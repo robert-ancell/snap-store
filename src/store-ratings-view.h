@@ -15,6 +15,15 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreRatingsView, store_ratings_view, STORE, RATINGS_VIEW, GtkGrid)
 
-void store_ratings_view_set_ratings (StoreRatingsView *view, const gint64 *ratings);
+void store_ratings_view_set_one_star_review_count   (StoreRatingsView *view, const gint64 count);
+
+void store_ratings_view_set_two_star_review_count   (StoreRatingsView *view, const gint64 count);
+
+void store_ratings_view_set_three_star_review_count (StoreRatingsView *view, const gint64 count);
+
+void store_ratings_view_set_four_star_review_count  (StoreRatingsView *view, const gint64 count);
+
+void store_ratings_view_set_five_star_review_count  (StoreRatingsView *view, const gint64 count);
+
 
 G_END_DECLS

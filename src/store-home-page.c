@@ -42,6 +42,20 @@ enum
 static guint signals[SIGNAL_LAST] = { 0, };
 
 static void
+set_review_counts (StoreHomePage *self, StoreApp *app)
+{
+    if (self->odrs_client == NULL)
+        return;
+
+    gint64 *ratings = store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (app));
+    store_app_set_one_star_review_count (app, ratings != NULL ? ratings[0] : 0);
+    store_app_set_two_star_review_count (app, ratings != NULL ? ratings[1] : 0);
+    store_app_set_three_star_review_count (app, ratings != NULL ? ratings[2] : 0);
+    store_app_set_four_star_review_count (app, ratings != NULL ? ratings[3] : 0);
+    store_app_set_five_star_review_count (app, ratings != NULL ? ratings[4] : 0);
+}
+
+static void
 app_activated_cb (StoreHomePage *self, StoreApp *app)
 {
     g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, app);
@@ -66,8 +80,7 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
-        if (self->odrs_client != NULL)
-            store_app_set_ratings (STORE_APP (app), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (app))));
+        set_review_counts (self, STORE_APP (app));
         if (self->cache != NULL)
             store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
@@ -242,8 +255,7 @@ get_category_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data
         SnapdSnap *snap = g_ptr_array_index (snaps, i);
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
-        if (self->odrs_client != NULL)
-            store_app_set_ratings (STORE_APP (app), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (app))));
+        set_review_counts (self, STORE_APP (app));
         if (self->cache != NULL)
             store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
@@ -413,8 +425,7 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_app_set_installed (STORE_APP (app), TRUE);
         store_snap_app_update_from_search (app, snap);
-        if (self->odrs_client != NULL)
-            store_app_set_ratings (STORE_APP (app), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (app))));
+        set_review_counts (self, STORE_APP (app));
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
     store_category_view_set_apps (self->installed_view, apps);
@@ -500,8 +511,7 @@ store_home_page_load (StoreHomePage *self)
                         const gchar *name = json_node_get_string (node);
                         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, name);
                         store_app_set_name (STORE_APP (app), name);
-                        if (self->odrs_client != NULL)
-                            store_app_set_ratings (STORE_APP (app), store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (app))));
+                        set_review_counts (self, STORE_APP (app));
                         store_app_update_from_cache (STORE_APP (app), self->cache);
                         g_ptr_array_add (apps, g_object_ref (app));
                     }
