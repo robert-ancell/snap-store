@@ -1,7 +1,7 @@
 name: snap-store
 version: git
 version-script: |
-  echo $(date --utc +%Y%m%d).$(git rev-parse HEAD | cut -c -7)
+  echo next.$(date --utc +%Y%m%d).$(git rev-parse HEAD | cut -c -7)
 summary: Snap Store
 description: |
   Snap Store allows you to find and install new applications and remove
