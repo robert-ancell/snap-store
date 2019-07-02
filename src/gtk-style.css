@@ -158,6 +158,15 @@
     padding-right: 16px;
 }
 
+.app-small-tile-box {
+}
+
+.app-small-tile-title-label {
+    font-family: Ubuntu-Light;
+    font-size: 18px;
+    color: #007aa6;
+}
+
 .app-tile-box {
     border-radius: 3px;
     border: solid 1px #e0e0e0;
@@ -182,6 +191,18 @@
     color: #111111;
 }
 
+.category-list-app-box {
+    border-radius: 3px;
+    border: solid 1px #e0e0e0;
+    padding: 24px;
+}
+
+.category-list-title-label {
+    font-family: Ubuntu-Light;
+    font-size: 19px;
+    color: #007aa6;
+}
+
 .category-title-label {
     font-family: Ubuntu-Light;
     font-size: 28px;
@@ -189,10 +210,26 @@
 }
 
 .home-page-category-box {
-    margin: 32px;
+    margin-left: 32px;
+    margin-right: 32px;
+}
+
+.home-page-editors-picks-grid {
+    margin-left: 32px;
+    margin-right: 32px;
+}
+
+.home-page-installed-grid {
+    margin-left: 32px;
+    margin-right: 32px;
 }
 
 .home-page-search-entry {
+    margin-left: 32px;
+    margin-right: 32px;
+}
+
+.home-page-small-banner-box {
     margin-left: 32px;
     margin-right: 32px;
 }

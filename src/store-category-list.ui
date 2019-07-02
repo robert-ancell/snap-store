@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="StoreCategoryList" parent="GtkBox">
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">30</property>
+        <property name="hexpand">True</property>        
+        <child>
+          <object class="GtkLabel" id="title_label">
+            <property name="visible">False</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="category-list-title-label"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="app_box">
+            <property name="visible">True</property>
+            <property name="spacing">32</property>
+            <property name="orientation">vertical</property>
+            <property name="homogeneous">True</property>
+            <style>
+              <class name="category-list-app-box"/>
+            </style>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

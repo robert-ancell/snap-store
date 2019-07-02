@@ -13,6 +13,7 @@
 #include "store-home-page.h"
 
 #include "store-banner-tile.h"
+#include "store-category-list.h"
 #include "store-category-view.h"
 
 struct _StoreHomePage
@@ -23,9 +24,14 @@ struct _StoreHomePage
     StoreBannerTile *banner1_tile;
     StoreBannerTile *banner2_tile;
     GtkBox *category_box;
-    StoreCategoryView *installed_view;
+    StoreCategoryList *category_list1;
+    StoreCategoryList *category_list2;
+    StoreCategoryList *category_list3;
+    StoreCategoryList *category_list4;
+    StoreCategoryView *editors_picks_grid;
+    StoreCategoryView *installed_grid;
     GtkEntry *search_entry;
-    StoreCategoryView *search_results_view;
+    StoreCategoryView *search_results_grid;
 
     StoreCache *cache;
     GCancellable *cancellable;
@@ -51,7 +57,10 @@ set_review_counts (StoreHomePage *self, StoreApp *app)
     if (self->odrs_client == NULL)
         return;
 
-    gint64 *ratings = store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (app));
+    gint64 *ratings = NULL;
+    if (store_app_get_appstream_id (app) != NULL)
+        ratings = store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (app));
+
     store_app_set_review_count_one_star (app, ratings != NULL ? ratings[0] : 0);
     store_app_set_review_count_two_star (app, ratings != NULL ? ratings[1] : 0);
     store_app_set_review_count_three_star (app, ratings != NULL ? ratings[2] : 0);
@@ -107,10 +116,11 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
             store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
-    store_category_view_set_apps (self->search_results_view, apps);
+    store_category_view_set_apps (self->search_results_grid, apps);
 
     gtk_widget_hide (GTK_WIDGET (self->category_box));
-    gtk_widget_show (GTK_WIDGET (self->search_results_view));
+    gtk_widget_hide (GTK_WIDGET (self->editors_picks_grid));
+    gtk_widget_show (GTK_WIDGET (self->search_results_grid));
 }
 
 static void
@@ -120,7 +130,8 @@ search_cb (StoreHomePage *self)
 
     if (query[0] == '\0') {
         gtk_widget_show (GTK_WIDGET (self->category_box));
-        gtk_widget_hide (GTK_WIDGET (self->search_results_view));
+        gtk_widget_show (GTK_WIDGET (self->editors_picks_grid));
+        gtk_widget_hide (GTK_WIDGET (self->search_results_grid));
         return;
     }
 
@@ -182,8 +193,14 @@ store_home_page_class_init (StoreHomePageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, banner1_tile);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, banner2_tile);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_box);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_list1);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_list2);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_list3);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_list4);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, editors_picks_grid);   
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, installed_grid);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_entry);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_results_view);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_results_grid);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner_activated_cb);
@@ -226,15 +243,15 @@ find_section_data_free (FindSectionData *data)
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (FindSectionData, find_section_data_free)
 
-static StoreCategoryView *
-find_store_category_view (StoreHomePage *self, const gchar *section_name)
+static StoreCategoryList *
+find_store_category_list (StoreHomePage *self, const gchar *section_name)
 {
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
     for (GList *link = children; link != NULL; link = link->next) {
         GtkWidget *child = link->data;
-        if (STORE_IS_CATEGORY_VIEW (child) &&
-            g_strcmp0 (store_category_view_get_name (STORE_CATEGORY_VIEW (child)), section_name) == 0)
-            return STORE_CATEGORY_VIEW (child);
+        if (STORE_IS_CATEGORY_LIST (child) &&
+            g_strcmp0 (store_category_list_get_name (STORE_CATEGORY_LIST (child)), section_name) == 0)
+            return STORE_CATEGORY_LIST (child);
     }
 
     return NULL;
@@ -243,16 +260,26 @@ find_store_category_view (StoreHomePage *self, const gchar *section_name)
 static void
 set_category_apps (StoreHomePage *self, const gchar *section_name, GPtrArray *apps)
 {
-    StoreCategoryView *view = find_store_category_view (self, section_name);
-    if (view == NULL)
+    if (g_strcmp0 (section_name, "featured") == 0) {
+        g_autoptr(GPtrArray) featured_apps = g_ptr_array_new_with_free_func (g_object_unref);
+        for (guint i = 0; i < apps->len && i < 6; i++) {
+            StoreSnapApp *app = g_ptr_array_index (apps, i);
+            g_ptr_array_add (featured_apps, g_object_ref (app));
+        }
+        store_category_view_set_apps (self->editors_picks_grid, featured_apps);
+        return;
+    }
+
+    StoreCategoryList *list = find_store_category_list (self, section_name);
+    if (list == NULL)
         return;
 
     g_autoptr(GPtrArray) featured_apps = g_ptr_array_new_with_free_func (g_object_unref);
-    for (guint i = 0; i < apps->len && i < 9; i++) {
+    for (guint i = 0; i < apps->len && i < 5; i++) {
         StoreSnapApp *app = g_ptr_array_index (apps, i);
         g_ptr_array_add (featured_apps, g_object_ref (app));
     }
-    store_category_view_set_apps (view, featured_apps);
+    store_category_list_set_apps (list, featured_apps);
 }
 
 static void
@@ -369,32 +396,23 @@ static void
 set_sections (StoreHomePage *self, GStrv sections, gboolean populate)
 {
     /* Add or update existing categories */
-    for (int i = 0; sections[i] != NULL; i++) {
-        StoreCategoryView *view = find_store_category_view (self, sections[i]); // FIXME: Only look ahead from current position
-        if (view != NULL)
-            gtk_box_reorder_child (self->category_box, GTK_WIDGET (view), i);
-        else {
-            view = store_category_view_new ();
-            gtk_widget_show (GTK_WIDGET (view));
-            store_category_view_set_name (view, sections[i]);
-            store_category_view_set_cache (view, self->cache);
-            store_category_view_set_title (view, get_section_title (sections[i]));
-            g_signal_connect_object (view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-            gtk_container_add_with_properties (GTK_CONTAINER (self->category_box), GTK_WIDGET (view), "position", i, NULL);
-        }
+    int n = 0;
+    for (int i = 0; sections[i] != NULL && n < 4; i++) {
+        if (g_strcmp0 (sections[i], "featured") == 0)
+            continue;
+
+        g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
+        StoreCategoryList *list = g_list_nth_data (children, n);
+        store_category_list_set_name (list, sections[i]);
+        store_category_list_set_title (list, get_section_title (sections[i]));
         if (populate) { // FIXME: Hack to stop the following occuring for cached values
             g_autoptr(SnapdClient) client = snapd_client_new ();
             snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, self->cancellable, get_category_snaps_cb, find_section_data_new (self, sections[i]));
         }
+        n++;
     }
 
-    /* Remove remaining unused categories */
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
-    for (GList *link = g_list_nth (children, g_strv_length (sections)); link != NULL; link = link->next) {
-        GtkWidget *child = link->data;
-        if (child != GTK_WIDGET (self->installed_view))
-            gtk_container_remove (GTK_CONTAINER (self->category_box), child);
-    }
+    // FIXME: Hide if not enough
 }
 
 static void
@@ -448,8 +466,8 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         set_review_counts (self, STORE_APP (app));
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
-    store_category_view_set_apps (self->installed_view, apps);
-    gtk_widget_show (GTK_WIDGET (self->installed_view));
+    store_category_view_set_apps (self->installed_grid, apps);
+    gtk_widget_show (GTK_WIDGET (self->installed_grid));
 }
 
 static void
@@ -458,16 +476,16 @@ store_home_page_init (StoreHomePage *self)
     self->cancellable = g_cancellable_new ();
 
     store_banner_tile_get_type ();
+    store_category_list_get_type ();
     store_category_view_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
-    self->installed_view = store_category_view_new (); // FIXME: Move into .ui
-    store_category_view_set_cache (self->installed_view, self->cache);
-    store_category_view_set_title (self->installed_view,
+    store_category_view_set_title (self->editors_picks_grid,
+                                   /* Title for category editors picks */
+                                   _("Editors picks")); // FIXME: Make a property in .ui
+    store_category_view_set_title (self->installed_grid,
                                    /* Title for category showing installed snaps */
-                                   _("Installed"));
-    g_signal_connect_object (self->installed_view, "app-activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-    gtk_box_pack_end (self->category_box, GTK_WIDGET (self->installed_view), FALSE, FALSE, 0);
+                                   _("Installed")); // FIXME: Make a property in .ui
 }
 
 void
@@ -476,13 +494,15 @@ store_home_page_set_cache (StoreHomePage *self, StoreCache *cache)
     g_return_if_fail (STORE_IS_HOME_PAGE (self));
     g_set_object (&self->cache, cache);
     store_banner_tile_set_cache (self->banner_tile, cache);
-    store_category_view_set_cache (self->installed_view, cache);
-    store_category_view_set_cache (self->search_results_view, cache);
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
-    for (GList *link = children; link != NULL; link = link->next) {
-        StoreCategoryView *view = link->data;
-        store_category_view_set_cache (view, cache);
-    }
+    store_banner_tile_set_cache (self->banner1_tile, cache);
+    store_banner_tile_set_cache (self->banner2_tile, cache);
+    store_category_list_set_cache (self->category_list1, cache);
+    store_category_list_set_cache (self->category_list2, cache);
+    store_category_list_set_cache (self->category_list3, cache);
+    store_category_list_set_cache (self->category_list4, cache);
+    store_category_view_set_cache (self->editors_picks_grid, cache);
+    store_category_view_set_cache (self->installed_grid, cache);
+    store_category_view_set_cache (self->search_results_grid, cache);
 }
 
 void
