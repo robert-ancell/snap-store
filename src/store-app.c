@@ -346,6 +346,13 @@ store_app_install_finish (StoreApp *self, GAsyncResult *result, GError **error)
     return STORE_APP_GET_CLASS (self)->install_finish (self, result, error);
 }
 
+gboolean
+store_app_launch (StoreApp *self, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_APP (self), FALSE);
+    return STORE_APP_GET_CLASS (self)->launch (self, error);
+}
+
 void
 store_app_refresh_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {

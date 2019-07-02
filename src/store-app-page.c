@@ -189,7 +189,9 @@ install_cb (StoreAppPage *self)
 static void
 launch_cb (StoreAppPage *self)
 {
-    //store_app_launch_async (self->app, NULL, NULL, NULL, NULL);
+    g_autoptr(GError) error = NULL;
+    if (!store_app_launch (self->app, &error))
+        g_warning ("Failed to launch app: %s", error->message); // FIXME: Show graphically
 }
 
 static void
