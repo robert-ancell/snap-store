@@ -91,9 +91,7 @@ store_app_tile_set_app (StoreAppTile *self, StoreApp *app)
     g_object_bind_property (app, "publisher-validated", self->publisher_validated_image, "visible", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "review-average", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "summary", self->summary_label, "label", G_BINDING_SYNC_CREATE);
-    store_image_set_uri (self->icon_image, NULL); // FIXME: Hack to reset icon
-    if (store_app_get_icon (app) != NULL)
-        store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));
+    g_object_bind_property (app, "icon", self->icon_image, "media", G_BINDING_SYNC_CREATE);
 }
 
 StoreApp *

@@ -285,9 +285,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_object_bind_property (app, "publisher-validated", self->publisher_validated_image, "visible", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "summary", self->summary_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "description", self->description_label, "label", G_BINDING_SYNC_CREATE);
-    store_image_set_uri (self->icon_image, NULL); // FIXME: Hack to reset icon
-    if (store_app_get_icon (app) != NULL)
-        store_image_set_uri (self->icon_image, store_media_get_uri (store_app_get_icon (app)));
+    g_object_bind_property (app, "icon", self->icon_image, "media", G_BINDING_SYNC_CREATE);
 
     g_object_bind_property (app, "version", self->details_version_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property_full (app, "updated-date", self->details_updated_label, "label", G_BINDING_SYNC_CREATE, date_to_label, NULL, NULL, NULL); // FIXME: Support updated for uninstalled snaps
