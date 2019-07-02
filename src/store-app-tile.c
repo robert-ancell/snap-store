@@ -14,7 +14,7 @@
 
 struct _StoreAppTile
 {
-    GtkFlowBoxChild parent_instance;
+    GtkEventBox parent_instance;
 
     StoreImage *icon_image;
     GtkLabel *name_label;
@@ -26,7 +26,22 @@ struct _StoreAppTile
     StoreApp *app;
 };
 
-G_DEFINE_TYPE (StoreAppTile, store_app_tile, GTK_TYPE_FLOW_BOX_CHILD)
+G_DEFINE_TYPE (StoreAppTile, store_app_tile, GTK_TYPE_EVENT_BOX)
+
+enum
+{
+    SIGNAL_ACTIVATED,
+    SIGNAL_LAST
+};
+
+static guint signals[SIGNAL_LAST] = { 0 };
+
+static gboolean
+button_release_event_cb (StoreAppTile *self)
+{
+    g_signal_emit (self, signals[SIGNAL_ACTIVATED], 0);
+    return TRUE;
+}
 
 static void
 store_app_tile_dispose (GObject *object)
@@ -51,6 +66,17 @@ store_app_tile_class_init (StoreAppTileClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, rating_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, summary_label);
+
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), button_release_event_cb);
+
+    signals[SIGNAL_ACTIVATED] = g_signal_new ("activated",
+                                              G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
+                                              G_SIGNAL_RUN_LAST,
+                                              0,
+                                              NULL, NULL,
+                                              NULL,
+                                              G_TYPE_NONE,
+                                              0);
 }
 
 static void

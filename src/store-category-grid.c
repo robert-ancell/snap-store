@@ -13,16 +13,16 @@
 
 struct _StoreCategoryGrid
 {
-    GtkFlowBoxChild parent_instance;
+    GtkBox parent_instance;
 
-    GtkFlowBox *app_flow_box;
+    GtkGrid *app_grid;
     GtkLabel *title_label;
 
     StoreCache *cache;
     gchar *name;
 };
 
-G_DEFINE_TYPE (StoreCategoryGrid, store_category_grid, GTK_TYPE_FLOW_BOX_CHILD)
+G_DEFINE_TYPE (StoreCategoryGrid, store_category_grid, GTK_TYPE_BOX)
 
 enum
 {
@@ -56,7 +56,7 @@ store_category_grid_class_init (StoreCategoryGridClass *klass)
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-category-grid.ui");
 
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryGrid, app_flow_box);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryGrid, app_grid);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryGrid, title_label);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
@@ -89,7 +89,7 @@ store_category_grid_set_cache (StoreCategoryGrid *self, StoreCache *cache)
     g_return_if_fail (STORE_IS_CATEGORY_GRID (self));
 
     g_set_object (&self->cache, cache);
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_flow_box));
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_grid));
     for (GList *link = children; link != NULL; link = link->next) {
         StoreAppTile *tile = link->data;
         store_app_tile_set_cache (tile, cache);
@@ -130,20 +130,21 @@ store_category_grid_set_apps (StoreCategoryGrid *self, GPtrArray *apps)
     g_return_if_fail (STORE_IS_CATEGORY_GRID (self));
 
     /* Ensure correct number of app tiles */
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_flow_box));
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_grid));
     guint n_tiles = g_list_length (children);
     while (n_tiles < apps->len) {
         StoreAppTile *tile = store_app_tile_new ();
         gtk_widget_show (GTK_WIDGET (tile));
+        g_signal_connect_object (tile, "activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
         store_app_tile_set_cache (tile, self->cache);
-        gtk_container_add (GTK_CONTAINER (self->app_flow_box), GTK_WIDGET (tile));
+        gtk_grid_attach (self->app_grid, GTK_WIDGET (tile), n_tiles % 3, n_tiles / 3, 1, 1);
         n_tiles++;
         children = g_list_append (children, tile);
     }
     while (n_tiles > apps->len) {
         for (GList *link = g_list_nth (children, apps->len); link != NULL; link = link->next) {
             StoreAppTile *tile = link->data;
-            gtk_container_remove (GTK_CONTAINER (self->app_flow_box), GTK_WIDGET (tile));
+            gtk_container_remove (GTK_CONTAINER (self->app_grid), GTK_WIDGET (tile));
         }
     }
     for (guint i = 0; i < apps->len; i++) {

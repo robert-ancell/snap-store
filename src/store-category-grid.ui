@@ -1,33 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="StoreCategoryGrid" parent="GtkFlowBoxChild">
+  <template class="StoreCategoryGrid" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <property name="spacing">30</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkLabel" id="title_label">
+        <property name="visible">False</property>
+        <property name="halign">start</property>
+        <style>
+          <class name="category-title-label"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkGrid" id="app_grid">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">30</property>
-        <child>
-          <object class="GtkLabel" id="title_label">
-            <property name="visible">False</property>
-            <property name="halign">start</property>
-            <style>
-              <class name="category-title-label"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkFlowBox" id="app_flow_box">
-            <property name="visible">True</property>
-            <property name="min-children-per-line">3</property>
-            <property name="max-children-per-line">3</property>
-            <property name="column-spacing">20</property>
-            <property name="row-spacing">20</property>
-            <property name="homogeneous">True</property>
-            <property name="activate-on-single-click">True</property>
-            <property name="selection-mode">none</property>
-            <signal name="child-activated" handler="app_activated_cb" object="StoreCategoryGrid" swapped="yes"/>
-          </object>
-        </child>
+        <property name="column-spacing">20</property>
+        <property name="row-spacing">20</property>
+        <property name="column-homogeneous">True</property>
+        <property name="row-homogeneous">True</property>
       </object>
     </child>
   </template>

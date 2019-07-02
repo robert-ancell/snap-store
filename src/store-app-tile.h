@@ -16,7 +16,7 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreAppTile, store_app_tile, STORE, APP_TILE, GtkFlowBoxChild)
+G_DECLARE_FINAL_TYPE (StoreAppTile, store_app_tile, STORE, APP_TILE, GtkEventBox)
 
 StoreAppTile *store_app_tile_new       (void);
 
