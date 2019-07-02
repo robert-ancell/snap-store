@@ -246,7 +246,8 @@ submit_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 gint64 *
 store_odrs_client_get_ratings (StoreOdrsClient *self, const gchar *app_id)
 {
-    g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), FALSE);
+    g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), NULL);
+    g_return_val_if_fail (app_id != NULL, NULL);
 
     if (self->ratings == NULL)
         return NULL;
