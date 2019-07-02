@@ -35,6 +35,29 @@
               </object>
             </child>
             <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="orientation">horizontal</property>
+                <property name="spacing">20</property>
+                <child>
+                  <object class="StoreBannerTile" id="banner1_tile">
+                    <property name="visible">True</property>
+                    <property name="height-request">122</property>
+                    <property name="hexpand">True</property>
+                    <signal name="activated" handler="banner1_activated_cb" object="StoreHomePage" swapped="yes"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="StoreBannerTile" id="banner2_tile">
+                    <property name="visible">True</property>
+                    <property name="height-request">122</property>
+                    <property name="hexpand">True</property>
+                    <signal name="activated" handler="banner2_activated_cb" object="StoreHomePage" swapped="yes"/>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="GtkBox" id="category_box">
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>

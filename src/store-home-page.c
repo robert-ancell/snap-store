@@ -20,6 +20,8 @@ struct _StoreHomePage
     GtkBox parent_instance;
 
     StoreBannerTile *banner_tile;
+    StoreBannerTile *banner1_tile;
+    StoreBannerTile *banner2_tile;
     GtkBox *category_box;
     StoreCategoryView *installed_view;
     GtkEntry *search_entry;
@@ -61,6 +63,18 @@ static void
 banner_activated_cb (StoreHomePage *self)
 {
     g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_banner_tile_get_app (self->banner_tile));
+}
+
+static void
+banner1_activated_cb (StoreHomePage *self)
+{
+    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_banner_tile_get_app (self->banner1_tile));
+}
+
+static void
+banner2_activated_cb (StoreHomePage *self)
+{
+    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_banner_tile_get_app (self->banner2_tile));
 }
 
 static void
@@ -165,12 +179,16 @@ store_home_page_class_init (StoreHomePageClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-home-page.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, banner_tile);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, banner1_tile);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, banner2_tile);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_entry);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_results_view);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner1_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner2_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_changed_cb);
 
@@ -494,6 +512,12 @@ store_home_page_load (StoreHomePage *self)
     g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, "telemetrytv");
     store_app_update_from_cache (STORE_APP (app), self->cache);
     store_banner_tile_set_app (self->banner_tile, STORE_APP (app));
+    g_autoptr(StoreSnapApp) app1 = store_snap_pool_get_snap (self->snap_pool, "supertuxkart");
+    store_app_update_from_cache (STORE_APP (app1), self->cache);
+    store_banner_tile_set_app (self->banner1_tile, STORE_APP (app1));
+    g_autoptr(StoreSnapApp) app2 = store_snap_pool_get_snap (self->snap_pool, "fluffychat");
+    store_app_update_from_cache (STORE_APP (app2), self->cache);
+    store_banner_tile_set_app (self->banner2_tile, STORE_APP (app2));
 
     /* Load cached sections */
     if (self->cache != NULL) {
