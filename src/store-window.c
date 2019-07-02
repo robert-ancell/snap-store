@@ -10,7 +10,9 @@
 #include "store-window.h"
 
 #include "store-app-page.h"
+#include "store-categories-page.h"
 #include "store-home-page.h"
+#include "store-installed-page.h"
 #include "store-snap-pool.h"
 
 struct _StoreWindow
@@ -19,7 +21,12 @@ struct _StoreWindow
 
     StoreAppPage *app_page;
     GtkButton *back_button;
+    GtkToggleButton *categories_button;
+    StoreCategoriesPage *categories_page;
+    GtkToggleButton *home_button;
     StoreHomePage *home_page;
+    GtkToggleButton *installed_button;
+    StoreInstalledPage *installed_page;
     GtkStack *stack;
 
     StoreCache *cache;
@@ -42,6 +49,28 @@ back_button_clicked_cb (StoreWindow *self)
 }
 
 static void
+page_toggled_cb (StoreWindow *self, GtkToggleButton *button)
+{
+    if (!gtk_toggle_button_get_active (button))
+        return;
+
+    if (button == self->home_button)
+        gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->home_page));
+    else if (button == self->categories_button)
+        gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->categories_page));
+    else if (button == self->installed_button)
+        gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->installed_page));
+    gtk_widget_hide (GTK_WIDGET (self->back_button));
+
+    if (button != self->home_button)
+        gtk_toggle_button_set_active (self->home_button, FALSE);
+    if (button != self->categories_button)
+        gtk_toggle_button_set_active (self->categories_button, FALSE);
+    if (button != self->installed_button)
+        gtk_toggle_button_set_active (self->installed_button, FALSE);
+}
+
+static void
 store_window_dispose (GObject *object)
 {
     StoreWindow *self = STORE_WINDOW (object);
@@ -61,18 +90,26 @@ store_window_class_init (StoreWindowClass *klass)
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, app_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, back_button);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, categories_button);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, categories_page);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, home_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, home_page);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, installed_button);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, installed_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, stack);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), back_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), page_toggled_cb);
 }
 
 static void
 store_window_init (StoreWindow *self)
 {
     store_app_page_get_type ();
+    store_categories_page_get_type ();
     store_home_page_get_type ();
+    store_installed_page_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
     gtk_window_set_default_size (GTK_WINDOW (self), 800, 600); // FIXME: Temp
@@ -95,6 +132,7 @@ store_window_set_cache (StoreWindow *self, StoreCache *cache)
 
     store_app_page_set_cache (self->app_page, cache);
     store_home_page_set_cache (self->home_page, cache);
+    store_installed_page_set_cache (self->installed_page, cache);
 }
 
 void
@@ -113,6 +151,7 @@ store_window_set_snap_pool (StoreWindow *self, StoreSnapPool *pool)
 {
     g_return_if_fail (STORE_IS_WINDOW (self));
     store_home_page_set_snap_pool (self->home_page, pool);
+    store_installed_page_set_snap_pool (self->installed_page, pool);
 }
 
 void
@@ -121,6 +160,7 @@ store_window_load (StoreWindow *self)
     g_return_if_fail (STORE_IS_WINDOW (self));
 
     store_home_page_load (self->home_page);
+    store_installed_page_load (self->installed_page);
 }
 
 void

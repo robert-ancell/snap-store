@@ -1,3 +1,51 @@
+.app-installed-tile-box {
+    border-radius: 3px;
+    border: solid 1px #e0e0e0;
+    padding: 16px;
+}
+
+.app-installed-tile-launch-button {
+    background-color: #0e8420;
+}
+
+.app-installed-tile-launch-button-label {
+    color: #ffffff;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.app-installed-tile-publisher-label {
+    font-family: Ubuntu-Light;
+    font-size: 14px;
+    color: #4a4a4a;
+}
+
+.app-installed-tile-remove-button {
+    background-color: #c7162b;
+}
+
+.app-installed-tile-remove-button-label {
+    color: #ffffff;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.app-installed-tile-summary-label {
+    font-family: Ubuntu-Light;
+    font-size: 14px;
+    color: #111111;
+}
+
+.app-installed-tile-title-label {
+    font-family: Ubuntu-Light;
+    font-size: 21px;
+    color: #007aa6;
+}
+
 .app-page-contact-label {
     font-family: Ubuntu-Light;
     font-size: 16px;
@@ -191,6 +239,25 @@
     color: #111111;
 }
 
+.categories-page-description-label {
+    font-family: Ubuntu-Light;
+    font-size: 16px;
+    color: #111111;
+    padding-top: 16px;
+}
+
+.categories-page-header-box {
+    background-image: url("snap-background.png");
+    background-size: cover;
+    padding: 32px;
+}
+
+.categories-page-title-label {
+    font-family: Ubuntu-Light;
+    font-size: 28px;
+    color: #212121;
+}
+
 .category-list-app-box {
     border-radius: 3px;
     border: solid 1px #e0e0e0;
@@ -237,6 +304,29 @@
 .home-page-small-banner-box {
     margin-left: 32px;
     margin-right: 32px;
+}
+
+.installed-page-app-box {
+    margin: 32px;
+}
+
+.installed-page-description-label {
+    font-family: Ubuntu-Light;
+    font-size: 16px;
+    color: #111111;
+    padding-top: 16px;
+}
+
+.installed-page-header-box {
+    background-image: url("snap-background.png");
+    background-size: cover;
+    padding: 32px;
+}
+
+.installed-page-title-label {
+    font-family: Ubuntu-Light;
+    font-size: 28px;
+    color: #212121;
 }
 
 .review-summary-bar {

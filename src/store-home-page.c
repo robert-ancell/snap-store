@@ -29,7 +29,6 @@ struct _StoreHomePage
     StoreCategoryList *category_list3;
     StoreCategoryList *category_list4;
     StoreCategoryGrid *editors_picks_grid;
-    StoreCategoryGrid *installed_grid;
     GtkEntry *search_entry;
     StoreCategoryGrid *search_results_grid;
     GtkBox *small_banner_box;
@@ -121,7 +120,6 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 
     gtk_widget_hide (GTK_WIDGET (self->category_box));
     gtk_widget_hide (GTK_WIDGET (self->editors_picks_grid));
-    gtk_widget_hide (GTK_WIDGET (self->installed_grid));
     gtk_widget_show (GTK_WIDGET (self->search_results_grid));
     gtk_widget_hide (GTK_WIDGET (self->small_banner_box));
 }
@@ -134,7 +132,6 @@ search_cb (StoreHomePage *self)
     if (query[0] == '\0') {
         gtk_widget_show (GTK_WIDGET (self->category_box));
         gtk_widget_show (GTK_WIDGET (self->editors_picks_grid));
-        gtk_widget_show (GTK_WIDGET (self->installed_grid));
         gtk_widget_hide (GTK_WIDGET (self->search_results_grid));
         gtk_widget_show (GTK_WIDGET (self->small_banner_box));
         return;
@@ -203,7 +200,6 @@ store_home_page_class_init (StoreHomePageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_list3);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_list4);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, editors_picks_grid);   
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, installed_grid);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_entry);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_results_grid);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, small_banner_box);
@@ -450,33 +446,6 @@ get_sections_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 }
 
 static void
-get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
-{
-    StoreHomePage *self = user_data;
-
-    g_autoptr(GError) error = NULL;
-    g_autoptr(GPtrArray) snaps = snapd_client_get_snaps_finish (SNAPD_CLIENT (object), result, &error);
-    if (snaps == NULL) {
-        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-            return;
-        g_warning ("Failed to get installed snaps: %s", error->message);
-        return;
-    }
-
-    g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
-    for (guint i = 0; i < snaps->len; i++) {
-        SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
-        store_app_set_installed (STORE_APP (app), TRUE);
-        store_snap_app_update_from_search (app, snap);
-        set_review_counts (self, STORE_APP (app));
-        g_ptr_array_add (apps, g_steal_pointer (&app));
-    }
-    store_category_grid_set_apps (self->installed_grid, apps);
-    gtk_widget_show (GTK_WIDGET (self->installed_grid));
-}
-
-static void
 store_home_page_init (StoreHomePage *self)
 {
     self->cancellable = g_cancellable_new ();
@@ -489,9 +458,6 @@ store_home_page_init (StoreHomePage *self)
     store_category_grid_set_title (self->editors_picks_grid,
                                    /* Title for category editors picks */
                                    _("Editors picks")); // FIXME: Make a property in .ui
-    store_category_grid_set_title (self->installed_grid,
-                                   /* Title for category showing installed snaps */
-                                   _("Installed")); // FIXME: Make a property in .ui
 }
 
 void
@@ -507,7 +473,6 @@ store_home_page_set_cache (StoreHomePage *self, StoreCache *cache)
     store_category_list_set_cache (self->category_list3, cache);
     store_category_list_set_cache (self->category_list4, cache);
     store_category_grid_set_cache (self->editors_picks_grid, cache);
-    store_category_grid_set_cache (self->installed_grid, cache);
     store_category_grid_set_cache (self->search_results_grid, cache);
 }
 
@@ -530,9 +495,6 @@ store_home_page_load (StoreHomePage *self)
 {
     g_autoptr(SnapdClient) client = snapd_client_new ();
     snapd_client_get_sections_async (client, self->cancellable, get_sections_cb, self);
-
-    g_autoptr(SnapdClient) client2 = snapd_client_new ();
-    snapd_client_get_snaps_async (client2, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);
 
     // FIXME: Hardcoded
     g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, "telemetrytv");

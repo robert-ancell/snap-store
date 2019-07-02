@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="StoreAppInstalledTile" parent="GtkEventBox">
+    <signal name="button_release_event" handler="button_release_event_cb" object="StoreAppInstalledTile" swapped="yes"/>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="orientation">horizontal</property>
+        <property name="spacing">16</property>
+        <style>
+          <class name="app-installed-tile-box"/>
+        </style>
+        <child>
+          <object class="StoreImage" id="icon_image">
+            <property name="visible">True</property>
+            <property name="valign">start</property>
+            <property name="width">72</property>
+            <property name="height">72</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">16</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkLabel" id="title_label">
+                    <property name="visible">True</property>
+                    <property name="halign">start</property>
+                    <property name="ellipsize">end</property>
+                    <style>
+                      <class name="app-installed-tile-title-label"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkLabel" id="publisher_label">
+                        <property name="visible">True</property>
+                        <property name="halign">start</property>
+                        <property name="ellipsize">end</property>
+                        <style>
+                          <class name="app-installed-tile-publisher-label"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage" id="publisher_validated_image">
+                        <property name="visible">False</property>
+                        <property name="resource">/io/snapcraft/Store/developer-verified.svg</property>
+                        <style>
+                          <class name="pubisher-verified-image"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="StoreRatingLabel" id="rating_label">
+                    <property name="visible">True</property>
+                    <property name="halign">start</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="summary_label">
+            <property name="visible">True</property>
+            <property name="hexpand">True</property>
+            <property name="halign">start</property>
+            <property name="xalign">0</property>
+            <property name="valign">start</property>
+            <property name="ellipsize">end</property>
+            <property name="wrap">True</property>
+            <property name="lines">2</property>
+            <style>
+              <class name="app-install-tile-summary-label"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="visible">True</property>
+            <property name="valign">start</property>
+            <style>
+              <class name="app-installed-tile-launch-button"/>
+            </style>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes" comments="Label on button to launch an app">Launch</property>
+                <style>
+                  <class name="app-installed-tile-launch-button-label"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="visible">True</property>
+            <property name="valign">start</property>
+            <style>
+              <class name="app-installed-tile-remove-button"/>
+            </style>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes" comments="Label on button to remove an app">Remove</property>
+                <style>
+                  <class name="app-installed-tile-remove-button-label"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

@@ -20,6 +20,53 @@
             </child>
           </object>
         </child>
+        <child type="title">
+          <object class="GtkButtonBox">
+            <property name="visible">True</property>
+            <property name="orientation">horizontal</property>
+            <property name="homogeneous">True</property>
+            <style>
+              <class name="linked"/>
+            </style>
+            <child>
+              <object class="GtkToggleButton" id="home_button">
+                <property name="visible">True</property>
+                <property name="active">True</property>
+                <signal name="toggled" handler="page_toggled_cb" object="StoreWindow" swapped="yes"/>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes" comments="Label on tab to show home page">All</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="categories_button">
+                <property name="visible">True</property>
+                <signal name="toggled" handler="page_toggled_cb" object="StoreWindow" swapped="yes"/>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes" comments="Label on tab to show app categories page">Categories</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="installed_button">
+                <property name="visible">True</property>
+                <signal name="toggled" handler="page_toggled_cb" object="StoreWindow" swapped="yes"/>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes" comments="Label on tab to show installed apps page">Installed</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
     <child>
@@ -34,6 +81,18 @@
         <child>
           <object class="StoreAppPage" id="app_page">
             <property name="visible">True</property>
+          </object>
+        </child>
+        <child>
+          <object class="StoreCategoriesPage" id="categories_page">
+            <property name="visible">True</property>
+            <signal name="app-activated" handler="app_activated_cb" object="StoreWindow" swapped="yes"/>
+          </object>
+        </child>
+        <child>
+          <object class="StoreInstalledPage" id="installed_page">
+            <property name="visible">True</property>
+            <signal name="app-activated" handler="app_activated_cb" object="StoreWindow" swapped="yes"/>
           </object>
         </child>
       </object>
