@@ -331,14 +331,14 @@ store_image_set_uri (StoreImage *self, const gchar *uri)
     g_clear_object (&self->cache_cancellable);
 
     g_clear_object (&self->pixbuf);
-    if (uri == NULL || g_strcmp0 (uri, "") == 0) {
-        self->pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/io/snapcraft/Store/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
+    self->pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/io/snapcraft/Store/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
+    gtk_widget_queue_draw (GTK_WIDGET (self));
+
+    if (uri == NULL)
         return;
-    }
 
     g_clear_pointer (&self->buffer, g_byte_array_unref);
     self->buffer = g_byte_array_new ();
-
     g_autoptr(SoupMessage) message = soup_message_new ("GET", uri);
     self->cancellable = g_cancellable_new ();
     soup_session_send_async (self->session, message, self->cancellable, send_cb, self);
