@@ -17,11 +17,11 @@ struct _StoreAppTile
     GtkEventBox parent_instance;
 
     StoreImage *icon_image;
-    GtkLabel *name_label;
     GtkLabel *publisher_label;
     GtkImage *publisher_validated_image;
     StoreRatingLabel *rating_label;
     GtkLabel *summary_label;
+    GtkLabel *title_label;
 
     StoreApp *app;
 };
@@ -61,11 +61,11 @@ store_app_tile_class_init (StoreAppTileClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-tile.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, icon_image);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, name_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, rating_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, summary_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppTile, title_label);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), button_release_event_cb);
 
@@ -112,12 +112,12 @@ store_app_tile_set_app (StoreAppTile *self, StoreApp *app)
     if (app != NULL)
         self->app = g_object_ref (app);
 
-    g_object_bind_property (app, "title", self->name_label, "label", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "icon", self->icon_image, "media", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "publisher", self->publisher_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "publisher-validated", self->publisher_validated_image, "visible", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "review-average", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "summary", self->summary_label, "label", G_BINDING_SYNC_CREATE);
-    g_object_bind_property (app, "icon", self->icon_image, "media", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "title", self->title_label, "label", G_BINDING_SYNC_CREATE);
 }
 
 StoreApp *
