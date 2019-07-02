@@ -14,6 +14,7 @@
 typedef struct
 {
     gchar *appstream_id;
+    StoreMedia *banner;
     GPtrArray *channels;
     gchar *contact;
     gchar *description;
@@ -39,6 +40,7 @@ typedef struct
 enum
 {
     PROP_0,
+    PROP_BANNER,
     PROP_CHANNELS,
     PROP_CONTACT,
     PROP_DESCRIPTION,
@@ -73,6 +75,7 @@ store_app_dispose (GObject *object)
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
     g_clear_pointer (&priv->appstream_id, g_free);
+    g_clear_object (&priv->banner);
     g_clear_pointer (&priv->channels, g_ptr_array_unref);
     g_clear_pointer (&priv->contact, g_free);
     g_clear_pointer (&priv->description, g_free);
@@ -97,6 +100,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 
     switch (prop_id)
     {
+    case PROP_BANNER:
+        g_value_set_object (value, priv->banner);
+        break;
     case PROP_CHANNELS:
         g_value_set_boxed (value, priv->channels);
         break;
@@ -176,6 +182,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 
     switch (prop_id)
     {
+    case PROP_BANNER:
+        store_app_set_banner (self, g_value_get_object (value));
+        break;
     case PROP_CHANNELS:
         store_app_set_channels (self, g_value_get_boxed (value));
         break;
@@ -281,6 +290,7 @@ store_app_class_init (StoreAppClass *klass)
     G_OBJECT_CLASS (klass)->get_property = store_app_get_property;
     G_OBJECT_CLASS (klass)->set_property = store_app_set_property;
 
+    install_object_property (klass, PROP_BANNER, "banner", store_media_get_type ());
     install_array_property (klass, PROP_CHANNELS, "channels");
     install_string_property (klass, PROP_CONTACT, "contact");
     install_string_property (klass, PROP_DESCRIPTION, "description");
@@ -414,6 +424,30 @@ store_app_get_appstream_id (StoreApp *self)
     g_return_val_if_fail (STORE_IS_APP (self), NULL);
 
     return priv->appstream_id;
+}
+
+void
+store_app_set_banner (StoreApp *self, StoreMedia *banner)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    g_clear_object (&priv->banner);
+    if (banner != NULL)
+        priv->banner = g_object_ref (banner);
+
+    g_object_notify (G_OBJECT (self), "banner");
+}
+
+StoreMedia *
+store_app_get_banner (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    return priv->banner;
 }
 
 void

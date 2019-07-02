@@ -56,6 +56,10 @@ void          store_app_set_appstream_id            (StoreApp *app, const gchar 
 
 const gchar  *store_app_get_appstream_id            (StoreApp *app);
 
+void          store_app_set_banner                  (StoreApp *app, StoreMedia *banner);
+
+StoreMedia   *store_app_get_banner                  (StoreApp *app);
+
 void          store_app_set_channels                (StoreApp *app, GPtrArray *channels);
 
 GPtrArray    *store_app_get_channels                (StoreApp *app);

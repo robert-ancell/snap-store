@@ -181,6 +181,10 @@ store_snap_app_save_to_cache (StoreApp *self, StoreCache *cache)
     json_builder_begin_object (builder);
     json_builder_set_member_name (builder, "appstream-id"); // FIXME: Move common fields into StoreApp
     json_builder_add_string_value (builder, store_app_get_appstream_id (self));
+    if (store_app_get_banner (self) != NULL) {
+        json_builder_set_member_name (builder, "banner");
+        json_builder_add_value (builder, store_media_to_json (store_app_get_banner (self)));
+    }
     GPtrArray *channels = store_app_get_channels (self);
     if (channels->len > 0) {
         json_builder_set_member_name (builder, "channels");
@@ -241,6 +245,10 @@ store_snap_app_update_from_cache (StoreApp *self, StoreCache *cache)
 
     JsonObject *object = json_node_get_object (node);
     store_app_set_appstream_id (STORE_APP (self), json_object_get_string_member (object, "appstream-id")); // FIXME: Move common fields into StoreApp
+    if (json_object_has_member (object, "banner")) {
+        g_autoptr(StoreMedia) banner = store_media_new_from_json (json_object_get_member (object, "banner"));
+        store_app_set_banner (STORE_APP (self), banner);
+    }
     if (json_object_has_member (object, "channels")) {
         g_autoptr(GPtrArray) channels = g_ptr_array_new_with_free_func (g_object_unref);
         JsonArray *channels_array = json_object_get_array_member (object, "channels");
@@ -380,6 +388,13 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
             store_media_set_width (icon, snapd_media_get_width (m));
             store_media_set_height (icon, snapd_media_get_height (m));
             store_app_set_icon (STORE_APP (self), icon);
+        }
+        else if (g_strcmp0 (snapd_media_get_media_type (m), "banner") == 0 && store_app_get_banner (STORE_APP (self)) == NULL) {
+            g_autoptr(StoreMedia) banner = store_media_new ();
+            store_media_set_uri (banner, snapd_media_get_url (m));
+            store_media_set_width (banner, snapd_media_get_width (m));
+            store_media_set_height (banner, snapd_media_get_height (m));
+            store_app_set_banner (STORE_APP (self), banner);
         }
         else if (is_screenshot (m)) {
             g_autoptr(StoreMedia) screenshot = store_media_new ();
