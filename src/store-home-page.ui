@@ -32,10 +32,13 @@
               <object class="StoreCategoryView" id="search_results_grid">
                 <property name="visible">False</property>
                 <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
+                <style>
+                  <class name="home-page-search-results-grid"/>
+                </style>
               </object>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkBox" id="small_banner_box">
                 <property name="visible">True</property>
                 <property name="orientation">horizontal</property>
                 <property name="spacing">20</property>

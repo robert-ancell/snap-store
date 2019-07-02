@@ -32,6 +32,7 @@ struct _StoreHomePage
     StoreCategoryView *installed_grid;
     GtkEntry *search_entry;
     StoreCategoryView *search_results_grid;
+    GtkBox *small_banner_box;
 
     StoreCache *cache;
     GCancellable *cancellable;
@@ -120,7 +121,9 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 
     gtk_widget_hide (GTK_WIDGET (self->category_box));
     gtk_widget_hide (GTK_WIDGET (self->editors_picks_grid));
+    gtk_widget_hide (GTK_WIDGET (self->installed_grid));
     gtk_widget_show (GTK_WIDGET (self->search_results_grid));
+    gtk_widget_hide (GTK_WIDGET (self->small_banner_box));
 }
 
 static void
@@ -131,7 +134,9 @@ search_cb (StoreHomePage *self)
     if (query[0] == '\0') {
         gtk_widget_show (GTK_WIDGET (self->category_box));
         gtk_widget_show (GTK_WIDGET (self->editors_picks_grid));
+        gtk_widget_show (GTK_WIDGET (self->installed_grid));
         gtk_widget_hide (GTK_WIDGET (self->search_results_grid));
+        gtk_widget_show (GTK_WIDGET (self->small_banner_box));
         return;
     }
 
@@ -201,6 +206,7 @@ store_home_page_class_init (StoreHomePageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, installed_grid);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_entry);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_results_grid);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, small_banner_box);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner_activated_cb);
