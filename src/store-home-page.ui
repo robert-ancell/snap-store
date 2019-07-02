@@ -29,7 +29,7 @@
               </object>
             </child>
             <child>
-              <object class="StoreCategoryView" id="search_results_grid">
+              <object class="StoreCategoryGrid" id="search_results_grid">
                 <property name="visible">False</property>
                 <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                 <style>
@@ -64,7 +64,7 @@
               </object>
             </child>
             <child>
-              <object class="StoreCategoryView" id="editors_picks_grid">
+              <object class="StoreCategoryGrid" id="editors_picks_grid">
                 <property name="visible">True</property>
                 <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                 <style>
@@ -112,7 +112,7 @@
               </object>
             </child>
             <child>
-              <object class="StoreCategoryView" id="installed_grid">
+              <object class="StoreCategoryGrid" id="installed_grid">
                 <property name="visible">False</property>
                 <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                 <style>

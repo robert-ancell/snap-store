@@ -13,8 +13,8 @@
 #include "store-home-page.h"
 
 #include "store-banner-tile.h"
+#include "store-category-grid.h"
 #include "store-category-list.h"
-#include "store-category-view.h"
 
 struct _StoreHomePage
 {
@@ -28,10 +28,10 @@ struct _StoreHomePage
     StoreCategoryList *category_list2;
     StoreCategoryList *category_list3;
     StoreCategoryList *category_list4;
-    StoreCategoryView *editors_picks_grid;
-    StoreCategoryView *installed_grid;
+    StoreCategoryGrid *editors_picks_grid;
+    StoreCategoryGrid *installed_grid;
     GtkEntry *search_entry;
-    StoreCategoryView *search_results_grid;
+    StoreCategoryGrid *search_results_grid;
     GtkBox *small_banner_box;
 
     StoreCache *cache;
@@ -117,7 +117,7 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
             store_app_save_to_cache (STORE_APP (app), self->cache);
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
-    store_category_view_set_apps (self->search_results_grid, apps);
+    store_category_grid_set_apps (self->search_results_grid, apps);
 
     gtk_widget_hide (GTK_WIDGET (self->category_box));
     gtk_widget_hide (GTK_WIDGET (self->editors_picks_grid));
@@ -272,7 +272,7 @@ set_category_apps (StoreHomePage *self, const gchar *section_name, GPtrArray *ap
             StoreSnapApp *app = g_ptr_array_index (apps, i);
             g_ptr_array_add (featured_apps, g_object_ref (app));
         }
-        store_category_view_set_apps (self->editors_picks_grid, featured_apps);
+        store_category_grid_set_apps (self->editors_picks_grid, featured_apps);
         return;
     }
 
@@ -472,7 +472,7 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         set_review_counts (self, STORE_APP (app));
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
-    store_category_view_set_apps (self->installed_grid, apps);
+    store_category_grid_set_apps (self->installed_grid, apps);
     gtk_widget_show (GTK_WIDGET (self->installed_grid));
 }
 
@@ -483,13 +483,13 @@ store_home_page_init (StoreHomePage *self)
 
     store_banner_tile_get_type ();
     store_category_list_get_type ();
-    store_category_view_get_type ();
+    store_category_grid_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
-    store_category_view_set_title (self->editors_picks_grid,
+    store_category_grid_set_title (self->editors_picks_grid,
                                    /* Title for category editors picks */
                                    _("Editors picks")); // FIXME: Make a property in .ui
-    store_category_view_set_title (self->installed_grid,
+    store_category_grid_set_title (self->installed_grid,
                                    /* Title for category showing installed snaps */
                                    _("Installed")); // FIXME: Make a property in .ui
 }
@@ -506,9 +506,9 @@ store_home_page_set_cache (StoreHomePage *self, StoreCache *cache)
     store_category_list_set_cache (self->category_list2, cache);
     store_category_list_set_cache (self->category_list3, cache);
     store_category_list_set_cache (self->category_list4, cache);
-    store_category_view_set_cache (self->editors_picks_grid, cache);
-    store_category_view_set_cache (self->installed_grid, cache);
-    store_category_view_set_cache (self->search_results_grid, cache);
+    store_category_grid_set_cache (self->editors_picks_grid, cache);
+    store_category_grid_set_cache (self->installed_grid, cache);
+    store_category_grid_set_cache (self->search_results_grid, cache);
 }
 
 void

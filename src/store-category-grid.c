@@ -7,11 +7,11 @@
  * (at your option) any later version.
  */
 
-#include "store-category-view.h"
+#include "store-category-grid.h"
 
 #include "store-app-tile.h"
 
-struct _StoreCategoryView
+struct _StoreCategoryGrid
 {
     GtkFlowBoxChild parent_instance;
 
@@ -22,7 +22,7 @@ struct _StoreCategoryView
     gchar *name;
 };
 
-G_DEFINE_TYPE (StoreCategoryView, store_category_view, GTK_TYPE_FLOW_BOX_CHILD)
+G_DEFINE_TYPE (StoreCategoryGrid, store_category_grid, GTK_TYPE_FLOW_BOX_CHILD)
 
 enum
 {
@@ -33,31 +33,31 @@ enum
 static guint signals[SIGNAL_LAST] = { 0, };
 
 static void
-app_activated_cb (StoreCategoryView *self, StoreAppTile *tile)
+app_activated_cb (StoreCategoryGrid *self, StoreAppTile *tile)
 {
     g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_app_tile_get_app (tile));
 }
 
 static void
-store_category_view_dispose (GObject *object)
+store_category_grid_dispose (GObject *object)
 {
-    StoreCategoryView *self = STORE_CATEGORY_VIEW (object);
+    StoreCategoryGrid *self = STORE_CATEGORY_GRID (object);
 
     g_clear_object (&self->cache);
     g_clear_pointer (&self->name, g_free);
 
-    G_OBJECT_CLASS (store_category_view_parent_class)->dispose (object);
+    G_OBJECT_CLASS (store_category_grid_parent_class)->dispose (object);
 }
 
 static void
-store_category_view_class_init (StoreCategoryViewClass *klass)
+store_category_grid_class_init (StoreCategoryGridClass *klass)
 {
-    G_OBJECT_CLASS (klass)->dispose = store_category_view_dispose;
+    G_OBJECT_CLASS (klass)->dispose = store_category_grid_dispose;
 
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-category-view.ui");
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-category-grid.ui");
 
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryView, app_flow_box);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryView, title_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryGrid, app_flow_box);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryGrid, title_label);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
 
@@ -72,21 +72,21 @@ store_category_view_class_init (StoreCategoryViewClass *klass)
 }
 
 static void
-store_category_view_init (StoreCategoryView *self)
+store_category_grid_init (StoreCategoryGrid *self)
 {
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 
-StoreCategoryView *
-store_category_view_new (void)
+StoreCategoryGrid *
+store_category_grid_new (void)
 {
-    return g_object_new (store_category_view_get_type (), NULL);
+    return g_object_new (store_category_grid_get_type (), NULL);
 }
 
 void
-store_category_view_set_cache (StoreCategoryView *self, StoreCache *cache)
+store_category_grid_set_cache (StoreCategoryGrid *self, StoreCache *cache)
 {
-    g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
+    g_return_if_fail (STORE_IS_CATEGORY_GRID (self));
 
     g_set_object (&self->cache, cache);
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_flow_box));
@@ -97,9 +97,9 @@ store_category_view_set_cache (StoreCategoryView *self, StoreCache *cache)
 }
 
 void
-store_category_view_set_name (StoreCategoryView *self, const gchar *name)
+store_category_grid_set_name (StoreCategoryGrid *self, const gchar *name)
 {
-    g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
+    g_return_if_fail (STORE_IS_CATEGORY_GRID (self));
 
     g_free (self->name);
     self->name = g_strdup (name);
@@ -109,25 +109,25 @@ store_category_view_set_name (StoreCategoryView *self, const gchar *name)
 }
 
 const gchar *
-store_category_view_get_name (StoreCategoryView *self)
+store_category_grid_get_name (StoreCategoryGrid *self)
 {
-    g_return_val_if_fail (STORE_IS_CATEGORY_VIEW (self), NULL);
+    g_return_val_if_fail (STORE_IS_CATEGORY_GRID (self), NULL);
     return self->name;
 }
 
 void
-store_category_view_set_title (StoreCategoryView *self, const gchar *title)
+store_category_grid_set_title (StoreCategoryGrid *self, const gchar *title)
 {
-    g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
+    g_return_if_fail (STORE_IS_CATEGORY_GRID (self));
 
     gtk_label_set_label (self->title_label, title);
     gtk_widget_set_visible (GTK_WIDGET (self->title_label), title != NULL);
 }
 
 void
-store_category_view_set_apps (StoreCategoryView *self, GPtrArray *apps)
+store_category_grid_set_apps (StoreCategoryGrid *self, GPtrArray *apps)
 {
-    g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
+    g_return_if_fail (STORE_IS_CATEGORY_GRID (self));
 
     /* Ensure correct number of app tiles */
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_flow_box));

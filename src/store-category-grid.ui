@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="StoreCategoryView" parent="GtkFlowBoxChild">
+  <template class="StoreCategoryGrid" parent="GtkFlowBoxChild">
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -25,7 +25,7 @@
             <property name="homogeneous">True</property>
             <property name="activate-on-single-click">True</property>
             <property name="selection-mode">none</property>
-            <signal name="child-activated" handler="app_activated_cb" object="StoreCategoryView" swapped="yes"/>
+            <signal name="child-activated" handler="app_activated_cb" object="StoreCategoryGrid" swapped="yes"/>
           </object>
         </child>
       </object>
