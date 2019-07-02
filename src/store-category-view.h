@@ -28,8 +28,6 @@ const gchar       *store_category_view_get_name  (StoreCategoryView *view);
 
 void               store_category_view_set_title (StoreCategoryView *view, const gchar *title);
 
-void               store_category_view_set_hero  (StoreCategoryView *view, StoreApp *app);
-
 void               store_category_view_set_apps  (StoreCategoryView *view, GPtrArray *apps);
 
 G_END_DECLS

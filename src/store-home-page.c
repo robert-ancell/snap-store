@@ -12,12 +12,14 @@
 
 #include "store-home-page.h"
 
+#include "store-banner-tile.h"
 #include "store-category-view.h"
 
 struct _StoreHomePage
 {
     GtkBox parent_instance;
 
+    StoreBannerTile *banner_tile;
     GtkBox *category_box;
     StoreCategoryView *installed_view;
     GtkEntry *search_entry;
@@ -53,6 +55,12 @@ set_review_counts (StoreHomePage *self, StoreApp *app)
     store_app_set_review_count_three_star (app, ratings != NULL ? ratings[2] : 0);
     store_app_set_review_count_four_star (app, ratings != NULL ? ratings[3] : 0);
     store_app_set_review_count_five_star (app, ratings != NULL ? ratings[4] : 0);
+}
+
+static void
+banner_activated_cb (StoreHomePage *self)
+{
+    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_banner_tile_get_app (self->banner_tile));
 }
 
 static void
@@ -156,11 +164,13 @@ store_home_page_class_init (StoreHomePageClass *klass)
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-home-page.ui");
 
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, banner_tile);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, category_box);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_entry);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, search_results_view);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_changed_cb);
 
@@ -219,16 +229,8 @@ set_category_apps (StoreHomePage *self, const gchar *section_name, GPtrArray *ap
     if (view == NULL)
         return;
 
-    guint start = 0;
-    if (apps->len >= 1) {
-        StoreSnapApp *hero = g_ptr_array_index (apps, 0);
-        if (store_app_get_icon (STORE_APP (hero)) != NULL) {
-            store_category_view_set_hero (view, STORE_APP (hero));
-            start = 1;
-        }
-    }
     g_autoptr(GPtrArray) featured_apps = g_ptr_array_new_with_free_func (g_object_unref);
-    for (guint i = start; i < apps->len && i < start + 9; i++) {
+    for (guint i = 0; i < apps->len && i < 9; i++) {
         StoreSnapApp *app = g_ptr_array_index (apps, i);
         g_ptr_array_add (featured_apps, g_object_ref (app));
     }
@@ -437,6 +439,7 @@ store_home_page_init (StoreHomePage *self)
 {
     self->cancellable = g_cancellable_new ();
 
+    store_banner_tile_get_type ();
     store_category_view_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
@@ -454,6 +457,7 @@ store_home_page_set_cache (StoreHomePage *self, StoreCache *cache)
 {
     g_return_if_fail (STORE_IS_HOME_PAGE (self));
     g_set_object (&self->cache, cache);
+    store_banner_tile_set_cache (self->banner_tile, cache);
     store_category_view_set_cache (self->installed_view, cache);
     store_category_view_set_cache (self->search_results_view, cache);
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_box));
@@ -485,6 +489,11 @@ store_home_page_load (StoreHomePage *self)
 
     g_autoptr(SnapdClient) client2 = snapd_client_new ();
     snapd_client_get_snaps_async (client2, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);
+
+    // FIXME: Hardcoded
+    g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, "telemetrytv");
+    store_app_update_from_cache (STORE_APP (app), self->cache);
+    store_banner_tile_set_app (self->banner_tile, STORE_APP (app));
 
     /* Load cached sections */
     if (self->cache != NULL) {

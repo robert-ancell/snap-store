@@ -10,14 +10,12 @@
 #include "store-category-view.h"
 
 #include "store-app-tile.h"
-#include "store-hero-tile.h"
 
 struct _StoreCategoryView
 {
     GtkFlowBoxChild parent_instance;
 
     GtkFlowBox *app_flow_box;
-    StoreHeroTile *hero_tile;
     GtkLabel *title_label;
 
     StoreCache *cache;
@@ -33,12 +31,6 @@ enum
 };
 
 static guint signals[SIGNAL_LAST] = { 0, };
-
-static void
-hero_activated_cb (StoreCategoryView *self)
-{
-    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_hero_tile_get_app (self->hero_tile));
-}
 
 static void
 app_activated_cb (StoreCategoryView *self, StoreAppTile *tile)
@@ -65,11 +57,9 @@ store_category_view_class_init (StoreCategoryViewClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-category-view.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryView, app_flow_box);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryView, hero_tile);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryView, title_label);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
-    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), hero_activated_cb);
 
     signals[SIGNAL_APP_ACTIVATED] = g_signal_new ("app-activated",
                                                   G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
@@ -84,7 +74,6 @@ store_category_view_class_init (StoreCategoryViewClass *klass)
 static void
 store_category_view_init (StoreCategoryView *self)
 {
-    store_hero_tile_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 
@@ -100,7 +89,6 @@ store_category_view_set_cache (StoreCategoryView *self, StoreCache *cache)
     g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
 
     g_set_object (&self->cache, cache);
-    store_hero_tile_set_cache (self->hero_tile, cache);
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_flow_box));
     for (GList *link = children; link != NULL; link = link->next) {
         StoreAppTile *tile = link->data;
@@ -134,15 +122,6 @@ store_category_view_set_title (StoreCategoryView *self, const gchar *title)
 
     gtk_label_set_label (self->title_label, title);
     gtk_widget_set_visible (GTK_WIDGET (self->title_label), title != NULL);
-}
-
-void
-store_category_view_set_hero (StoreCategoryView *self, StoreApp *app)
-{
-    g_return_if_fail (STORE_IS_CATEGORY_VIEW (self));
-
-    store_hero_tile_set_app (self->hero_tile, app);
-    gtk_widget_set_visible (GTK_WIDGET (self->hero_tile), app != NULL);
 }
 
 void

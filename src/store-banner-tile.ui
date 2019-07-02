@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="StoreBannerTile" parent="GtkEventBox">
+    <signal name="button_release_event" handler="button_release_event_cb" object="StoreBannerTile" swapped="yes"/>
+    <child>
+      <object class="StoreImage" id="image">
+        <property name="visible">True</property>
+      </object>
+    </child>
+  </template>
+</interface>

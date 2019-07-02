@@ -8,15 +8,24 @@
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
-            <property name="margin">36</property>
             <property name="spacing">36</property>
             <property name="valign">start</property>
+            <child>
+              <object class="StoreBannerTile" id="banner_tile">
+                <property name="visible">True</property>
+                <property name="height-request">262</property>
+                <signal name="activated" handler="banner_activated_cb" object="StoreHomePage" swapped="yes"/>
+              </object>
+            </child>
             <child>
               <object class="GtkEntry" id="search_entry">
                 <property name="visible">True</property>
                 <property name="hexpand">True</property>
                 <signal name="notify::text" handler="search_changed_cb" object="StoreHomePage" swapped="yes"/>
                 <signal name="activate" handler="search_cb" object="StoreHomePage" swapped="yes"/>
+                <style>
+                  <class name="home-page-search-entry"/>
+                </style>
               </object>
             </child>
             <child>
@@ -31,6 +40,9 @@
                 <property name="orientation">vertical</property>
                 <property name="spacing">36</property>
                 <property name="halign">center</property>
+                <style>
+                  <class name="home-page-category-box"/>
+                </style>
               </object>
             </child>
           </object>

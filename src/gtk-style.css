@@ -188,15 +188,13 @@
     color: #212121;
 }
 
-.hero-title-label {
+.home-page-category-box {
+    margin: 32px;
 }
 
-.hero-summary-label {
-    font-size: x-large;
-}
-
-.hero-tile {
-    background: #10d356;
+.home-page-search-entry {
+    margin-left: 32px;
+    margin-right: 32px;
 }
 
 .review-summary-bar {

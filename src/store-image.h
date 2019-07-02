@@ -13,14 +13,17 @@
 #include <libsoup/soup.h>
 
 #include "store-cache.h"
+#include "store-media.h"
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreImage, store_image, STORE, IMAGE, GtkImage)
+G_DECLARE_FINAL_TYPE (StoreImage, store_image, STORE, IMAGE, GtkDrawingArea)
 
 StoreImage *store_image_new         (void);
 
 void        store_image_set_cache   (StoreImage *image, StoreCache *cache);
+
+void        store_image_set_media   (StoreImage *image, StoreMedia *media);
 
 void        store_image_set_session (StoreImage *image, SoupSession *session);
 

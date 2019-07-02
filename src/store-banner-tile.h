@@ -12,17 +12,17 @@
 #include <gtk/gtk.h>
 
 #include "store-app.h"
+#include "store-cache.h"
+#include "store-image.h"
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreHeroTile, store_hero_tile, STORE, HERO_TILE, GtkEventBox)
+G_DECLARE_FINAL_TYPE (StoreBannerTile, store_banner_tile, STORE, BANNER_TILE, GtkEventBox)
 
-StoreHeroTile *store_hero_tile_new       (void);
+void      store_banner_tile_set_cache (StoreBannerTile *tile, StoreCache *cache);
 
-void           store_hero_tile_set_cache (StoreHeroTile *tile, StoreCache *cache);
+void      store_banner_tile_set_app   (StoreBannerTile *tile, StoreApp *app);
 
-void           store_hero_tile_set_app   (StoreHeroTile *tile, StoreApp *app);
-
-StoreApp      *store_hero_tile_get_app   (StoreHeroTile *tile);
+StoreApp *store_banner_tile_get_app   (StoreBannerTile *tile);
 
 G_END_DECLS

@@ -12,6 +12,7 @@
 #include <gtk/gtk.h>
 
 #include "store-app.h"
+#include "store-cache.h"
 
 G_BEGIN_DECLS
 

@@ -13,13 +13,14 @@
 
 struct _StoreImage
 {
-    GtkImage parent_instance;
+    GtkDrawingArea parent_instance;
 
     GByteArray *buffer;
     StoreCache *cache;
     GCancellable *cache_cancellable;
     GCancellable *cancellable;
     guint height;
+    GdkPixbuf *pixbuf;
     guint width;
     SoupSession *session;
     gchar *uri;
@@ -29,16 +30,20 @@ enum
 {
     PROP_0,
     PROP_HEIGHT,
+    PROP_MEDIA,
     PROP_WIDTH,
     PROP_URI,
     PROP_LAST
 };
 
-G_DEFINE_TYPE (StoreImage, store_image, GTK_TYPE_IMAGE)
+G_DEFINE_TYPE (StoreImage, store_image, GTK_TYPE_DRAWING_AREA)
 
 static void
 image_size_cb (StoreImage *self, gint width, gint height, GdkPixbufLoader *loader)
 {
+    if (self->width == 0 || self->height == 0)
+        return;
+
     gint w, h;
     if (width * self->height > height * self->width) {
         w = self->width;
@@ -66,7 +71,10 @@ process_image (StoreImage *self, GBytes *data)
         return FALSE;
     }
 
-    gtk_image_set_from_pixbuf (GTK_IMAGE (self), gdk_pixbuf_loader_get_pixbuf (loader));
+    g_set_object (&self->pixbuf, gdk_pixbuf_loader_get_pixbuf (loader));
+
+    gtk_widget_queue_draw (GTK_WIDGET (self));
+
     return TRUE;
 }
 
@@ -152,6 +160,7 @@ store_image_dispose (GObject *object)
     g_clear_object (&self->cache_cancellable);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
+    g_clear_object (&self->pixbuf);
     g_clear_object (&self->session);
     g_clear_pointer (&self->uri, g_free);
 
@@ -190,6 +199,9 @@ store_image_set_property (GObject *object, guint prop_id, const GValue *value, G
     case PROP_HEIGHT:
         self->height = g_value_get_int (value);
         break;
+    case PROP_MEDIA:
+        store_image_set_media (self, g_value_get_object (value));
+        break;
     case PROP_WIDTH:
         self->width = g_value_get_int (value);
         break;
@@ -203,15 +215,52 @@ store_image_set_property (GObject *object, guint prop_id, const GValue *value, G
 }
 
 static void
+store_image_get_preferred_height (GtkWidget *widget, gint *minimum_height, gint *natural_height)
+{
+    StoreImage *self = STORE_IMAGE (widget);
+    *minimum_height = *natural_height = self->height;
+}
+
+static void
+store_image_get_preferred_width (GtkWidget *widget, gint *minimum_width, gint *natural_width)
+{
+    StoreImage *self = STORE_IMAGE (widget);
+    *minimum_width = *natural_width = self->width;
+}
+
+static gboolean
+store_image_draw (GtkWidget *widget, cairo_t *cr)
+{
+    StoreImage *self = STORE_IMAGE (widget);
+
+    if (self->pixbuf == NULL)
+        return FALSE;
+
+    int width = gtk_widget_get_allocated_width (widget);
+    int height = gtk_widget_get_allocated_height (widget);
+    g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_scale_simple (self->pixbuf, width, height, GDK_INTERP_BILINEAR); // FIXME: Super inefficient
+    gtk_render_icon (gtk_widget_get_style_context (widget), cr, pixbuf, 0, 0); // FIXME: Store surface instead of sending pixbuf each time to GPU
+
+    return TRUE;
+}
+
+static void
 store_image_class_init (StoreImageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_image_dispose;
     G_OBJECT_CLASS (klass)->get_property = store_image_get_property;
     G_OBJECT_CLASS (klass)->set_property = store_image_set_property;
 
+    GTK_WIDGET_CLASS (klass)->get_preferred_height = store_image_get_preferred_height;
+    GTK_WIDGET_CLASS (klass)->get_preferred_width = store_image_get_preferred_width;
+    GTK_WIDGET_CLASS (klass)->draw = store_image_draw;
+
     g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_HEIGHT,
                                      g_param_spec_int ("height", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_MEDIA,
+                                     g_param_spec_object ("media", NULL, NULL, store_media_get_type (), G_PARAM_WRITABLE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_WIDTH,
                                      g_param_spec_int ("width", NULL, NULL, G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
@@ -240,6 +289,14 @@ store_image_set_cache (StoreImage *self, StoreCache *cache)
 }
 
 void
+store_image_set_media (StoreImage *self, StoreMedia *media)
+{
+    g_return_if_fail (STORE_IS_IMAGE (self));
+
+    store_image_set_uri (self, media != NULL ? store_media_get_uri (media) : NULL);
+}
+
+void
 store_image_set_session (StoreImage *self, SoupSession *session)
 {
     g_return_if_fail (STORE_IS_IMAGE (self));
@@ -262,19 +319,20 @@ store_image_set_uri (StoreImage *self, const gchar *uri)
 {
     g_return_if_fail (STORE_IS_IMAGE (self));
 
-    if (uri != self->uri) {
-        g_free (self->uri);
-        self->uri = g_strdup (uri);
-    }
+    if (g_strcmp0 (uri, self->uri) == 0)
+        return;
+    g_free (self->uri);
+    self->uri = g_strdup (uri);
 
     /* Cancel existing operation */
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
-    self->cancellable = g_cancellable_new ();
+    g_cancellable_cancel (self->cache_cancellable);
+    g_clear_object (&self->cache_cancellable);
 
+    g_clear_object (&self->pixbuf);
     if (uri == NULL || g_strcmp0 (uri, "") == 0) {
-        g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/io/snapcraft/Store/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
-        gtk_image_set_from_pixbuf (GTK_IMAGE (self), pixbuf);
+        self->pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/io/snapcraft/Store/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
         return;
     }
 
@@ -282,12 +340,11 @@ store_image_set_uri (StoreImage *self, const gchar *uri)
     self->buffer = g_byte_array_new ();
 
     g_autoptr(SoupMessage) message = soup_message_new ("GET", uri);
+    self->cancellable = g_cancellable_new ();
     soup_session_send_async (self->session, message, self->cancellable, send_cb, self);
 
     /* Load cached version */
     if (self->cache != NULL) {
-        g_cancellable_cancel (self->cache_cancellable);
-        g_clear_object (&self->cache_cancellable);
         self->cache_cancellable = g_cancellable_new ();
         store_cache_lookup_async (self->cache, "images", uri, TRUE, self->cache_cancellable, cache_cb, self);
     }

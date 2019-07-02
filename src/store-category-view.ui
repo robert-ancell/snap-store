@@ -16,12 +16,6 @@
           </object>
         </child>
         <child>
-          <object class="StoreHeroTile" id="hero_tile">
-            <property name="visible">False</property>
-            <signal name="activated" handler="hero_activated_cb" object="StoreCategoryView" swapped="yes"/>
-          </object>
-        </child>
-        <child>
           <object class="GtkFlowBox" id="app_flow_box">
             <property name="visible">True</property>
             <property name="min-children-per-line">3</property>
