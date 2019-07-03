@@ -16,6 +16,7 @@ struct _StoreOdrsReview
     gchar *author;
     GDateTime *date_created;
     gchar *description;
+    gint64 id;
     gint64 rating;
     gchar *summary;
 };
@@ -26,6 +27,7 @@ enum
     PROP_AUTHOR,
     PROP_DATE_CREATED,
     PROP_DESCRIPTION,
+    PROP_ID,
     PROP_RATING,
     PROP_SUMMARY,
     PROP_LAST
@@ -62,6 +64,9 @@ store_odrs_review_get_property (GObject *object, guint prop_id, GValue *value, G
     case PROP_DESCRIPTION:
         g_value_set_string (value, self->description);
         break;
+    case PROP_ID:
+        g_value_set_int64 (value, self->id);
+        break;
     case PROP_RATING:
         g_value_set_int64 (value, self->rating);
         break;
@@ -89,6 +94,9 @@ store_odrs_review_set_property (GObject *object, guint prop_id, const GValue *va
         break;
     case PROP_DESCRIPTION:
         store_odrs_review_set_description (self, g_value_get_string (value));
+        break;
+    case PROP_ID:
+        store_odrs_review_set_id (self, g_value_get_int64 (value));
         break;
     case PROP_RATING:
         store_odrs_review_set_rating (self, g_value_get_int64 (value));
@@ -119,6 +127,9 @@ store_odrs_review_class_init (StoreOdrsReviewClass *klass)
                                      PROP_DESCRIPTION,
                                      g_param_spec_string ("description", NULL, NULL, NULL, G_PARAM_READWRITE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_ID,
+                                     g_param_spec_int64 ("id", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_RATING,
                                      g_param_spec_int64 ("rating", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
     g_object_class_install_property (G_OBJECT_CLASS (klass),
@@ -146,14 +157,20 @@ store_odrs_review_new_from_json (JsonNode *node)
     StoreOdrsReview *self = store_odrs_review_new ();
 
     JsonObject *object = json_node_get_object (node);
-    store_odrs_review_set_author (self, json_object_get_string_member (object, "author"));
+    if (json_object_has_member (object, "author"))
+        store_odrs_review_set_author (self, json_object_get_string_member (object, "author"));
     if (json_object_has_member (object, "date-created")) {
         g_autoptr(GDateTime) date_created = g_date_time_new_from_unix_utc (json_object_get_int_member (object, "date-created"));
         store_odrs_review_set_date_created (self, date_created);
     }
-    store_odrs_review_set_description (self, json_object_get_string_member (object, "description"));
-    store_odrs_review_set_rating (self, json_object_get_int_member (object, "rating"));
-    store_odrs_review_set_summary (self, json_object_get_string_member (object, "summary"));
+    if (json_object_has_member (object, "description"))
+        store_odrs_review_set_description (self, json_object_get_string_member (object, "description"));
+    if (json_object_has_member (object, "id"))
+        store_odrs_review_set_id (self, json_object_get_int_member (object, "id"));
+    if (json_object_has_member (object, "rating"))
+        store_odrs_review_set_rating (self, json_object_get_int_member (object, "rating"));
+    if (json_object_has_member (object, "summary"))
+        store_odrs_review_set_summary (self, json_object_get_string_member (object, "summary"));
 
     return self;
 }
@@ -173,6 +190,8 @@ store_odrs_review_to_json (StoreOdrsReview *self)
     }
     json_builder_set_member_name (builder, "description");
     json_builder_add_string_value (builder, self->description);
+    json_builder_set_member_name (builder, "id");
+    json_builder_add_int_value (builder, self->id);
     json_builder_set_member_name (builder, "rating");
     json_builder_add_int_value (builder, self->rating);
     json_builder_set_member_name (builder, "summary");
@@ -236,6 +255,23 @@ store_odrs_review_get_description (StoreOdrsReview *self)
 {
     g_return_val_if_fail (STORE_IS_ODRS_REVIEW (self), NULL);
     return self->description;
+}
+
+void
+store_odrs_review_set_id (StoreOdrsReview *self, gint64 id)
+{
+    g_return_if_fail (STORE_IS_ODRS_REVIEW (self));
+
+    self->id = id;
+
+    g_object_notify (G_OBJECT (self), "id");
+}
+
+gint64
+store_odrs_review_get_id (StoreOdrsReview *self)
+{
+    g_return_val_if_fail (STORE_IS_ODRS_REVIEW (self), 0);
+    return self->id;
 }
 
 void

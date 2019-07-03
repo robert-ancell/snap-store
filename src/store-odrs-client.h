@@ -40,4 +40,14 @@ void             store_odrs_client_submit_async         (StoreOdrsClient *client
 
 gboolean         store_odrs_client_submit_finish        (StoreOdrsClient *client, GAsyncResult *result, GError **error);
 
+void             store_odrs_client_upvote_async         (StoreOdrsClient *client, const gchar *user_skey, const gchar *app_id, gint64 review_id,
+                                                         GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+
+gboolean         store_odrs_client_upvote_finish        (StoreOdrsClient *client, GAsyncResult *result, GError **error);
+
+void             store_odrs_client_downvote_async       (StoreOdrsClient *client, const gchar *user_skey, const gchar *app_id, gint64 review_id,
+                                                         GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
+
+gboolean         store_odrs_client_downvote_finish      (StoreOdrsClient *client, GAsyncResult *result, GError **error);
+
 G_END_DECLS

@@ -34,6 +34,10 @@ void             store_odrs_review_set_description  (StoreOdrsReview *review, co
 
 const gchar     *store_odrs_review_get_description  (StoreOdrsReview *review);
 
+void             store_odrs_review_set_id           (StoreOdrsReview *review, gint64 id);
+
+gint64           store_odrs_review_get_id           (StoreOdrsReview *review);
+
 void             store_odrs_review_set_rating       (StoreOdrsReview *review, gint64 rating);
 
 gint64           store_odrs_review_get_rating       (StoreOdrsReview *review);
