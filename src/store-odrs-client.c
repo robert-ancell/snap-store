@@ -227,6 +227,35 @@ report_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 }
 
 static void
+send_feedback (StoreOdrsClient *self, const char *method, GAsyncReadyCallback result_callback, const gchar *user_skey, const gchar *app_id, gint64 review_id,
+               GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_autofree gchar *uri= g_strdup_printf ("%s/%s", self->server_uri, method);
+    g_autoptr(SoupMessage) message = soup_message_new ("POST", uri);
+
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
+    json_builder_begin_object (builder);
+    json_builder_set_member_name (builder, "user_hash");
+    json_builder_add_string_value (builder, self->user_hash);
+    json_builder_set_member_name (builder, "user_skey");
+    json_builder_add_string_value (builder, user_skey);
+    json_builder_set_member_name (builder, "app_id");
+    json_builder_add_string_value (builder, app_id);
+    json_builder_set_member_name (builder, "review_id");
+    json_builder_add_int_value (builder, review_id);
+    json_builder_end_object (builder);
+    g_autoptr(JsonGenerator) generator = json_generator_new ();
+    g_autoptr(JsonNode) root = json_builder_get_root (builder);
+    json_generator_set_root (generator, root);
+    gsize json_text_length;
+    g_autofree gchar *json_text = json_generator_to_data (generator, &json_text_length);
+    soup_message_set_request (message, "application/json; charset=utf-8", SOUP_MEMORY_COPY, json_text, json_text_length);
+
+    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
+    soup_session_send_async (self->soup_session, message, self->cancellable, result_callback, task);
+}
+
+static void
 store_odrs_client_dispose (GObject *object)
 {
     StoreOdrsClient *self = STORE_ODRS_CLIENT (object);
@@ -441,29 +470,7 @@ store_odrs_client_upvote_async (StoreOdrsClient *self, const gchar *user_skey, c
     g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
     g_return_if_fail (app_id != NULL);
 
-    g_autofree gchar *uri= g_strdup_printf ("%s/upvote", self->server_uri);
-    g_autoptr(SoupMessage) message = soup_message_new ("POST", uri);
-
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-    json_builder_begin_object (builder);
-    json_builder_set_member_name (builder, "user_hash");
-    json_builder_add_string_value (builder, self->user_hash);
-    json_builder_set_member_name (builder, "user_skey");
-    json_builder_add_string_value (builder, user_skey);
-    json_builder_set_member_name (builder, "app_id");
-    json_builder_add_string_value (builder, app_id);
-    json_builder_set_member_name (builder, "review_id");
-    json_builder_add_int_value (builder, review_id);
-    json_builder_end_object (builder);
-    g_autoptr(JsonGenerator) generator = json_generator_new ();
-    g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    json_generator_set_root (generator, root);
-    gsize json_text_length;
-    g_autofree gchar *json_text = json_generator_to_data (generator, &json_text_length);
-    soup_message_set_request (message, "application/json; charset=utf-8", SOUP_MEMORY_COPY, json_text, json_text_length);
-
-    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
-    soup_session_send_async (self->soup_session, message, self->cancellable, upvote_cb, task);
+    send_feedback (self, "upvote", upvote_cb, user_skey, app_id, review_id, cancellable, callback, callback_data);
 }
 
 gboolean
@@ -482,29 +489,7 @@ store_odrs_client_downvote_async (StoreOdrsClient *self, const gchar *user_skey,
     g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
     g_return_if_fail (app_id != NULL);
 
-    g_autofree gchar *uri= g_strdup_printf ("%s/downvote", self->server_uri);
-    g_autoptr(SoupMessage) message = soup_message_new ("POST", uri);
-
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-    json_builder_begin_object (builder);
-    json_builder_set_member_name (builder, "user_hash");
-    json_builder_add_string_value (builder, self->user_hash);
-    json_builder_set_member_name (builder, "user_skey");
-    json_builder_add_string_value (builder, user_skey);
-    json_builder_set_member_name (builder, "app_id");
-    json_builder_add_string_value (builder, app_id);
-    json_builder_set_member_name (builder, "review_id");
-    json_builder_add_int_value (builder, review_id);
-    json_builder_end_object (builder);
-    g_autoptr(JsonGenerator) generator = json_generator_new ();
-    g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    json_generator_set_root (generator, root);
-    gsize json_text_length;
-    g_autofree gchar *json_text = json_generator_to_data (generator, &json_text_length);
-    soup_message_set_request (message, "application/json; charset=utf-8", SOUP_MEMORY_COPY, json_text, json_text_length);
-
-    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
-    soup_session_send_async (self->soup_session, message, self->cancellable, downvote_cb, task);
+    send_feedback (self, "downvote", downvote_cb, user_skey, app_id, review_id, cancellable, callback, callback_data);
 }
 
 gboolean
@@ -518,34 +503,12 @@ store_odrs_client_downvote_finish (StoreOdrsClient *self, GAsyncResult *result, 
 
 void
 store_odrs_client_report_async (StoreOdrsClient *self, const gchar *user_skey, const gchar *app_id, gint64 review_id,
-                                  GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+                                GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
     g_return_if_fail (app_id != NULL);
 
-    g_autofree gchar *uri= g_strdup_printf ("%s/report", self->server_uri);
-    g_autoptr(SoupMessage) message = soup_message_new ("POST", uri);
-
-    g_autoptr(JsonBuilder) builder = json_builder_new ();
-    json_builder_begin_object (builder);
-    json_builder_set_member_name (builder, "user_hash");
-    json_builder_add_string_value (builder, self->user_hash);
-    json_builder_set_member_name (builder, "user_skey");
-    json_builder_add_string_value (builder, user_skey);
-    json_builder_set_member_name (builder, "app_id");
-    json_builder_add_string_value (builder, app_id);
-    json_builder_set_member_name (builder, "review_id");
-    json_builder_add_int_value (builder, review_id);
-    json_builder_end_object (builder);
-    g_autoptr(JsonGenerator) generator = json_generator_new ();
-    g_autoptr(JsonNode) root = json_builder_get_root (builder);
-    json_generator_set_root (generator, root);
-    gsize json_text_length;
-    g_autofree gchar *json_text = json_generator_to_data (generator, &json_text_length);
-    soup_message_set_request (message, "application/json; charset=utf-8", SOUP_MEMORY_COPY, json_text, json_text_length);
-
-    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
-    soup_session_send_async (self->soup_session, message, self->cancellable, report_cb, task);
+    send_feedback (self, "report", report_cb, user_skey, app_id, review_id, cancellable, callback, callback_data);
 }
 
 gboolean
