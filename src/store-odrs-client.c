@@ -285,7 +285,7 @@ store_odrs_client_get_reviews_async (StoreOdrsClient *self, const gchar *app_id,
     g_return_if_fail (app_id != NULL);
 
     if (version == NULL)
-        version = "";
+        version = "unknown";
 
     g_autofree gchar *uri= g_strdup_printf ("%s/fetch", self->server_uri);
     g_autoptr(SoupMessage) message = soup_message_new ("POST", uri);
