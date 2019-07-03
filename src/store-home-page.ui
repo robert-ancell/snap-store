@@ -13,7 +13,7 @@
               <object class="StoreBannerTile" id="banner_tile">
                 <property name="visible">True</property>
                 <property name="height-request">262</property>
-                <signal name="activated" handler="banner_activated_cb" object="StoreHomePage" swapped="yes"/>
+                <signal name="activated" handler="banner_tile_activated_cb" object="StoreHomePage" swapped="yes"/>
               </object>
             </child>
             <child>
@@ -48,7 +48,7 @@
                         <property name="visible">True</property>
                         <property name="height-request">122</property>
                         <property name="hexpand">True</property>
-                        <signal name="activated" handler="banner1_activated_cb" object="StoreHomePage" swapped="yes"/>
+                        <signal name="activated" handler="banner_tile_activated_cb" object="StoreHomePage" swapped="yes"/>
                       </object>
                     </child>
                     <child>
@@ -56,7 +56,7 @@
                         <property name="visible">True</property>
                         <property name="height-request">122</property>
                         <property name="hexpand">True</property>
-                        <signal name="activated" handler="banner2_activated_cb" object="StoreHomePage" swapped="yes"/>
+                        <signal name="activated" handler="banner_tile_activated_cb" object="StoreHomePage" swapped="yes"/>
                       </object>
                     </child>
                   </object>
@@ -77,6 +77,7 @@
                       <object class="StoreCategoryList" id="category_list1">
                         <property name="visible">True</property>
                         <property name="hexpand">True</property>
+                        <signal name="activated" handler="category_list_activated_cb" object="StoreHomePage" swapped="yes"/>
                         <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                       </object>
                     </child>
@@ -84,6 +85,7 @@
                       <object class="StoreCategoryList" id="category_list2">
                         <property name="visible">True</property>
                         <property name="hexpand">True</property>
+                        <signal name="activated" handler="category_list_activated_cb" object="StoreHomePage" swapped="yes"/>
                         <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                       </object>
                     </child>
@@ -91,6 +93,7 @@
                       <object class="StoreCategoryList" id="category_list3">
                         <property name="visible">True</property>
                         <property name="hexpand">True</property>
+                        <signal name="activated" handler="category_list_activated_cb" object="StoreHomePage" swapped="yes"/>
                         <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                       </object>
                     </child>
@@ -98,15 +101,10 @@
                       <object class="StoreCategoryList" id="category_list4">
                         <property name="visible">True</property>
                         <property name="hexpand">True</property>
+                        <signal name="activated" handler="category_list_activated_cb" object="StoreHomePage" swapped="yes"/>
                         <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                       </object>
                     </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="StoreCategoryGrid" id="installed_grid">
-                    <property name="visible">False</property>
-                    <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                   </object>
                 </child>
               </object>

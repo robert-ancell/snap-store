@@ -26,6 +26,7 @@ G_DEFINE_TYPE (StoreCategoryList, store_category_list, GTK_TYPE_BOX)
 
 enum
 {
+    SIGNAL_ACTIVATED,
     SIGNAL_APP_ACTIVATED,
     SIGNAL_LAST
 };
@@ -36,6 +37,13 @@ static void
 app_activated_cb (StoreCategoryList *self, StoreAppSmallTile *tile)
 {
     g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_app_small_tile_get_app (tile));
+}
+
+static gboolean
+button_release_event_cb (StoreAppSmallTile *self)
+{
+    g_signal_emit (self, signals[SIGNAL_ACTIVATED], 0);
+    return TRUE;
 }
 
 static void
@@ -60,6 +68,16 @@ store_category_list_class_init (StoreCategoryListClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryList, title_label);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), button_release_event_cb);
+
+    signals[SIGNAL_ACTIVATED] = g_signal_new ("activated",
+                                              G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
+                                              G_SIGNAL_RUN_LAST,
+                                              0,
+                                              NULL, NULL,
+                                              NULL,
+                                              G_TYPE_NONE,
+                                              0);
 
     signals[SIGNAL_APP_ACTIVATED] = g_signal_new ("app-activated",
                                                   G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),

@@ -46,6 +46,7 @@ G_DEFINE_TYPE (StoreHomePage, store_home_page, GTK_TYPE_BOX)
 enum
 {
     SIGNAL_APP_ACTIVATED,
+    SIGNAL_CATEGORY_ACTIVATED,
     SIGNAL_LAST
 };
 
@@ -69,21 +70,15 @@ set_review_counts (StoreHomePage *self, StoreApp *app)
 }
 
 static void
-banner_activated_cb (StoreHomePage *self)
+banner_tile_activated_cb (StoreHomePage *self, StoreBannerTile *banner_tile)
 {
-    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_banner_tile_get_app (self->banner_tile));
+    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_banner_tile_get_app (banner_tile));
 }
 
 static void
-banner1_activated_cb (StoreHomePage *self)
+category_list_activated_cb (StoreHomePage *self, StoreCategoryList *category_list)
 {
-    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_banner_tile_get_app (self->banner1_tile));
-}
-
-static void
-banner2_activated_cb (StoreHomePage *self)
-{
-    g_signal_emit (self, signals[SIGNAL_APP_ACTIVATED], 0, store_banner_tile_get_app (self->banner2_tile));
+    g_signal_emit (self, signals[SIGNAL_CATEGORY_ACTIVATED], 0, store_category_list_get_category (category_list));
 }
 
 static void
@@ -205,9 +200,8 @@ store_home_page_class_init (StoreHomePageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreHomePage, small_banner_box);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
-    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner_activated_cb);
-    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner1_activated_cb);
-    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner2_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), banner_tile_activated_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), category_list_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_changed_cb);
 
@@ -219,6 +213,15 @@ store_home_page_class_init (StoreHomePageClass *klass)
                                                   NULL,
                                                   G_TYPE_NONE,
                                                   1, store_app_get_type ());
+
+    signals[SIGNAL_CATEGORY_ACTIVATED] = g_signal_new ("category-activated",
+                                                       G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
+                                                       G_SIGNAL_RUN_LAST,
+                                                       0,
+                                                       NULL, NULL,
+                                                       NULL,
+                                                       G_TYPE_NONE,
+                                                       1, store_category_get_type ());
 }
 
 static void

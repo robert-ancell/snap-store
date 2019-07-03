@@ -8,12 +8,18 @@
         <property name="spacing">30</property>
         <property name="hexpand">True</property>        
         <child>
-          <object class="GtkLabel" id="title_label">
+          <object class="GtkEventBox">
             <property name="visible">True</property>
             <property name="halign">start</property>
-            <style>
-              <class name="category-list-title-label"/>
-            </style>
+            <signal name="button_release_event" handler="button_release_event_cb" object="StoreCategoryList" swapped="yes"/>
+            <child>
+              <object class="GtkLabel" id="title_label">
+                <property name="visible">True</property>
+                <style>
+                  <class name="category-list-title-label"/>
+                </style>
+              </object>
+            </child>
           </object>
         </child>
         <child>
