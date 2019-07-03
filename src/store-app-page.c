@@ -47,7 +47,13 @@ struct _StoreAppPage
 
     StoreApp *app;
     GCancellable *cancellable;
-    StoreOdrsClient *odrs_client;
+};
+
+enum
+{
+    PROP_0,
+    PROP_REVIEWS,
+    PROP_LAST
 };
 
 G_DEFINE_TYPE (StoreAppPage, store_app_page, store_page_get_type ())
@@ -105,10 +111,8 @@ ratings_total_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_valu
 }
 
 static void
-refresh_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+refresh_cb (GObject *object, GAsyncResult *result, gpointer user_data G_GNUC_UNUSED)
 {
-    StoreAppPage *self = user_data;
-
     g_autoptr(GError) error = NULL;
     if (!store_app_refresh_finish (STORE_APP (object), result, &error)) {
         if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
@@ -116,13 +120,10 @@ refresh_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         g_warning ("Failed to refresh app: %s", error->message);
         return;
     }
-
-    if (store_page_get_cache (STORE_PAGE (self)) != NULL)
-        store_app_save_to_cache (self->app, store_page_get_cache (STORE_PAGE (self)));
 }
 
 static void
-set_reviews (StoreAppPage *self, GPtrArray *reviews)
+store_app_page_set_reviews (StoreAppPage *self, GPtrArray *reviews)
 {
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->reviews_box));
     for (GList *link = children; link != NULL; link = link->next) {
@@ -137,38 +138,6 @@ set_reviews (StoreAppPage *self, GPtrArray *reviews)
         gtk_container_add (GTK_CONTAINER (self->reviews_box), GTK_WIDGET (view));
     }
     gtk_widget_set_visible (GTK_WIDGET (self->reviews_box), reviews->len > 0);
-}
-
-static void
-reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
-{
-    StoreAppPage *self = user_data;
-
-    g_autoptr(GError) error = NULL;
-    g_autofree gchar *user_skey = NULL;
-    g_autoptr(GPtrArray) reviews = store_odrs_client_get_reviews_finish (STORE_ODRS_CLIENT (object), result, &user_skey, &error);
-    if (reviews == NULL) {
-        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-            return;
-        g_warning ("Failed to get ODRS reviews: %s", error->message);
-        return;
-    }
-    // FIXME: Store and use review key
-
-    set_reviews (self, reviews);
-
-    /* Save in cache */
-    if (store_page_get_cache (STORE_PAGE (self)) != NULL) {
-        g_autoptr(JsonBuilder) builder = json_builder_new ();
-        json_builder_begin_array (builder);
-        for (guint i = 0; i < reviews->len; i++) {
-            StoreOdrsReview *review = g_ptr_array_index (reviews, i);
-            json_builder_add_value (builder, store_odrs_review_to_json (review));
-        }
-        json_builder_end_array (builder);
-        g_autoptr(JsonNode) root = json_builder_get_root (builder);
-        store_cache_insert_json (store_page_get_cache (STORE_PAGE (self)), "reviews", store_app_get_name (self->app), FALSE, root, NULL, NULL);
-    }
 }
 
 static void
@@ -207,27 +176,55 @@ store_app_page_dispose (GObject *object)
     g_clear_object (&self->app);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
-    g_clear_object (&self->odrs_client);
 
     G_OBJECT_CLASS (store_app_page_parent_class)->dispose (object);
 }
 
 static void
-store_app_page_set_cache (StorePage *page, StoreCache *cache)
+store_app_page_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
+{
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+}
+
+static void
+store_app_page_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StoreAppPage *self = STORE_APP_PAGE (object);
+
+    switch (prop_id)
+    {
+    case PROP_REVIEWS:
+        store_app_page_set_reviews (self, g_value_get_boxed (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_app_page_set_model (StorePage *page, StoreModel *model)
 {
     StoreAppPage *self = STORE_APP_PAGE (page);
 
-    store_image_set_cache (self->icon_image, cache);
+    store_image_set_model (self->icon_image, model);
+    store_screenshot_view_set_model (self->screenshot_view, model);
     // FIXME: Should apply to children
 
-    STORE_PAGE_CLASS (store_app_page_parent_class)->set_cache (page, cache);
+    STORE_PAGE_CLASS (store_app_page_parent_class)->set_model (page, model);
 }
 
 static void
 store_app_page_class_init (StoreAppPageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_app_page_dispose;
-    STORE_PAGE_CLASS (klass)->set_cache = store_app_page_set_cache;
+    G_OBJECT_CLASS (klass)->get_property = store_app_page_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_app_page_set_property;
+    STORE_PAGE_CLASS (klass)->set_model = store_app_page_set_model;
+
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_REVIEWS,
+                                     g_param_spec_boxed ("reviews", NULL, NULL, G_TYPE_PTR_ARRAY, G_PARAM_WRITABLE));
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-page.ui");
 
@@ -271,12 +268,6 @@ store_app_page_init (StoreAppPage *self)
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 
-StoreAppPage *
-store_app_page_new (void)
-{
-    return g_object_new (store_app_page_get_type (), NULL);
-}
-
 void
 store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 {
@@ -311,6 +302,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_object_bind_property (app, "review-count-three-star", self->review_summary, "review-count-three-star", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "review-count-four-star", self->review_summary, "review-count-four-star", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "review-count-five-star", self->review_summary, "review-count-five-star", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "reviews", self, "reviews", G_BINDING_SYNC_CREATE);
 
     if (store_app_get_contact (app) != NULL) {
         /* Link shown below app description to contact app publisher. */
@@ -331,23 +323,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 
     gtk_widget_hide (GTK_WIDGET (self->reviews_box));
 
-    if (self->odrs_client != NULL) {
-        /* Load cached reviews */
-        if (store_page_get_cache (STORE_PAGE (self)) != NULL) {
-            g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (store_page_get_cache (STORE_PAGE (self)), "reviews", store_app_get_name (app), FALSE, NULL, NULL);
-            if (reviews_cache != NULL) {
-                g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
-                JsonArray *array = json_node_get_array (reviews_cache);
-                for (guint i = 0; i < json_array_get_length (array); i++) {
-                    JsonNode *node = json_array_get_element (array, i);
-                    g_ptr_array_add (reviews, store_odrs_review_new_from_json (node));
-                }
-                set_reviews (self, reviews);
-            }
-        }
-
-        store_odrs_client_get_reviews_async (self->odrs_client, store_app_get_appstream_id (app), NULL, NULL, 40, NULL, reviews_cb, self);
-    }
+    store_model_update_reviews_async (store_page_get_model (STORE_PAGE (self)), app, self->cancellable, NULL, NULL);
 
     store_screenshot_view_set_app (self->screenshot_view, app);
     GPtrArray *screenshots = store_app_get_screenshots (app);
@@ -359,11 +335,4 @@ store_app_page_get_app (StoreAppPage *self)
 {
     g_return_val_if_fail (STORE_IS_APP_PAGE (self), NULL);
     return self->app;
-}
-
-void
-store_app_page_set_odrs_client (StoreAppPage *self, StoreOdrsClient *odrs_client)
-{
-    g_return_if_fail (STORE_IS_APP_PAGE (self));
-    g_set_object (&self->odrs_client, odrs_client);
 }

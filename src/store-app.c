@@ -30,6 +30,7 @@ typedef struct
     gint64 review_count_three_star;
     gint64 review_count_four_star;
     gint64 review_count_five_star;
+    GPtrArray *reviews;
     GPtrArray *screenshots;
     gchar *summary;
     gchar *title;
@@ -58,6 +59,7 @@ enum
     PROP_REVIEW_COUNT_THREE_STAR,
     PROP_REVIEW_COUNT_FOUR_STAR,
     PROP_REVIEW_COUNT_FIVE_STAR,
+    PROP_REVIEWS,
     PROP_SCREENSHOTS,
     PROP_SUMMARY,
     PROP_TITLE,
@@ -83,6 +85,7 @@ store_app_dispose (GObject *object)
     g_clear_pointer (&priv->license, g_free);
     g_clear_pointer (&priv->name, g_free);
     g_clear_pointer (&priv->publisher, g_free);
+    g_clear_pointer (&priv->reviews, g_ptr_array_unref);
     g_clear_pointer (&priv->screenshots, g_ptr_array_unref);
     g_clear_pointer (&priv->summary, g_free);
     g_clear_pointer (&priv->title, g_free);
@@ -132,6 +135,9 @@ store_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
         break;
     case PROP_PUBLISHER_VALIDATED:
         g_value_set_boolean (value, priv->publisher_validated);
+        break;
+    case PROP_REVIEWS:
+        g_value_set_boxed (value, priv->reviews);
         break;
     case PROP_SCREENSHOTS:
         g_value_set_boxed (value, priv->screenshots);
@@ -214,6 +220,9 @@ store_app_set_property (GObject *object, guint prop_id, const GValue *value, GPa
         break;
     case PROP_PUBLISHER_VALIDATED:
         store_app_set_publisher_validated (self, g_value_get_boolean (value));
+        break;
+    case PROP_REVIEWS:
+        store_app_set_reviews (self, g_value_get_boxed (value));
         break;
     case PROP_SCREENSHOTS:
         store_app_set_screenshots (self, g_value_get_boxed (value));
@@ -324,6 +333,7 @@ store_app_class_init (StoreAppClass *klass)
     g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_REVIEW_COUNT_FIVE_STAR,
                                      g_param_spec_int64 ("review-count-five-star", NULL, NULL, G_MININT64, G_MAXINT64, 0, G_PARAM_READWRITE));
+    install_array_property (klass, PROP_REVIEWS, "reviews");
     install_array_property (klass, PROP_SCREENSHOTS, "screenshots");
     install_string_property (klass, PROP_SUMMARY, "summary");
     install_string_property (klass, PROP_TITLE, "title");
@@ -339,6 +349,7 @@ store_app_init (StoreApp *self)
     StoreAppPrivate *priv = store_app_get_instance_private (self);
 
     priv->channels = g_ptr_array_new ();
+    priv->reviews = g_ptr_array_new ();
     priv->screenshots = g_ptr_array_new ();
 }
 
@@ -815,6 +826,30 @@ store_app_set_review_count_five_star (StoreApp *self, gint64 count)
     g_object_notify (G_OBJECT (self), "review-count-five-star");
     g_object_notify (G_OBJECT (self), "review-count");
     g_object_notify (G_OBJECT (self), "review-average");
+}
+
+void
+store_app_set_reviews (StoreApp *self, GPtrArray *reviews)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_if_fail (STORE_IS_APP (self));
+
+    g_clear_pointer (&priv->reviews, g_ptr_array_unref);
+    if (reviews != NULL)
+        priv->reviews = g_ptr_array_ref (reviews);
+
+    g_object_notify (G_OBJECT (self), "reviews");
+}
+
+GPtrArray *
+store_app_get_reviews (StoreApp *self)
+{
+    StoreAppPrivate *priv = store_app_get_instance_private (self);
+
+    g_return_val_if_fail (STORE_IS_APP (self), NULL);
+
+    return priv->reviews;
 }
 
 void

@@ -16,8 +16,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreInstalledPage, store_installed_page, STORE, INSTALLED_PAGE, StorePage)
 
-void store_installed_page_set_snap_pool (StoreInstalledPage *page, StoreSnapPool *pool);
+void store_installed_page_load     (StoreInstalledPage *page);
 
-void store_installed_page_load          (StoreInstalledPage *page);
+void store_installed_page_set_apps (StoreInstalledPage *page, GPtrArray *apps);
 
 G_END_DECLS

@@ -18,7 +18,7 @@ struct _StoreCategoryGrid
     GtkGrid *app_grid;
     GtkLabel *title_label;
 
-    StoreCache *cache;
+    StoreModel *model;
     gchar *name;
 };
 
@@ -43,7 +43,7 @@ store_category_grid_dispose (GObject *object)
 {
     StoreCategoryGrid *self = STORE_CATEGORY_GRID (object);
 
-    g_clear_object (&self->cache);
+    g_clear_object (&self->model);
     g_clear_pointer (&self->name, g_free);
 
     G_OBJECT_CLASS (store_category_grid_parent_class)->dispose (object);
@@ -84,15 +84,15 @@ store_category_grid_new (void)
 }
 
 void
-store_category_grid_set_cache (StoreCategoryGrid *self, StoreCache *cache)
+store_category_grid_set_model (StoreCategoryGrid *self, StoreModel *model)
 {
     g_return_if_fail (STORE_IS_CATEGORY_GRID (self));
 
-    g_set_object (&self->cache, cache);
+    g_set_object (&self->model, model);
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_grid));
     for (GList *link = children; link != NULL; link = link->next) {
         StoreAppTile *tile = link->data;
-        store_app_tile_set_cache (tile, cache);
+        store_app_tile_set_model (tile, model);
     }
 }
 
@@ -137,7 +137,7 @@ store_category_grid_set_apps (StoreCategoryGrid *self, GPtrArray *apps)
         StoreAppTile *tile = store_app_tile_new ();
         gtk_widget_show (GTK_WIDGET (tile));
         g_signal_connect_object (tile, "activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-        store_app_tile_set_cache (tile, self->cache);
+        store_app_tile_set_model (tile, self->model);
         gtk_grid_attach (self->app_grid, GTK_WIDGET (tile), n_tiles % 3, n_tiles / 3, 1, 1);
         n_tiles++;
     }

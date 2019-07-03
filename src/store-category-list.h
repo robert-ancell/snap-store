@@ -11,7 +11,7 @@
 
 #include <gtk/gtk.h>
 
-#include "store-cache.h"
+#include "store-model.h"
 #include "store-category.h"
 
 G_BEGIN_DECLS
@@ -20,10 +20,10 @@ G_DECLARE_FINAL_TYPE (StoreCategoryList, store_category_list, STORE, CATEGORY_LI
 
 StoreCategoryList *store_category_list_new          (void);
 
-void               store_category_list_set_cache    (StoreCategoryList *list, StoreCache *cache);
-
 void               store_category_list_set_category (StoreCategoryList *list, StoreCategory *category);
 
 StoreCategory     *store_category_list_get_category (StoreCategoryList *list);
+
+void               store_category_list_set_model    (StoreCategoryList *list, StoreModel *model);
 
 G_END_DECLS

@@ -15,6 +15,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreCategoriesPage, store_categories_page, STORE, CATEGORIES_PAGE, StorePage)
 
-void store_categories_page_set_categories (StoreCategoriesPage *page, GPtrArray *categories);
+void store_categories_page_set_categories (StoreCategoriesPage *self, GPtrArray *categories);
 
 G_END_DECLS

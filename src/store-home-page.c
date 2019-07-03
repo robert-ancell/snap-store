@@ -33,11 +33,15 @@ struct _StoreHomePage
     StoreCategoryGrid *search_results_grid;
     GtkBox *small_banner_box;
 
-    GCancellable *cancellable;
-    StoreOdrsClient *odrs_client;
     GCancellable *search_cancellable;
     GSource *search_timeout;
-    StoreSnapPool *snap_pool;
+};
+
+enum
+{
+    PROP_0,
+    PROP_CATEGORIES,
+    PROP_LAST
 };
 
 G_DEFINE_TYPE (StoreHomePage, store_home_page, store_page_get_type ())
@@ -50,23 +54,6 @@ enum
 };
 
 static guint signals[SIGNAL_LAST] = { 0, };
-
-static void
-set_review_counts (StoreHomePage *self, StoreApp *app)
-{
-    if (self->odrs_client == NULL)
-        return;
-
-    gint64 *ratings = NULL;
-    if (store_app_get_appstream_id (app) != NULL)
-        ratings = store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (app));
-
-    store_app_set_review_count_one_star (app, ratings != NULL ? ratings[0] : 0);
-    store_app_set_review_count_two_star (app, ratings != NULL ? ratings[1] : 0);
-    store_app_set_review_count_three_star (app, ratings != NULL ? ratings[2] : 0);
-    store_app_set_review_count_four_star (app, ratings != NULL ? ratings[3] : 0);
-    store_app_set_review_count_five_star (app, ratings != NULL ? ratings[4] : 0);
-}
 
 static void
 banner_tile_activated_cb (StoreHomePage *self, StoreBannerTile *banner_tile)
@@ -92,24 +79,14 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     StoreHomePage *self = user_data;
 
     g_autoptr(GError) error = NULL;
-    g_autoptr(GPtrArray) snaps = snapd_client_find_finish (SNAPD_CLIENT (object), result, NULL, &error);
-    if (snaps == NULL) {
+    g_autoptr(GPtrArray) apps = store_model_search_finish (STORE_MODEL (object), result, &error);
+    if (apps == NULL) {
         if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
             return;
         g_warning ("Failed to find snaps: %s", error->message);
         return;
     }
 
-    g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
-    for (guint i = 0; i < snaps->len; i++) {
-        SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
-        store_snap_app_update_from_search (app, snap);
-        set_review_counts (self, STORE_APP (app));
-        if (store_page_get_cache (STORE_PAGE (self)) != NULL)
-            store_app_save_to_cache (STORE_APP (app), store_page_get_cache (STORE_PAGE (self)));
-        g_ptr_array_add (apps, g_steal_pointer (&app));
-    }
     store_category_grid_set_apps (self->search_results_grid, apps);
 
     gtk_widget_hide (GTK_WIDGET (self->category_box));
@@ -135,7 +112,7 @@ search_cb (StoreHomePage *self)
     g_cancellable_cancel (self->search_cancellable);
     g_clear_object (&self->search_cancellable);
     self->search_cancellable = g_cancellable_new ();
-    snapd_client_find_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, query, self->search_cancellable, search_results_cb, self);
+    store_model_search_async (store_page_get_model (STORE_PAGE (self)), query, self->search_cancellable, search_results_cb, self);
 }
 
 static gboolean
@@ -164,42 +141,68 @@ store_home_page_dispose (GObject *object)
 {
     StoreHomePage *self = STORE_HOME_PAGE (object);
 
-    g_cancellable_cancel (self->cancellable);
-    g_clear_object (&self->cancellable);
-    g_clear_object (&self->odrs_client);
     g_cancellable_cancel (self->search_cancellable);
     g_clear_object (&self->search_cancellable);
     if (self->search_timeout)
         g_source_destroy (self->search_timeout);
     g_clear_pointer (&self->search_timeout, g_source_unref);
-    g_clear_object (&self->snap_pool);
 
     G_OBJECT_CLASS (store_home_page_parent_class)->dispose (object);
 }
 
 static void
-store_home_page_set_cache (StorePage *page, StoreCache *cache)
+store_home_page_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
+{
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+}
+
+static void
+store_home_page_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StoreHomePage *self = STORE_HOME_PAGE (object);
+
+    switch (prop_id)
+    {
+    case PROP_CATEGORIES:
+        store_home_page_set_categories (self, g_value_get_boxed (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_home_page_set_model (StorePage *page, StoreModel *model)
 {
     StoreHomePage *self = STORE_HOME_PAGE (page);
 
-    store_banner_tile_set_cache (self->banner_tile, cache);
-    store_banner_tile_set_cache (self->banner1_tile, cache);
-    store_banner_tile_set_cache (self->banner2_tile, cache);
-    store_category_list_set_cache (self->category_list1, cache);
-    store_category_list_set_cache (self->category_list2, cache);
-    store_category_list_set_cache (self->category_list3, cache);
-    store_category_list_set_cache (self->category_list4, cache);
-    store_category_grid_set_cache (self->editors_picks_grid, cache);
-    store_category_grid_set_cache (self->search_results_grid, cache);
+    store_banner_tile_set_model (self->banner_tile, model);
+    store_banner_tile_set_model (self->banner1_tile, model);
+    store_banner_tile_set_model (self->banner2_tile, model);
+    store_category_list_set_model (self->category_list1, model);
+    store_category_list_set_model (self->category_list2, model);
+    store_category_list_set_model (self->category_list3, model);
+    store_category_list_set_model (self->category_list4, model);
+    store_category_grid_set_model (self->editors_picks_grid, model);
+    store_category_grid_set_model (self->search_results_grid, model);
 
-    STORE_PAGE_CLASS (store_home_page_parent_class)->set_cache (page, cache);
+    g_object_bind_property (model, "categories", self, "categories", G_BINDING_SYNC_CREATE);
+
+    STORE_PAGE_CLASS (store_home_page_parent_class)->set_model (page, model);
 }
 
 static void
 store_home_page_class_init (StoreHomePageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_home_page_dispose;
-    STORE_PAGE_CLASS (klass)->set_cache = store_home_page_set_cache;
+    G_OBJECT_CLASS (klass)->get_property = store_home_page_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_home_page_set_property;
+    STORE_PAGE_CLASS (klass)->set_model = store_home_page_set_model;
+
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_CATEGORIES,
+                                     g_param_spec_boxed ("categories", NULL, NULL, G_TYPE_PTR_ARRAY, G_PARAM_WRITABLE));
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-home-page.ui");
 
@@ -244,8 +247,6 @@ store_home_page_class_init (StoreHomePageClass *klass)
 static void
 store_home_page_init (StoreHomePage *self)
 {
-    self->cancellable = g_cancellable_new ();
-
     store_banner_tile_get_type ();
     store_category_list_get_type ();
     store_category_grid_get_type ();
@@ -290,31 +291,15 @@ store_home_page_set_categories (StoreHomePage *self, GPtrArray *categories)
 }
 
 void
-store_home_page_set_odrs_client (StoreHomePage *self, StoreOdrsClient *odrs_client)
-{
-    g_return_if_fail (STORE_IS_HOME_PAGE (self));
-    g_set_object (&self->odrs_client, odrs_client);
-}
-
-void
-store_home_page_set_snap_pool (StoreHomePage *self, StoreSnapPool *pool)
-{
-    g_return_if_fail (STORE_IS_HOME_PAGE (self));
-    g_set_object (&self->snap_pool, pool);
-}
-
-void
 store_home_page_load (StoreHomePage *self)
 {
-    // FIXME: Hardcoded
-    g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, "telemetrytv");
-    store_app_update_from_cache (STORE_APP (app), store_page_get_cache (STORE_PAGE (self)));
-    store_banner_tile_set_app (self->banner_tile, STORE_APP (app));
-    g_autoptr(StoreSnapApp) app1 = store_snap_pool_get_snap (self->snap_pool, "supertuxkart");
-    store_app_update_from_cache (STORE_APP (app1), store_page_get_cache (STORE_PAGE (self)));
-    store_banner_tile_set_app (self->banner1_tile, STORE_APP (app1));
-    g_autoptr(StoreSnapApp) app2 = store_snap_pool_get_snap (self->snap_pool, "fluffychat");
-    store_app_update_from_cache (STORE_APP (app2), store_page_get_cache (STORE_PAGE (self)));
-    store_banner_tile_set_app (self->banner2_tile, STORE_APP (app2));
+    store_model_update_categories_async (store_page_get_model (STORE_PAGE (self)), NULL, NULL, NULL);
 
+    // FIXME: Hardcoded
+    g_autoptr(StoreSnapApp) app = store_model_get_snap (store_page_get_model (STORE_PAGE (self)), "telemetrytv");
+    store_banner_tile_set_app (self->banner_tile, STORE_APP (app));
+    g_autoptr(StoreSnapApp) app1 = store_model_get_snap (store_page_get_model (STORE_PAGE (self)), "supertuxkart");
+    store_banner_tile_set_app (self->banner1_tile, STORE_APP (app1));
+    g_autoptr(StoreSnapApp) app2 = store_model_get_snap (store_page_get_model (STORE_PAGE (self)), "fluffychat");
+    store_banner_tile_set_app (self->banner2_tile, STORE_APP (app2));
 }

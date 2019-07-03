@@ -4,5 +4,6 @@ src/store-application.c
 src/store-categories-page.ui
 src/store-home-page.c
 src/store-installed-page.ui
+src/store-model.c
 src/store-review-view.ui
 src/store-window.ui

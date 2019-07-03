@@ -7,8 +7,6 @@
  * (at your option) any later version.
  */
 
-#include <snapd-glib/snapd-glib.h>
-
 #include "store-app.h"
 #include "store-app-installed-tile.h"
 #include "store-installed-page.h"
@@ -21,8 +19,15 @@ struct _StoreInstalledPage
     GtkLabel *summary_label; // FIXME
 
     GCancellable *cancellable;
-    StoreSnapPool *snap_pool;
 };
+
+enum
+{
+    PROP_0,
+    PROP_APPS,
+    PROP_LAST
+};
+
 
 G_DEFINE_TYPE (StoreInstalledPage, store_installed_page, store_page_get_type ())
 
@@ -41,75 +46,61 @@ tile_activated_cb (StoreInstalledPage *self, StoreAppInstalledTile *tile)
 }
 
 static void
-get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
-{
-    StoreInstalledPage *self = user_data;
-
-    g_autoptr(GError) error = NULL;
-    g_autoptr(GPtrArray) snaps = snapd_client_get_snaps_finish (SNAPD_CLIENT (object), result, &error);
-    if (snaps == NULL) {
-        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-            return;
-        g_warning ("Failed to get installed snaps: %s", error->message);
-        return;
-    }
-
-    /* Ensure correct number of app tiles */
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_box));
-    guint n_tiles = g_list_length (children);
-    while (n_tiles < snaps->len) {
-        StoreAppInstalledTile *tile = store_app_installed_tile_new ();
-        gtk_widget_show (GTK_WIDGET (tile));
-        g_signal_connect_object (tile, "activated", G_CALLBACK (tile_activated_cb), self, G_CONNECT_SWAPPED);
-        store_app_installed_tile_set_cache (tile, store_page_get_cache (STORE_PAGE (self)));
-        gtk_container_add (GTK_CONTAINER (self->app_box), GTK_WIDGET (tile));
-        n_tiles++;
-        children = g_list_append (children, tile);
-    }
-    while (n_tiles > snaps->len) {
-        for (GList *link = g_list_nth (children, snaps->len); link != NULL; link = link->next) {
-            StoreAppInstalledTile *tile = link->data;
-            gtk_container_remove (GTK_CONTAINER (self->app_box), GTK_WIDGET (tile));
-        }
-    }
-
-    for (guint i = 0; i < snaps->len; i++) {
-        SnapdSnap *snap = g_ptr_array_index (snaps, i);
-        g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
-        store_app_set_installed (STORE_APP (app), TRUE);
-        store_snap_app_update_from_search (app, snap);
-        //FIXMEset_review_counts (self, STORE_APP (app));
-
-        StoreAppInstalledTile *tile = g_list_nth_data (children, i);
-        store_app_installed_tile_set_app (tile, STORE_APP (app));
-    }
-}
-
-static void
 store_installed_page_dispose (GObject *object)
 {
     StoreInstalledPage *self = STORE_INSTALLED_PAGE (object);
 
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
-    g_clear_object (&self->snap_pool);
 
     G_OBJECT_CLASS (store_installed_page_parent_class)->dispose (object);
 }
 
 static void
-store_installed_page_set_cache (StorePage *page, StoreCache *cache)
+store_installed_page_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
 {
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+}
+
+static void
+store_installed_page_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StoreInstalledPage *self = STORE_INSTALLED_PAGE (object);
+
+    switch (prop_id)
+    {
+    case PROP_APPS:
+        store_installed_page_set_apps (self, g_value_get_boxed (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_installed_page_set_model (StorePage *page, StoreModel *model)
+{
+    StoreInstalledPage *self = STORE_INSTALLED_PAGE (page);
+
     // FIXME: Should apply to children
 
-    STORE_PAGE_CLASS (store_installed_page_parent_class)->set_cache (page, cache);
+    g_object_bind_property (model, "installed", self, "apps", G_BINDING_SYNC_CREATE);
+
+    STORE_PAGE_CLASS (store_installed_page_parent_class)->set_model (page, model);
 }
 
 static void
 store_installed_page_class_init (StoreInstalledPageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_installed_page_dispose;
-    STORE_PAGE_CLASS (klass)->set_cache = store_installed_page_set_cache;
+    G_OBJECT_CLASS (klass)->get_property = store_installed_page_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_installed_page_set_property;
+    STORE_PAGE_CLASS (klass)->set_model = store_installed_page_set_model;
+
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_APPS,
+                                     g_param_spec_boxed ("apps", NULL, NULL, G_TYPE_PTR_ARRAY, G_PARAM_WRITABLE));
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-installed-page.ui");
 
@@ -136,17 +127,40 @@ store_installed_page_init (StoreInstalledPage *self)
 }
 
 void
-store_installed_page_set_snap_pool (StoreInstalledPage *self, StoreSnapPool *pool)
-{
-    g_return_if_fail (STORE_IS_INSTALLED_PAGE (self));
-    g_set_object (&self->snap_pool, pool);
-}
-
-void
 store_installed_page_load (StoreInstalledPage *self)
 {
     g_return_if_fail (STORE_IS_INSTALLED_PAGE (self));
 
-    g_autoptr(SnapdClient) client = snapd_client_new ();
-    snapd_client_get_snaps_async (client, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, self->cancellable, get_snaps_cb, self);
+    store_model_update_installed_async (store_page_get_model (STORE_PAGE (self)), NULL, NULL, NULL);
+}
+
+void
+store_installed_page_set_apps (StoreInstalledPage *self, GPtrArray *apps)
+{
+    g_return_if_fail (STORE_IS_INSTALLED_PAGE (self));
+
+    /* Ensure correct number of app tiles */
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_box));
+    guint n_tiles = g_list_length (children);
+    while (n_tiles < apps->len) {
+        StoreAppInstalledTile *tile = store_app_installed_tile_new ();
+        gtk_widget_show (GTK_WIDGET (tile));
+        g_signal_connect_object (tile, "activated", G_CALLBACK (tile_activated_cb), self, G_CONNECT_SWAPPED);
+        store_app_installed_tile_set_model (tile, store_page_get_model (STORE_PAGE (self)));
+        gtk_container_add (GTK_CONTAINER (self->app_box), GTK_WIDGET (tile));
+        n_tiles++;
+        children = g_list_append (children, tile);
+    }
+    while (n_tiles > apps->len) {
+        for (GList *link = g_list_nth (children, apps->len); link != NULL; link = link->next) {
+            StoreAppInstalledTile *tile = link->data;
+            gtk_container_remove (GTK_CONTAINER (self->app_box), GTK_WIDGET (tile));
+        }
+    }
+
+    for (guint i = 0; i < apps->len; i++) {
+        StoreSnapApp *app = g_ptr_array_index (apps, i);
+        StoreAppInstalledTile *tile = g_list_nth_data (children, i);
+        store_app_installed_tile_set_app (tile, STORE_APP (app));
+    }
 }

@@ -18,7 +18,7 @@ struct _StoreCategoryList
     GtkBox *app_box;
     GtkLabel *title_label;
 
-    StoreCache *cache;
+    StoreModel *model;
     StoreCategory *category;
 };
 
@@ -51,7 +51,7 @@ store_category_list_dispose (GObject *object)
 {
     StoreCategoryList *self = STORE_CATEGORY_LIST (object);
 
-    g_clear_object (&self->cache);
+    g_clear_object (&self->model);
     g_clear_object (&self->category);
 
     G_OBJECT_CLASS (store_category_list_parent_class)->dispose (object);
@@ -102,19 +102,6 @@ store_category_list_new (void)
 }
 
 void
-store_category_list_set_cache (StoreCategoryList *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_CATEGORY_LIST (self));
-
-    g_set_object (&self->cache, cache);
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_box));
-    for (GList *link = children; link != NULL; link = link->next) {
-        StoreAppSmallTile *tile = link->data;
-        store_app_small_tile_set_cache (tile, cache);
-    }
-}
-
-void
 store_category_list_set_category (StoreCategoryList *self, StoreCategory *category)
 {
     g_return_if_fail (STORE_IS_CATEGORY_LIST (self));
@@ -133,7 +120,7 @@ store_category_list_set_category (StoreCategoryList *self, StoreCategory *catego
         StoreAppSmallTile *tile = store_app_small_tile_new ();
         gtk_widget_show (GTK_WIDGET (tile));
         g_signal_connect_object (tile, "activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
-        store_app_small_tile_set_cache (tile, self->cache);
+        store_app_small_tile_set_model (tile, self->model);
         gtk_container_add (GTK_CONTAINER (self->app_box), GTK_WIDGET (tile));
         n_tiles++;
         children = g_list_append (children, tile);
@@ -157,4 +144,17 @@ store_category_list_get_category (StoreCategoryList *self)
     g_return_val_if_fail (STORE_IS_CATEGORY_LIST (self), NULL);
 
     return self->category;
+}
+
+void
+store_category_list_set_model (StoreCategoryList *self, StoreModel *model)
+{
+    g_return_if_fail (STORE_IS_CATEGORY_LIST (self));
+
+    g_set_object (&self->model, model);
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_box));
+    for (GList *link = children; link != NULL; link = link->next) {
+        StoreAppSmallTile *tile = link->data;
+        store_app_small_tile_set_model (tile, model);
+    }
 }

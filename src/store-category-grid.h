@@ -12,7 +12,7 @@
 #include <gtk/gtk.h>
 
 #include "store-app.h"
-#include "store-cache.h"
+#include "store-model.h"
 
 G_BEGIN_DECLS
 
@@ -20,7 +20,7 @@ G_DECLARE_FINAL_TYPE (StoreCategoryGrid, store_category_grid, STORE, CATEGORY_GR
 
 StoreCategoryGrid *store_category_grid_new       (void);
 
-void               store_category_grid_set_cache (StoreCategoryGrid *grid, StoreCache *cache);
+void               store_category_grid_set_model (StoreCategoryGrid *grid, StoreModel *model);
 
 void               store_category_grid_set_name  (StoreCategoryGrid *grid, const gchar *name);
 

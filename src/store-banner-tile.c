@@ -74,13 +74,6 @@ store_banner_tile_init (StoreBannerTile *self)
 }
 
 void
-store_banner_tile_set_cache (StoreBannerTile *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_BANNER_TILE (self));
-    store_image_set_cache (self->image, cache);
-}
-
-void
 store_banner_tile_set_app (StoreBannerTile *self, StoreApp *app)
 {
     g_return_if_fail (STORE_IS_BANNER_TILE (self));
@@ -100,4 +93,11 @@ store_banner_tile_get_app (StoreBannerTile *self)
 {
     g_return_val_if_fail (STORE_IS_BANNER_TILE (self), NULL);
     return self->app;
+}
+
+void
+store_banner_tile_set_model (StoreBannerTile *self, StoreModel *model)
+{
+    g_return_if_fail (STORE_IS_BANNER_TILE (self));
+    store_image_set_model (self->image, model);
 }

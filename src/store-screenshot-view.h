@@ -12,7 +12,7 @@
 #include <gtk/gtk.h>
 
 #include "store-app.h"
-#include "store-cache.h"
+#include "store-model.h"
 
 G_BEGIN_DECLS
 
@@ -20,8 +20,8 @@ G_DECLARE_FINAL_TYPE (StoreScreenshotView, store_screenshot_view, STORE, SCREENS
 
 StoreScreenshotView *store_screenshot_view_new       (void);
 
-void                 store_screenshot_view_set_cache (StoreScreenshotView *view, StoreCache *cache);
-
 void                 store_screenshot_view_set_app   (StoreScreenshotView *view, StoreApp *app);
+
+void                 store_screenshot_view_set_model (StoreScreenshotView *view, StoreModel *model);
 
 G_END_DECLS

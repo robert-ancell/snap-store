@@ -18,6 +18,13 @@ struct _StoreCategoriesPage
     GtkGrid *category_grid;
 };
 
+enum
+{
+    PROP_0,
+    PROP_CATEGORIES,
+    PROP_LAST
+};
+
 G_DEFINE_TYPE (StoreCategoriesPage, store_categories_page, store_page_get_type ())
 
 enum
@@ -35,8 +42,48 @@ category_activated_cb (StoreCategoriesPage *self, StoreCategoryTile *tile)
 }
 
 static void
+store_categories_page_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
+{
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+}
+
+static void
+store_categories_page_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StoreCategoriesPage *self = STORE_CATEGORIES_PAGE (object);
+
+    switch (prop_id)
+    {
+    case PROP_CATEGORIES:
+        store_categories_page_set_categories (self, g_value_get_boxed (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+store_categories_page_set_model (StorePage *page, StoreModel *model)
+{
+    StoreCategoriesPage *self = STORE_CATEGORIES_PAGE (page);
+
+    g_object_bind_property (model, "categories", self, "categories", G_BINDING_SYNC_CREATE);
+
+    STORE_PAGE_CLASS (store_categories_page_parent_class)->set_model (page, model);
+}
+
+static void
 store_categories_page_class_init (StoreCategoriesPageClass *klass)
 {
+    G_OBJECT_CLASS (klass)->get_property = store_categories_page_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_categories_page_set_property;
+    STORE_PAGE_CLASS (klass)->set_model = store_categories_page_set_model;
+
+    g_object_class_install_property (G_OBJECT_CLASS (klass),
+                                     PROP_CATEGORIES,
+                                     g_param_spec_boxed ("categories", NULL, NULL, G_TYPE_PTR_ARRAY, G_PARAM_WRITABLE));
+
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-categories-page.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoriesPage, category_grid);

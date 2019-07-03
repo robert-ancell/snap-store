@@ -12,7 +12,7 @@
 #include <gtk/gtk.h>
 
 #include "store-app.h"
-#include "store-cache.h"
+#include "store-model.h"
 
 G_BEGIN_DECLS
 
@@ -20,7 +20,7 @@ G_DECLARE_FINAL_TYPE (StoreAppTile, store_app_tile, STORE, APP_TILE, GtkEventBox
 
 StoreAppTile *store_app_tile_new       (void);
 
-void          store_app_tile_set_cache (StoreAppTile *tile, StoreCache *cache);
+void          store_app_tile_set_model (StoreAppTile *tile, StoreModel *model);
 
 void          store_app_tile_set_app   (StoreAppTile *tile, StoreApp *app);
 

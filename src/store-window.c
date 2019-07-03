@@ -14,7 +14,6 @@
 #include "store-category-page.h"
 #include "store-home-page.h"
 #include "store-installed-page.h"
-#include "store-snap-pool.h"
 
 struct _StoreWindow
 {
@@ -31,8 +30,7 @@ struct _StoreWindow
     StoreInstalledPage *installed_page;
     GtkStack *stack;
 
-    StoreCache *cache;
-    StoreOdrsClient *odrs_client;
+    StoreModel *model;
     GList *page_stack;
 };
 
@@ -89,8 +87,7 @@ store_window_dispose (GObject *object)
 {
     StoreWindow *self = STORE_WINDOW (object);
 
-    g_clear_object (&self->cache);
-    g_clear_object (&self->odrs_client);
+    g_clear_object (&self->model);
     g_clear_pointer (&self->page_stack, g_list_free);
 
     G_OBJECT_CLASS (store_window_parent_class)->dispose (object);
@@ -142,43 +139,17 @@ store_window_new (StoreApplication *application)
 }
 
 void
-store_window_set_cache (StoreWindow *self, StoreCache *cache)
+store_window_set_model (StoreWindow *self, StoreModel *model)
 {
     g_return_if_fail (STORE_IS_WINDOW (self));
 
-    g_set_object (&self->cache, cache);
+    g_set_object (&self->model, model);
 
-    store_page_set_cache (STORE_PAGE (self->app_page), cache);
-    store_page_set_cache (STORE_PAGE (self->home_page), cache);
-    store_page_set_cache (STORE_PAGE (self->installed_page), cache);
-}
-
-void
-store_window_set_categories (StoreWindow *self, GPtrArray *categories)
-{
-    g_return_if_fail (STORE_IS_WINDOW (self));
-
-    store_home_page_set_categories (self->home_page, categories);
-    store_categories_page_set_categories (self->categories_page, categories);
-}
-
-void
-store_window_set_odrs_client (StoreWindow *self, StoreOdrsClient *odrs_client)
-{
-    g_return_if_fail (STORE_IS_WINDOW (self));
-
-    g_set_object (&self->odrs_client, odrs_client);
-
-    store_app_page_set_odrs_client (self->app_page, odrs_client);
-    store_home_page_set_odrs_client (self->home_page, odrs_client);
-}
-
-void
-store_window_set_snap_pool (StoreWindow *self, StoreSnapPool *pool)
-{
-    g_return_if_fail (STORE_IS_WINDOW (self));
-    store_home_page_set_snap_pool (self->home_page, pool);
-    store_installed_page_set_snap_pool (self->installed_page, pool);
+    store_page_set_model (STORE_PAGE (self->app_page), model);
+    store_page_set_model (STORE_PAGE (self->categories_page), model);
+    store_page_set_model (STORE_PAGE (self->category_page), model);
+    store_page_set_model (STORE_PAGE (self->home_page), model);
+    store_page_set_model (STORE_PAGE (self->installed_page), model);
 }
 
 void

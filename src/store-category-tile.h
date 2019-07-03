@@ -17,10 +17,10 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreCategoryTile, store_category_tile, STORE, CATEGORY_TILE, GtkEventBox)
 
-StoreCategoryTile *store_category_tile_new       (void);
+StoreCategoryTile *store_category_tile_new          (void);
 
-void               store_category_tile_set_category  (StoreCategoryTile *tile, StoreCategory *category);
+void               store_category_tile_set_category (StoreCategoryTile *tile, StoreCategory *category);
 
-StoreCategory     *store_category_tile_get_category  (StoreCategoryTile *tile);
+StoreCategory     *store_category_tile_get_category (StoreCategoryTile *tile);
 
 G_END_DECLS

@@ -19,7 +19,7 @@ struct _StoreScreenshotView
     GtkBox *thumbnail_box;
 
     StoreApp *app;
-    StoreCache *cache;
+    StoreModel *model;
 };
 
 G_DEFINE_TYPE (StoreScreenshotView, store_screenshot_view, GTK_TYPE_BOX)
@@ -29,7 +29,7 @@ store_screenshot_view_dispose (GObject *object)
 {
     StoreScreenshotView *self = STORE_SCREENSHOT_VIEW (object);
 
-    g_clear_object (&self->cache);
+    g_clear_object (&self->model);
     g_clear_object (&self->app);
 
     G_OBJECT_CLASS (store_screenshot_view_parent_class)->dispose (object);
@@ -56,20 +56,6 @@ StoreScreenshotView *
 store_screenshot_view_new (void)
 {
     return g_object_new (store_screenshot_view_get_type (), NULL);
-}
-
-void
-store_screenshot_view_set_cache (StoreScreenshotView *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_SCREENSHOT_VIEW (self));
-
-    g_set_object (&self->cache, cache);
-    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->thumbnail_box));
-    store_image_set_cache (self->selected_image, cache);
-    for (GList *link = children; link != NULL; link = link->next) {
-        StoreImage *image = link->data;
-        store_image_set_cache (image, cache);
-    }
 }
 
 void
@@ -103,7 +89,7 @@ store_screenshot_view_set_app (StoreScreenshotView *self, StoreApp *app)
         StoreMedia *screenshot = g_ptr_array_index (screenshots, i);
         StoreImage *image = store_image_new ();
         gtk_widget_show (GTK_WIDGET (image));
-        store_image_set_cache (image, self->cache);
+        store_image_set_model (image, self->model);
         store_image_set_uri (image, store_media_get_uri (screenshot));
         guint width, height = 90;
         if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)
@@ -114,4 +100,18 @@ store_screenshot_view_set_app (StoreScreenshotView *self, StoreApp *app)
         gtk_container_add (GTK_CONTAINER (self->thumbnail_box), GTK_WIDGET (image));
     }
     gtk_widget_set_visible (GTK_WIDGET (self->thumbnail_box), screenshots->len > 1);
+}
+
+void
+store_screenshot_view_set_model (StoreScreenshotView *self, StoreModel *model)
+{
+    g_return_if_fail (STORE_IS_SCREENSHOT_VIEW (self));
+
+    g_set_object (&self->model, model);
+    g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->thumbnail_box));
+    store_image_set_model (self->selected_image, model);
+    for (GList *link = children; link != NULL; link = link->next) {
+        StoreImage *image = link->data;
+        store_image_set_model (image, model);
+    }
 }

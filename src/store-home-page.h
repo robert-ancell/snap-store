@@ -9,20 +9,14 @@
 
 #pragma once
 
-#include "store-odrs-client.h"
 #include "store-page.h"
-#include "store-snap-pool.h"
 
 G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreHomePage, store_home_page, STORE, HOME_PAGE, StorePage)
 
-void store_home_page_set_categories  (StoreHomePage *page, GPtrArray *categories);
+void store_home_page_load           (StoreHomePage *page);
 
-void store_home_page_set_odrs_client (StoreHomePage *page, StoreOdrsClient *odrs_client);
-
-void store_home_page_set_snap_pool   (StoreHomePage *page, StoreSnapPool *pool);
-
-void store_home_page_load            (StoreHomePage *page);
+void store_home_page_set_categories (StoreHomePage *self, GPtrArray *categories);
 
 G_END_DECLS

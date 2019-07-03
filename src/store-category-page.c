@@ -37,17 +37,17 @@ app_activated_cb (StoreCategoryPage *self, StoreAppTile *tile)
 }
 
 static void
-store_category_page_set_cache (StorePage *page, StoreCache *cache)
+store_category_page_set_model (StorePage *page, StoreModel *model)
 {
     // FIXME: Should apply to children
 
-    STORE_PAGE_CLASS (store_category_page_parent_class)->set_cache (page, cache);
+    STORE_PAGE_CLASS (store_category_page_parent_class)->set_model (page, model);
 }
 
 static void
 store_category_page_class_init (StoreCategoryPageClass *klass)
 {
-    STORE_PAGE_CLASS (klass)->set_cache = store_category_page_set_cache;
+    STORE_PAGE_CLASS (klass)->set_model = store_category_page_set_model;
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-category-page.ui");
 
@@ -88,7 +88,7 @@ store_category_page_set_category (StoreCategoryPage *self, StoreCategory *catego
     while (n_tiles < apps->len) {
         StoreAppTile *tile = store_app_tile_new ();
         gtk_widget_show (GTK_WIDGET (tile));
-        store_app_tile_set_cache (tile, store_page_get_cache (STORE_PAGE (self)));
+        store_app_tile_set_model (tile, store_page_get_model (STORE_PAGE (self)));
         g_signal_connect_object (tile, "activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
         gtk_grid_attach (self->app_grid, GTK_WIDGET (tile), n_tiles % 3, n_tiles / 3, 1, 1);
         n_tiles++;

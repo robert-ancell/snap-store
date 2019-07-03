@@ -11,7 +11,7 @@
 
 #include <gtk/gtk.h>
 
-#include "store-cache.h"
+#include "store-model.h"
 
 G_BEGIN_DECLS
 
@@ -21,11 +21,11 @@ struct _StorePageClass
 {
     GtkBinClass parent_class;
 
-    void (*set_cache) (StorePage *page, StoreCache *cache);
+    void (*set_model) (StorePage *page, StoreModel *model); // FIXME: Replace with a property binding
 };
 
-void        store_page_set_cache (StorePage *page, StoreCache *cache);
+void        store_page_set_model (StorePage *page, StoreModel *model);
 
-StoreCache *store_page_get_cache (StorePage *page);
+StoreModel *store_page_get_model (StorePage *page);
 
 G_END_DECLS

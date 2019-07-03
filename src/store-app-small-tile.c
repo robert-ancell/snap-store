@@ -84,13 +84,6 @@ store_app_small_tile_new (void)
 }
 
 void
-store_app_small_tile_set_cache (StoreAppSmallTile *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_APP_SMALL_TILE (self));
-    store_image_set_cache (self->icon_image, cache);
-}
-
-void
 store_app_small_tile_set_app (StoreAppSmallTile *self, StoreApp *app)
 {
     g_return_if_fail (STORE_IS_APP_SMALL_TILE (self));
@@ -111,4 +104,11 @@ store_app_small_tile_get_app (StoreAppSmallTile *self)
 {
     g_return_val_if_fail (STORE_IS_APP_SMALL_TILE (self), NULL);
     return self->app;
+}
+
+void
+store_app_small_tile_set_model (StoreAppSmallTile *self, StoreModel *model)
+{
+    g_return_if_fail (STORE_IS_APP_SMALL_TILE (self));
+    store_image_set_model (self->icon_image, model);
 }

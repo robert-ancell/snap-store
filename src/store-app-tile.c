@@ -94,10 +94,10 @@ store_app_tile_new (void)
 }
 
 void
-store_app_tile_set_cache (StoreAppTile *self, StoreCache *cache)
+store_app_tile_set_model (StoreAppTile *self, StoreModel *model)
 {
     g_return_if_fail (STORE_IS_APP_TILE (self));
-    store_image_set_cache (self->icon_image, cache);
+    store_image_set_model (self->icon_image, model);
 }
 
 void

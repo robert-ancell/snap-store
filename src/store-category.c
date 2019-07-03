@@ -133,6 +133,7 @@ store_category_set_apps (StoreCategory *self, GPtrArray *apps)
 
     if (self->apps == apps)
         return;
+    // FIXME: Also check for arrays with same contents
 
     g_clear_pointer (&self->apps, g_ptr_array_unref);
     if (apps != NULL)
