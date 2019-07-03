@@ -33,6 +33,7 @@ struct _StoreWindow
 
     StoreCache *cache;
     StoreOdrsClient *odrs_client;
+    GList *page_stack;
 };
 
 G_DEFINE_TYPE (StoreWindow, store_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -52,8 +53,12 @@ category_activated_cb (StoreWindow *self, StoreCategory *category)
 static void
 back_button_clicked_cb (StoreWindow *self)
 {
-    gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->home_page));
-    gtk_widget_hide (GTK_WIDGET (self->back_button));
+    GtkWidget *page = g_list_nth_data (self->page_stack, 0);
+    if (page == NULL)
+        page = GTK_WIDGET (self->home_page);
+    self->page_stack = g_list_delete_link (self->page_stack, g_list_first (self->page_stack));
+    gtk_stack_set_visible_child (self->stack, page);
+    gtk_widget_set_visible (GTK_WIDGET (self->back_button), self->page_stack != NULL);
 }
 
 static void
@@ -68,6 +73,7 @@ page_toggled_cb (StoreWindow *self, GtkToggleButton *button)
         gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->categories_page));
     else if (button == self->installed_button)
         gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->installed_page));
+    g_clear_pointer (&self->page_stack, g_list_free);
     gtk_widget_hide (GTK_WIDGET (self->back_button));
 
     if (button != self->home_button)
@@ -85,6 +91,7 @@ store_window_dispose (GObject *object)
 
     g_clear_object (&self->cache);
     g_clear_object (&self->odrs_client);
+    g_clear_pointer (&self->page_stack, g_list_free);
 
     G_OBJECT_CLASS (store_window_parent_class)->dispose (object);
 }
@@ -188,6 +195,8 @@ store_window_show_app (StoreWindow *self, StoreApp *app)
 {
     g_return_if_fail (STORE_IS_WINDOW (self));
 
+    self->page_stack = g_list_prepend (self->page_stack, gtk_stack_get_visible_child (self->stack));
+
     store_app_page_set_app (self->app_page, app);
     gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->app_page)); // FIXME: Buttons
     gtk_widget_show (GTK_WIDGET (self->back_button));
@@ -197,6 +206,8 @@ void
 store_window_show_category (StoreWindow *self, StoreCategory *category)
 {
     g_return_if_fail (STORE_IS_WINDOW (self));
+
+    self->page_stack = g_list_prepend (self->page_stack, gtk_stack_get_visible_child (self->stack));
 
     store_category_page_set_category (self->category_page, category);
     gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->category_page)); // FIXME: Buttons
