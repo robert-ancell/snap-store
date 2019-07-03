@@ -39,6 +39,7 @@ store_odrs_client_dispose (GObject *object)
     g_clear_pointer (&self->distro, g_free);
     g_clear_pointer (&self->locale, g_free);
     g_clear_pointer (&self->ratings, g_hash_table_unref);
+    g_clear_pointer (&self->server_uri, g_free);
     g_clear_object (&self->soup_session);
     g_clear_pointer (&self->user_hash, g_free);
 

@@ -32,7 +32,7 @@ get_cache_file (const gchar *type, const gchar *name, gboolean hash)
 static void
 contents_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
-    GTask *task = user_data;
+    g_autoptr(GTask) task = user_data;
 
     g_autoptr(GError) error = NULL;
     g_autofree gchar *contents = NULL;
@@ -68,7 +68,8 @@ store_cache_insert (StoreCache *self, const gchar *type, const gchar *name, gboo
 
     g_autoptr(GFile) file = get_cache_file (type, name, hash);
 
-    g_autofree gchar *dir = g_path_get_dirname (g_file_get_path (file));
+    g_autofree gchar *path = g_file_get_path (file);
+    g_autofree gchar *dir = g_path_get_dirname (path);
     g_mkdir_with_parents (dir, 0700);
 
     gsize contents_length;

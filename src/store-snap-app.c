@@ -83,7 +83,7 @@ compare_channel (gconstpointer a, gconstpointer b, gpointer user_data)
 static void
 find_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
-    GTask *task = user_data;
+    g_autoptr(GTask) task = user_data;
 
     g_autoptr(GError) error = NULL;
     g_autoptr(GPtrArray) snaps = snapd_client_find_finish (SNAPD_CLIENT (object), result, NULL, &error);
@@ -356,7 +356,7 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
     /* Channels are only returned on searches for a particular snap */
     GPtrArray *channels = snapd_snap_get_channels (snap);
     if (channels->len > 0) {
-        GPtrArray *store_channels = g_ptr_array_new_with_free_func (g_object_unref);
+        g_autoptr(GPtrArray) store_channels = g_ptr_array_new_with_free_func (g_object_unref);
         g_autoptr(GPtrArray) sorted_channels = g_ptr_array_new ();
         for (guint i = 0; i < channels->len; i++)
             g_ptr_array_add (sorted_channels, g_ptr_array_index (channels, i));
@@ -379,7 +379,7 @@ store_snap_app_update_from_search (StoreSnapApp *self, SnapdSnap *snap)
     }
 
     GPtrArray *media = snapd_snap_get_media (snap);
-    GPtrArray *screenshots = g_ptr_array_new_with_free_func (g_object_unref);
+    g_autoptr(GPtrArray) screenshots = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 0; i < media->len; i++) {
         SnapdMedia *m = g_ptr_array_index (media, i);
         if (g_strcmp0 (snapd_media_get_media_type (m), "icon") == 0 && store_app_get_icon (STORE_APP (self)) == NULL) {
