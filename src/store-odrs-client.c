@@ -29,29 +29,6 @@ struct _StoreOdrsClient
 
 G_DEFINE_TYPE (StoreOdrsClient, store_odrs_client, G_TYPE_OBJECT)
 
-static void
-store_odrs_client_dispose (GObject *object)
-{
-    StoreOdrsClient *self = STORE_ODRS_CLIENT (object);
-
-    g_cancellable_cancel (self->cancellable);
-    g_clear_object (&self->cancellable);
-    g_clear_pointer (&self->distro, g_free);
-    g_clear_pointer (&self->locale, g_free);
-    g_clear_pointer (&self->ratings, g_hash_table_unref);
-    g_clear_pointer (&self->server_uri, g_free);
-    g_clear_object (&self->soup_session);
-    g_clear_pointer (&self->user_hash, g_free);
-
-    G_OBJECT_CLASS (store_odrs_client_parent_class)->dispose (object);
-}
-
-static void
-store_odrs_client_class_init (StoreOdrsClientClass *klass)
-{
-    G_OBJECT_CLASS (klass)->dispose = store_odrs_client_dispose;
-}
-
 static gchar *
 get_user_hash (void)
 {
@@ -64,39 +41,6 @@ get_user_hash (void)
 
     g_autofree gchar *salted = g_strdup_printf ("gnome-software[%s:%s]", g_get_user_name (), machine_id);
     return g_compute_checksum_for_string (G_CHECKSUM_SHA1, salted, -1);
-}
-
-static void
-store_odrs_client_init (StoreOdrsClient *self)
-{
-    self->cancellable = g_cancellable_new ();
-    self->distro = g_strdup ("Ubuntu"); // FIXME
-    self->locale = g_strdup ("en"); // FIXME
-    self->server_uri = g_strdup ("https://odrs.gnome.org/1.0/reviews/api");
-    self->soup_session = soup_session_new (); // FIXME: Support common session
-    self->user_hash = get_user_hash ();
-}
-
-StoreOdrsClient *
-store_odrs_client_new (void)
-{
-    return g_object_new (store_odrs_client_get_type (), NULL);
-}
-
-void
-store_odrs_client_set_distro (StoreOdrsClient *self, const gchar *distro)
-{
-    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
-    g_free (self->distro);
-    self->distro = g_strdup (distro);
-}
-
-void
-store_odrs_client_set_locale (StoreOdrsClient *self, const gchar *locale)
-{
-    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
-    g_free (self->locale);
-    self->locale = g_strdup (locale);
 }
 
 static JsonNode *
@@ -280,6 +224,62 @@ report_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     }
 
     g_task_return_boolean (task, TRUE);
+}
+
+static void
+store_odrs_client_dispose (GObject *object)
+{
+    StoreOdrsClient *self = STORE_ODRS_CLIENT (object);
+
+    g_cancellable_cancel (self->cancellable);
+    g_clear_object (&self->cancellable);
+    g_clear_pointer (&self->distro, g_free);
+    g_clear_pointer (&self->locale, g_free);
+    g_clear_pointer (&self->ratings, g_hash_table_unref);
+    g_clear_pointer (&self->server_uri, g_free);
+    g_clear_object (&self->soup_session);
+    g_clear_pointer (&self->user_hash, g_free);
+
+    G_OBJECT_CLASS (store_odrs_client_parent_class)->dispose (object);
+}
+
+static void
+store_odrs_client_class_init (StoreOdrsClientClass *klass)
+{
+    G_OBJECT_CLASS (klass)->dispose = store_odrs_client_dispose;
+}
+
+static void
+store_odrs_client_init (StoreOdrsClient *self)
+{
+    self->cancellable = g_cancellable_new ();
+    self->distro = g_strdup ("Ubuntu"); // FIXME
+    self->locale = g_strdup ("en"); // FIXME
+    self->server_uri = g_strdup ("https://odrs.gnome.org/1.0/reviews/api");
+    self->soup_session = soup_session_new (); // FIXME: Support common session
+    self->user_hash = get_user_hash ();
+}
+
+StoreOdrsClient *
+store_odrs_client_new (void)
+{
+    return g_object_new (store_odrs_client_get_type (), NULL);
+}
+
+void
+store_odrs_client_set_distro (StoreOdrsClient *self, const gchar *distro)
+{
+    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
+    g_free (self->distro);
+    self->distro = g_strdup (distro);
+}
+
+void
+store_odrs_client_set_locale (StoreOdrsClient *self, const gchar *locale)
+{
+    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
+    g_free (self->locale);
+    self->locale = g_strdup (locale);
 }
 
 gint64 *
