@@ -13,12 +13,12 @@
 
 struct _StoreCategoriesPage
 {
-    GtkBox parent_instance;
+    StorePage parent_instance;
 
     GtkGrid *category_grid;
 };
 
-G_DEFINE_TYPE (StoreCategoriesPage, store_categories_page, GTK_TYPE_BOX)
+G_DEFINE_TYPE (StoreCategoriesPage, store_categories_page, store_page_get_type ())
 
 enum
 {

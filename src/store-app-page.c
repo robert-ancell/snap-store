@@ -21,7 +21,7 @@
 
 struct _StoreAppPage
 {
-    GtkBox parent_instance;
+    StorePage parent_instance;
 
     StoreChannelCombo *channel_combo;
     GtkLabel *contact_label;
@@ -46,12 +46,11 @@ struct _StoreAppPage
     GtkLabel *title_label;
 
     StoreApp *app;
-    StoreCache *cache;
     GCancellable *cancellable;
     StoreOdrsClient *odrs_client;
 };
 
-G_DEFINE_TYPE (StoreAppPage, store_app_page, GTK_TYPE_BOX)
+G_DEFINE_TYPE (StoreAppPage, store_app_page, store_page_get_type ())
 
 static gboolean
 date_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue *to_value, gpointer user_data G_GNUC_UNUSED)
@@ -118,8 +117,8 @@ refresh_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    if (self->cache != NULL)
-        store_app_save_to_cache (self->app, self->cache);
+    if (store_page_get_cache (STORE_PAGE (self)) != NULL)
+        store_app_save_to_cache (self->app, store_page_get_cache (STORE_PAGE (self)));
 }
 
 static void
@@ -159,7 +158,7 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     set_reviews (self, reviews);
 
     /* Save in cache */
-    if (self->cache != NULL) {
+    if (store_page_get_cache (STORE_PAGE (self)) != NULL) {
         g_autoptr(JsonBuilder) builder = json_builder_new ();
         json_builder_begin_array (builder);
         for (guint i = 0; i < reviews->len; i++) {
@@ -168,7 +167,7 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         }
         json_builder_end_array (builder);
         g_autoptr(JsonNode) root = json_builder_get_root (builder);
-        store_cache_insert_json (self->cache, "reviews", store_app_get_name (self->app), FALSE, root, NULL, NULL);
+        store_cache_insert_json (store_page_get_cache (STORE_PAGE (self)), "reviews", store_app_get_name (self->app), FALSE, root, NULL, NULL);
     }
 }
 
@@ -206,7 +205,6 @@ store_app_page_dispose (GObject *object)
     StoreAppPage *self = STORE_APP_PAGE (object);
 
     g_clear_object (&self->app);
-    g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
     g_clear_object (&self->odrs_client);
@@ -215,9 +213,21 @@ store_app_page_dispose (GObject *object)
 }
 
 static void
+store_app_page_set_cache (StorePage *page, StoreCache *cache)
+{
+    StoreAppPage *self = STORE_APP_PAGE (page);
+
+    store_image_set_cache (self->icon_image, cache);
+    // FIXME: Should apply to children
+
+    STORE_PAGE_CLASS (store_app_page_parent_class)->set_cache (page, cache);
+}
+
+static void
 store_app_page_class_init (StoreAppPageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_app_page_dispose;
+    STORE_PAGE_CLASS (klass)->set_cache = store_app_page_set_cache;
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-app-page.ui");
 
@@ -254,6 +264,7 @@ store_app_page_init (StoreAppPage *self)
 {
     store_channel_combo_get_type ();
     store_image_get_type ();
+    store_page_get_type ();
     store_rating_label_get_type ();
     store_review_summary_get_type ();
     store_screenshot_view_get_type ();
@@ -322,8 +333,8 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
 
     if (self->odrs_client != NULL) {
         /* Load cached reviews */
-        if (self->cache != NULL) {
-            g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (self->cache, "reviews", store_app_get_name (app), FALSE, NULL, NULL);
+        if (store_page_get_cache (STORE_PAGE (self)) != NULL) {
+            g_autoptr(JsonNode) reviews_cache = store_cache_lookup_json (store_page_get_cache (STORE_PAGE (self)), "reviews", store_app_get_name (app), FALSE, NULL, NULL);
             if (reviews_cache != NULL) {
                 g_autoptr(GPtrArray) reviews = g_ptr_array_new_with_free_func (g_object_unref);
                 JsonArray *array = json_node_get_array (reviews_cache);
@@ -348,15 +359,6 @@ store_app_page_get_app (StoreAppPage *self)
 {
     g_return_val_if_fail (STORE_IS_APP_PAGE (self), NULL);
     return self->app;
-}
-
-void
-store_app_page_set_cache (StoreAppPage *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_APP_PAGE (self));
-    g_set_object (&self->cache, cache);
-    store_image_set_cache (self->icon_image, cache);
-    // FIXME: Should apply to children
 }
 
 void

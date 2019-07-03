@@ -13,16 +13,14 @@
 
 struct _StoreCategoryPage
 {
-    GtkBox parent_instance;
+    StorePage parent_instance;
 
     GtkGrid *app_grid;
     GtkLabel *summary_label;
     GtkLabel *title_label;
-
-    StoreCache *cache;
 };
 
-G_DEFINE_TYPE (StoreCategoryPage, store_category_page, GTK_TYPE_BOX)
+G_DEFINE_TYPE (StoreCategoryPage, store_category_page, store_page_get_type ())
 
 enum
 {
@@ -39,19 +37,17 @@ app_activated_cb (StoreCategoryPage *self, StoreAppTile *tile)
 }
 
 static void
-store_category_page_dispose (GObject *object)
+store_category_page_set_cache (StorePage *page, StoreCache *cache)
 {
-    StoreCategoryPage *self = STORE_CATEGORY_PAGE (object);
+    // FIXME: Should apply to children
 
-    g_clear_object (&self->cache);
-
-    G_OBJECT_CLASS (store_category_page_parent_class)->dispose (object);
+    STORE_PAGE_CLASS (store_category_page_parent_class)->set_cache (page, cache);
 }
 
 static void
 store_category_page_class_init (StoreCategoryPageClass *klass)
 {
-    G_OBJECT_CLASS (klass)->dispose = store_category_page_dispose;
+    STORE_PAGE_CLASS (klass)->set_cache = store_category_page_set_cache;
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-category-page.ui");
 
@@ -76,14 +72,6 @@ store_category_page_init (StoreCategoryPage *self)
 }
 
 void
-store_category_page_set_cache (StoreCategoryPage *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_CATEGORY_PAGE (self));
-
-    g_set_object (&self->cache, cache);
-}
-
-void
 store_category_page_set_category (StoreCategoryPage *self, StoreCategory *category)
 {
     g_return_if_fail (STORE_IS_CATEGORY_PAGE (self));
@@ -100,7 +88,7 @@ store_category_page_set_category (StoreCategoryPage *self, StoreCategory *catego
     while (n_tiles < apps->len) {
         StoreAppTile *tile = store_app_tile_new ();
         gtk_widget_show (GTK_WIDGET (tile));
-        store_app_tile_set_cache (tile, self->cache);
+        store_app_tile_set_cache (tile, store_page_get_cache (STORE_PAGE (self)));
         g_signal_connect_object (tile, "activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
         gtk_grid_attach (self->app_grid, GTK_WIDGET (tile), n_tiles % 3, n_tiles / 3, 1, 1);
         n_tiles++;

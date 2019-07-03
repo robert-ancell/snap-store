@@ -15,17 +15,16 @@
 
 struct _StoreInstalledPage
 {
-    GtkBox parent_instance;
+    StorePage parent_instance;
 
     GtkBox *app_box;
     GtkLabel *summary_label; // FIXME
 
-    StoreCache *cache;
     GCancellable *cancellable;
     StoreSnapPool *snap_pool;
 };
 
-G_DEFINE_TYPE (StoreInstalledPage, store_installed_page, GTK_TYPE_BOX)
+G_DEFINE_TYPE (StoreInstalledPage, store_installed_page, store_page_get_type ())
 
 enum
 {
@@ -62,7 +61,7 @@ get_snaps_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         StoreAppInstalledTile *tile = store_app_installed_tile_new ();
         gtk_widget_show (GTK_WIDGET (tile));
         g_signal_connect_object (tile, "activated", G_CALLBACK (tile_activated_cb), self, G_CONNECT_SWAPPED);
-        store_app_installed_tile_set_cache (tile, self->cache);
+        store_app_installed_tile_set_cache (tile, store_page_get_cache (STORE_PAGE (self)));
         gtk_container_add (GTK_CONTAINER (self->app_box), GTK_WIDGET (tile));
         n_tiles++;
         children = g_list_append (children, tile);
@@ -91,7 +90,6 @@ store_installed_page_dispose (GObject *object)
 {
     StoreInstalledPage *self = STORE_INSTALLED_PAGE (object);
 
-    g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
     g_clear_object (&self->snap_pool);
@@ -100,9 +98,18 @@ store_installed_page_dispose (GObject *object)
 }
 
 static void
+store_installed_page_set_cache (StorePage *page, StoreCache *cache)
+{
+    // FIXME: Should apply to children
+
+    STORE_PAGE_CLASS (store_installed_page_parent_class)->set_cache (page, cache);
+}
+
+static void
 store_installed_page_class_init (StoreInstalledPageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_installed_page_dispose;
+    STORE_PAGE_CLASS (klass)->set_cache = store_installed_page_set_cache;
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-installed-page.ui");
 
@@ -124,15 +131,8 @@ store_installed_page_init (StoreInstalledPage *self)
 {
     self->cancellable = g_cancellable_new ();
 
+    store_page_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
-}
-
-void
-store_installed_page_set_cache (StoreInstalledPage *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_INSTALLED_PAGE (self));
-    g_set_object (&self->cache, cache);
-    // FIXME: Should apply to children
 }
 
 void

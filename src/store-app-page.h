@@ -12,20 +12,18 @@
 #include <gtk/gtk.h>
 
 #include "store-app.h"
-#include "store-cache.h"
 #include "store-odrs-client.h"
+#include "store-page.h"
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreAppPage, store_app_page, STORE, APP_PAGE, GtkBox)
+G_DECLARE_FINAL_TYPE (StoreAppPage, store_app_page, STORE, APP_PAGE, StorePage)
 
 StoreAppPage *store_app_page_new             (void);
 
 void          store_app_page_set_app         (StoreAppPage *page, StoreApp *app);
 
 StoreApp     *store_app_page_get_app         (StoreAppPage *page);
-
-void          store_app_page_set_cache       (StoreAppPage *page, StoreCache *cache);
 
 void          store_app_page_set_odrs_client (StoreAppPage *page, StoreOdrsClient *odrs_client);
 

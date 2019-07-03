@@ -18,7 +18,7 @@
 
 struct _StoreHomePage
 {
-    GtkBox parent_instance;
+    StorePage parent_instance;
 
     StoreBannerTile *banner_tile;
     StoreBannerTile *banner1_tile;
@@ -33,7 +33,6 @@ struct _StoreHomePage
     StoreCategoryGrid *search_results_grid;
     GtkBox *small_banner_box;
 
-    StoreCache *cache;
     GCancellable *cancellable;
     StoreOdrsClient *odrs_client;
     GCancellable *search_cancellable;
@@ -41,7 +40,7 @@ struct _StoreHomePage
     StoreSnapPool *snap_pool;
 };
 
-G_DEFINE_TYPE (StoreHomePage, store_home_page, GTK_TYPE_BOX)
+G_DEFINE_TYPE (StoreHomePage, store_home_page, store_page_get_type ())
 
 enum
 {
@@ -107,8 +106,8 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, snapd_snap_get_name (snap));
         store_snap_app_update_from_search (app, snap);
         set_review_counts (self, STORE_APP (app));
-        if (self->cache != NULL)
-            store_app_save_to_cache (STORE_APP (app), self->cache);
+        if (store_page_get_cache (STORE_PAGE (self)) != NULL)
+            store_app_save_to_cache (STORE_APP (app), store_page_get_cache (STORE_PAGE (self)));
         g_ptr_array_add (apps, g_steal_pointer (&app));
     }
     store_category_grid_set_apps (self->search_results_grid, apps);
@@ -165,7 +164,6 @@ store_home_page_dispose (GObject *object)
 {
     StoreHomePage *self = STORE_HOME_PAGE (object);
 
-    g_clear_object (&self->cache);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
     g_clear_object (&self->odrs_client);
@@ -180,9 +178,28 @@ store_home_page_dispose (GObject *object)
 }
 
 static void
+store_home_page_set_cache (StorePage *page, StoreCache *cache)
+{
+    StoreHomePage *self = STORE_HOME_PAGE (page);
+
+    store_banner_tile_set_cache (self->banner_tile, cache);
+    store_banner_tile_set_cache (self->banner1_tile, cache);
+    store_banner_tile_set_cache (self->banner2_tile, cache);
+    store_category_list_set_cache (self->category_list1, cache);
+    store_category_list_set_cache (self->category_list2, cache);
+    store_category_list_set_cache (self->category_list3, cache);
+    store_category_list_set_cache (self->category_list4, cache);
+    store_category_grid_set_cache (self->editors_picks_grid, cache);
+    store_category_grid_set_cache (self->search_results_grid, cache);
+
+    STORE_PAGE_CLASS (store_home_page_parent_class)->set_cache (page, cache);
+}
+
+static void
 store_home_page_class_init (StoreHomePageClass *klass)
 {
     G_OBJECT_CLASS (klass)->dispose = store_home_page_dispose;
+    STORE_PAGE_CLASS (klass)->set_cache = store_home_page_set_cache;
 
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-home-page.ui");
 
@@ -232,28 +249,12 @@ store_home_page_init (StoreHomePage *self)
     store_banner_tile_get_type ();
     store_category_list_get_type ();
     store_category_grid_get_type ();
+    store_page_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
 
     store_category_grid_set_title (self->editors_picks_grid,
                                    /* Title for category editors picks */
                                    _("Editors picks")); // FIXME: Make a property in .ui
-}
-
-void
-store_home_page_set_cache (StoreHomePage *self, StoreCache *cache)
-{
-    g_return_if_fail (STORE_IS_HOME_PAGE (self));
-
-    g_set_object (&self->cache, cache);
-    store_banner_tile_set_cache (self->banner_tile, cache);
-    store_banner_tile_set_cache (self->banner1_tile, cache);
-    store_banner_tile_set_cache (self->banner2_tile, cache);
-    store_category_list_set_cache (self->category_list1, cache);
-    store_category_list_set_cache (self->category_list2, cache);
-    store_category_list_set_cache (self->category_list3, cache);
-    store_category_list_set_cache (self->category_list4, cache);
-    store_category_grid_set_cache (self->editors_picks_grid, cache);
-    store_category_grid_set_cache (self->search_results_grid, cache);
 }
 
 void
@@ -307,13 +308,13 @@ store_home_page_load (StoreHomePage *self)
 {
     // FIXME: Hardcoded
     g_autoptr(StoreSnapApp) app = store_snap_pool_get_snap (self->snap_pool, "telemetrytv");
-    store_app_update_from_cache (STORE_APP (app), self->cache);
+    store_app_update_from_cache (STORE_APP (app), store_page_get_cache (STORE_PAGE (self)));
     store_banner_tile_set_app (self->banner_tile, STORE_APP (app));
     g_autoptr(StoreSnapApp) app1 = store_snap_pool_get_snap (self->snap_pool, "supertuxkart");
-    store_app_update_from_cache (STORE_APP (app1), self->cache);
+    store_app_update_from_cache (STORE_APP (app1), store_page_get_cache (STORE_PAGE (self)));
     store_banner_tile_set_app (self->banner1_tile, STORE_APP (app1));
     g_autoptr(StoreSnapApp) app2 = store_snap_pool_get_snap (self->snap_pool, "fluffychat");
-    store_app_update_from_cache (STORE_APP (app2), self->cache);
+    store_app_update_from_cache (STORE_APP (app2), store_page_get_cache (STORE_PAGE (self)));
     store_banner_tile_set_app (self->banner2_tile, STORE_APP (app2));
 
 }

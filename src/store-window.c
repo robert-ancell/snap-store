@@ -148,9 +148,9 @@ store_window_set_cache (StoreWindow *self, StoreCache *cache)
 
     g_set_object (&self->cache, cache);
 
-    store_app_page_set_cache (self->app_page, cache);
-    store_home_page_set_cache (self->home_page, cache);
-    store_installed_page_set_cache (self->installed_page, cache);
+    store_page_set_cache (STORE_PAGE (self->app_page), cache);
+    store_page_set_cache (STORE_PAGE (self->home_page), cache);
+    store_page_set_cache (STORE_PAGE (self->installed_page), cache);
 }
 
 void

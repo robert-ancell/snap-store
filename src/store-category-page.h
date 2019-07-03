@@ -9,16 +9,12 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
-
-#include "store-cache.h"
 #include "store-category.h"
+#include "store-page.h"
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreCategoryPage, store_category_page, STORE, CATEGORY_PAGE, GtkBox)
-
-void store_category_page_set_cache    (StoreCategoryPage *page, StoreCache *cache);
+G_DECLARE_FINAL_TYPE (StoreCategoryPage, store_category_page, STORE, CATEGORY_PAGE, StorePage)
 
 void store_category_page_set_category (StoreCategoryPage *page, StoreCategory *category);
 

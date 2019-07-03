@@ -9,11 +9,11 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include "store-page.h"
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreCategoriesPage, store_categories_page, STORE, CATEGORIES_PAGE, GtkBox)
+G_DECLARE_FINAL_TYPE (StoreCategoriesPage, store_categories_page, STORE, CATEGORIES_PAGE, StorePage)
 
 void store_categories_page_set_categories (StoreCategoriesPage *page, GPtrArray *categories);
 

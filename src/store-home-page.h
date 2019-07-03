@@ -9,17 +9,13 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
-
-#include "store-cache.h"
 #include "store-odrs-client.h"
+#include "store-page.h"
 #include "store-snap-pool.h"
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreHomePage, store_home_page, STORE, HOME_PAGE, GtkBox)
-
-void store_home_page_set_cache       (StoreHomePage *page, StoreCache *cache);
+G_DECLARE_FINAL_TYPE (StoreHomePage, store_home_page, STORE, HOME_PAGE, StorePage)
 
 void store_home_page_set_categories  (StoreHomePage *page, GPtrArray *categories);
 

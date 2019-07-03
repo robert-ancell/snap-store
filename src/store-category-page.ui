@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="StoreCategoryPage" parent="GtkBox">
+  <template class="StoreCategoryPage" parent="StorePage">
     <child>
       <object class="GtkScrolledWindow">
         <property name="visible">True</property>
