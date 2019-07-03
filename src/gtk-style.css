@@ -315,34 +315,8 @@
     color: #212121;
 }
 
-.home-page-category-box {
-    margin-left: 32px;
-    margin-right: 32px;
-}
-
-.home-page-editors-picks-grid {
-    margin-left: 32px;
-    margin-right: 32px;
-}
-
-.home-page-installed-grid {
-    margin-left: 32px;
-    margin-right: 32px;
-}
-
-.home-page-search-entry {
-    margin-left: 32px;
-    margin-right: 32px;
-}
-
-.home-page-search-results-grid {
-    margin-left: 32px;
-    margin-right: 32px;
-}
-
-.home-page-small-banner-box {
-    margin-left: 32px;
-    margin-right: 32px;
+.home-page-content-box {
+    margin: 32px;
 }
 
 .installed-page-app-box {
