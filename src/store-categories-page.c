@@ -7,9 +7,6 @@
  * (at your option) any later version.
  */
 
-#include <glib/gi18n.h>
-
-#include "store-app.h"
 #include "store-categories-page.h"
 #include "store-category.h"
 #include "store-category-tile.h"

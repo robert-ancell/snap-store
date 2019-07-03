@@ -11,10 +11,15 @@
 
 #include <gtk/gtk.h>
 
+#include "store-cache.h"
+#include "store-category.h"
+
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreCategoriesPage, store_categories_page, STORE, CATEGORIES_PAGE, GtkBox)
+G_DECLARE_FINAL_TYPE (StoreCategoryPage, store_category_page, STORE, CATEGORY_PAGE, GtkBox)
 
-void store_categories_page_set_categories (StoreCategoriesPage *page, GPtrArray *categories);
+void store_category_page_set_cache    (StoreCategoryPage *page, StoreCache *cache);
+
+void store_category_page_set_category (StoreCategoryPage *page, StoreCategory *category);
 
 G_END_DECLS

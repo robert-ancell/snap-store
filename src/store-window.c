@@ -11,6 +11,7 @@
 
 #include "store-app-page.h"
 #include "store-categories-page.h"
+#include "store-category-page.h"
 #include "store-home-page.h"
 #include "store-installed-page.h"
 #include "store-snap-pool.h"
@@ -23,6 +24,7 @@ struct _StoreWindow
     GtkButton *back_button;
     GtkToggleButton *categories_button;
     StoreCategoriesPage *categories_page;
+    StoreCategoryPage *category_page;
     GtkToggleButton *home_button;
     StoreHomePage *home_page;
     GtkToggleButton *installed_button;
@@ -98,6 +100,7 @@ store_window_class_init (StoreWindowClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, back_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, categories_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, categories_page);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, category_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, home_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, home_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, installed_button);
@@ -115,6 +118,7 @@ store_window_init (StoreWindow *self)
 {
     store_app_page_get_type ();
     store_categories_page_get_type ();
+    store_category_page_get_type ();
     store_home_page_get_type ();
     store_installed_page_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
@@ -194,5 +198,7 @@ store_window_show_category (StoreWindow *self, StoreCategory *category)
 {
     g_return_if_fail (STORE_IS_WINDOW (self));
 
-    // FIXME
+    store_category_page_set_category (self->category_page, category);
+    gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->category_page)); // FIXME: Buttons
+    gtk_widget_show (GTK_WIDGET (self->back_button));
 }
