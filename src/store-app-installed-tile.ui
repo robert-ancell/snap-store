@@ -93,6 +93,7 @@
           <object class="GtkButton">
             <property name="visible">True</property>
             <property name="valign">start</property>
+            <signal name="clicked" handler="launch_cb" object="StoreAppInstalledTile" swapped="yes"/>
             <style>
               <class name="app-installed-tile-launch-button"/>
             </style>
@@ -111,6 +112,7 @@
           <object class="GtkButton">
             <property name="visible">True</property>
             <property name="valign">start</property>
+            <signal name="clicked" handler="remove_cb" object="StoreAppInstalledTile" swapped="yes"/>
             <style>
               <class name="app-installed-tile-remove-button"/>
             </style>

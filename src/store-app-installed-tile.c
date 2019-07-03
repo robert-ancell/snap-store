@@ -45,6 +45,18 @@ button_release_event_cb (StoreAppInstalledTile *self)
 }
 
 static void
+launch_cb (StoreAppInstalledTile *self)
+{
+    // FIXME
+}
+
+static void
+remove_cb (StoreAppInstalledTile *self)
+{
+    // FIXME
+}
+
+static void
 store_app_installed_tile_dispose (GObject *object)
 {
     StoreAppInstalledTile *self = STORE_APP_INSTALLED_TILE (object);
@@ -70,6 +82,8 @@ store_app_installed_tile_class_init (StoreAppInstalledTileClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppInstalledTile, title_label);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), button_release_event_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), launch_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), remove_cb);
 
     signals[SIGNAL_ACTIVATED] = g_signal_new ("activated",
                                               G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
