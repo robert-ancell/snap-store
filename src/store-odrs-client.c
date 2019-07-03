@@ -267,6 +267,21 @@ downvote_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_task_return_boolean (task, TRUE);
 }
 
+static void
+report_cb (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+    g_autoptr(GTask) task = user_data;
+
+    g_autoptr(GError) error = NULL;
+    g_autoptr(JsonNode) root = send_finish (task, object, result, &error);
+    if (root == NULL) {
+        g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    g_task_return_boolean (task, TRUE);
+}
+
 gint64 *
 store_odrs_client_get_ratings (StoreOdrsClient *self, const gchar *app_id)
 {
@@ -494,6 +509,47 @@ store_odrs_client_downvote_async (StoreOdrsClient *self, const gchar *user_skey,
 
 gboolean
 store_odrs_client_downvote_finish (StoreOdrsClient *self, GAsyncResult *result, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), FALSE);
+    g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), FALSE);
+
+    return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+void
+store_odrs_client_report_async (StoreOdrsClient *self, const gchar *user_skey, const gchar *app_id, gint64 review_id,
+                                  GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    g_return_if_fail (STORE_IS_ODRS_CLIENT (self));
+    g_return_if_fail (app_id != NULL);
+
+    g_autofree gchar *uri= g_strdup_printf ("%s/report", self->server_uri);
+    g_autoptr(SoupMessage) message = soup_message_new ("POST", uri);
+
+    g_autoptr(JsonBuilder) builder = json_builder_new ();
+    json_builder_begin_object (builder);
+    json_builder_set_member_name (builder, "user_hash");
+    json_builder_add_string_value (builder, self->user_hash);
+    json_builder_set_member_name (builder, "user_skey");
+    json_builder_add_string_value (builder, user_skey);
+    json_builder_set_member_name (builder, "app_id");
+    json_builder_add_string_value (builder, app_id);
+    json_builder_set_member_name (builder, "review_id");
+    json_builder_add_int_value (builder, review_id);
+    json_builder_end_object (builder);
+    g_autoptr(JsonGenerator) generator = json_generator_new ();
+    g_autoptr(JsonNode) root = json_builder_get_root (builder);
+    json_generator_set_root (generator, root);
+    gsize json_text_length;
+    g_autofree gchar *json_text = json_generator_to_data (generator, &json_text_length);
+    soup_message_set_request (message, "application/json; charset=utf-8", SOUP_MEMORY_COPY, json_text, json_text_length);
+
+    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
+    soup_session_send_async (self->soup_session, message, self->cancellable, report_cb, task);
+}
+
+gboolean
+store_odrs_client_report_finish (StoreOdrsClient *self, GAsyncResult *result, GError **error)
 {
     g_return_val_if_fail (STORE_IS_ODRS_CLIENT (self), FALSE);
     g_return_val_if_fail (g_task_is_valid (G_TASK (result), self), FALSE);
