@@ -94,6 +94,7 @@ store_category_page_set_category (StoreCategoryPage *self, StoreCategory *catego
     GPtrArray *apps = store_category_get_apps (category);
 
     /* Ensure correct number of app tiles */
+    // FIXME: Make a new widget that does this
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_grid));
     guint n_tiles = g_list_length (children);
     while (n_tiles < apps->len) {
@@ -105,15 +106,18 @@ store_category_page_set_category (StoreCategoryPage *self, StoreCategory *catego
         n_tiles++;
         children = g_list_append (children, tile);
     }
-    while (n_tiles > apps->len) {
-        for (GList *link = g_list_nth (children, apps->len); link != NULL; link = link->next) {
-            StoreAppTile *tile = link->data;
-            gtk_container_remove (GTK_CONTAINER (self->app_grid), GTK_WIDGET (tile));
-        }
+    for (GList *link = children; link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        int left_attach, top_attach;
+        gtk_container_child_get (GTK_CONTAINER (self->app_grid), child, "left-attach", &left_attach, "top-attach", &top_attach, NULL);
+        guint index = top_attach * 3 + left_attach;
+        if (index >= apps->len)
+            gtk_container_remove (GTK_CONTAINER (self->app_grid), child);
     }
+
     for (guint i = 0; i < apps->len; i++) {
         StoreApp *app = g_ptr_array_index (apps, i);
-        StoreAppTile *tile = g_list_nth_data (children, i);
+        StoreAppTile *tile = STORE_APP_TILE (gtk_grid_get_child_at (self->app_grid, i % 3, i / 3));
         store_app_tile_set_app (tile, app);
     }
 }

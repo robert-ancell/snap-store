@@ -63,6 +63,7 @@ store_categories_page_set_categories (StoreCategoriesPage *self, GPtrArray *cate
     g_return_if_fail (STORE_IS_CATEGORIES_PAGE (self));
 
     /* Ensure correct number of category tiles */
+    // FIXME: Make a new widget that does this
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->category_grid));
     guint n_tiles = g_list_length (children);
     while (n_tiles < categories->len) {
@@ -71,17 +72,19 @@ store_categories_page_set_categories (StoreCategoriesPage *self, GPtrArray *cate
         g_signal_connect_object (tile, "activated", G_CALLBACK (category_activated_cb), self, G_CONNECT_SWAPPED);
         gtk_grid_attach (self->category_grid, GTK_WIDGET (tile), n_tiles % 3, n_tiles / 3, 1, 1);
         n_tiles++;
-        children = g_list_append (children, tile);
     }
-    while (n_tiles > categories->len) {
-        for (GList *link = g_list_nth (children, categories->len); link != NULL; link = link->next) {
-            StoreCategoryTile *tile = link->data;
-            gtk_container_remove (GTK_CONTAINER (self->category_grid), GTK_WIDGET (tile));
-        }
+    for (GList *link = children; link != NULL; link = link->next) {
+        GtkWidget *child = link->data;
+        int left_attach, top_attach;
+        gtk_container_child_get (GTK_CONTAINER (self->category_grid), child, "left-attach", &left_attach, "top-attach", &top_attach, NULL);
+        guint index = top_attach * 3 + left_attach;
+        if (index >= categories->len)
+            gtk_container_remove (GTK_CONTAINER (self->category_grid), child);
     }
+
     for (guint i = 0; i < categories->len; i++) {
         StoreCategory *category = g_ptr_array_index (categories, i);
-        StoreCategoryTile *tile = g_list_nth_data (children, i);
+        StoreCategoryTile *tile = STORE_CATEGORY_TILE (gtk_grid_get_child_at (self->category_grid, i % 3, i / 3));
         store_category_tile_set_category (tile, category);
     }
 }
