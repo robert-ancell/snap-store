@@ -19,7 +19,7 @@ struct _StoreCategoryList
     GtkLabel *title_label;
 
     StoreCache *cache;
-    gchar *name;
+    StoreCategory *category;
 };
 
 G_DEFINE_TYPE (StoreCategoryList, store_category_list, GTK_TYPE_BOX)
@@ -44,7 +44,7 @@ store_category_list_dispose (GObject *object)
     StoreCategoryList *self = STORE_CATEGORY_LIST (object);
 
     g_clear_object (&self->cache);
-    g_clear_pointer (&self->name, g_free);
+    g_clear_object (&self->category);
 
     G_OBJECT_CLASS (store_category_list_parent_class)->dispose (object);
 }
@@ -97,42 +97,21 @@ store_category_list_set_cache (StoreCategoryList *self, StoreCache *cache)
 }
 
 void
-store_category_list_set_name (StoreCategoryList *self, const gchar *name)
+store_category_list_set_category (StoreCategoryList *self, StoreCategory *category)
 {
     g_return_if_fail (STORE_IS_CATEGORY_LIST (self));
 
-    g_free (self->name);
-    self->name = g_strdup (name);
+    g_set_object (&self->category, category);
 
-    gtk_label_set_label (self->title_label, name);
-    gtk_widget_set_visible (GTK_WIDGET (self->title_label), name != NULL);
-}
+    g_object_bind_property (category, "title", self->title_label, "label", G_BINDING_SYNC_CREATE);
 
-const gchar *
-store_category_list_get_name (StoreCategoryList *self)
-{
-    g_return_val_if_fail (STORE_IS_CATEGORY_LIST (self), NULL);
-    return self->name;
-}
-
-void
-store_category_list_set_title (StoreCategoryList *self, const gchar *title)
-{
-    g_return_if_fail (STORE_IS_CATEGORY_LIST (self));
-
-    gtk_label_set_label (self->title_label, title);
-    gtk_widget_set_visible (GTK_WIDGET (self->title_label), title != NULL);
-}
-
-void
-store_category_list_set_apps (StoreCategoryList *self, GPtrArray *apps)
-{
-    g_return_if_fail (STORE_IS_CATEGORY_LIST (self));
+    GPtrArray *apps = store_category_get_apps (category); // FIXME Update when apps updates
 
     /* Ensure correct number of app tiles */
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->app_box));
     guint n_tiles = g_list_length (children);
-    while (n_tiles < apps->len) {
+    guint n_apps = apps->len <  5 ? apps->len : 5;
+    while (n_tiles < n_apps) {
         StoreAppSmallTile *tile = store_app_small_tile_new ();
         gtk_widget_show (GTK_WIDGET (tile));
         g_signal_connect_object (tile, "activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
@@ -141,15 +120,23 @@ store_category_list_set_apps (StoreCategoryList *self, GPtrArray *apps)
         n_tiles++;
         children = g_list_append (children, tile);
     }
-    while (n_tiles > apps->len) {
-        for (GList *link = g_list_nth (children, apps->len); link != NULL; link = link->next) {
+    while (n_tiles > n_apps) {
+        for (GList *link = g_list_nth (children, n_apps); link != NULL; link = link->next) {
             StoreAppSmallTile *tile = link->data;
             gtk_container_remove (GTK_CONTAINER (self->app_box), GTK_WIDGET (tile));
         }
     }
-    for (guint i = 0; i < apps->len; i++) {
+    for (guint i = 0; i < n_apps; i++) {
         StoreApp *app = g_ptr_array_index (apps, i);
         StoreAppSmallTile *tile = g_list_nth_data (children, i);
         store_app_small_tile_set_app (tile, app);
     }
+}
+
+StoreCategory *
+store_category_list_get_category (StoreCategoryList *self)
+{
+    g_return_val_if_fail (STORE_IS_CATEGORY_LIST (self), NULL);
+
+    return self->category;
 }

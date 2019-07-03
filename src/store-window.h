@@ -14,6 +14,7 @@
 #include "store-app.h"
 #include "store-application.h"
 #include "store-cache.h"
+#include "store-category.h"
 #include "store-odrs-client.h"
 #include "store-snap-pool.h"
 
@@ -25,6 +26,8 @@ StoreWindow *store_window_new             (StoreApplication *application);
 
 void         store_window_set_cache       (StoreWindow *window, StoreCache *cache);
 
+void         store_window_set_categories  (StoreWindow *window, GPtrArray *categories);
+
 void         store_window_set_odrs_client (StoreWindow *window, StoreOdrsClient *client);
 
 void         store_window_set_snap_pool   (StoreWindow *window, StoreSnapPool *pool);
@@ -32,5 +35,7 @@ void         store_window_set_snap_pool   (StoreWindow *window, StoreSnapPool *p
 void         store_window_load            (StoreWindow *self);
 
 void         store_window_show_app        (StoreWindow *self, StoreApp *app);
+
+void         store_window_show_category   (StoreWindow *self, StoreCategory *category);
 
 G_END_DECLS

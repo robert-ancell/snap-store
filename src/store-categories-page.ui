@@ -36,12 +36,19 @@
                     </style>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="orientation">vertical</property>
-                  </object>
-                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkGrid" id="category_grid">
+                <property name="visible">True</property>
+                <property name="hexpand">True</property>
+                <property name="row-spacing">20</property>
+                <property name="column-spacing">20</property>
+                <property name="row-homogeneous">True</property>
+                <property name="column-homogeneous">True</property>
+                <style>
+                  <class name="categories-page-category-grid"/>
+                </style>
               </object>
             </child>
           </object>

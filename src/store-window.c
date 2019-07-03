@@ -42,6 +42,12 @@ app_activated_cb (StoreWindow *self, StoreApp *app)
 }
 
 static void
+category_activated_cb (StoreWindow *self, StoreCategory *category)
+{
+    store_window_show_category (self, category);
+}
+
+static void
 back_button_clicked_cb (StoreWindow *self)
 {
     gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->home_page));
@@ -100,6 +106,7 @@ store_window_class_init (StoreWindowClass *klass)
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), app_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), back_button_clicked_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), category_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), page_toggled_cb);
 }
 
@@ -136,6 +143,15 @@ store_window_set_cache (StoreWindow *self, StoreCache *cache)
 }
 
 void
+store_window_set_categories (StoreWindow *self, GPtrArray *categories)
+{
+    g_return_if_fail (STORE_IS_WINDOW (self));
+
+    store_home_page_set_categories (self->home_page, categories);
+    store_categories_page_set_categories (self->categories_page, categories);
+}
+
+void
 store_window_set_odrs_client (StoreWindow *self, StoreOdrsClient *odrs_client)
 {
     g_return_if_fail (STORE_IS_WINDOW (self));
@@ -169,6 +185,14 @@ store_window_show_app (StoreWindow *self, StoreApp *app)
     g_return_if_fail (STORE_IS_WINDOW (self));
 
     store_app_page_set_app (self->app_page, app);
-    gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->app_page));
+    gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->app_page)); // FIXME: Buttons
     gtk_widget_show (GTK_WIDGET (self->back_button));
+}
+
+void
+store_window_show_category (StoreWindow *self, StoreCategory *category)
+{
+    g_return_if_fail (STORE_IS_WINDOW (self));
+
+    // FIXME
 }
