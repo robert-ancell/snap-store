@@ -1,4 +1,4 @@
-# Snap Store is a graphical desktop application for discovering, installing and managing snaps on Linux.
+## Snap Store is a graphical desktop application for discovering, installing and managing snaps on Linux.
 
 Snap Store showcases featured and popular applications with useful descriptions, ratings, reviews and screenshots.
 Applications can be found either through browsing categories or by searching.
