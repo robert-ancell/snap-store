@@ -47,13 +47,13 @@ button_release_event_cb (StoreAppInstalledTile *self)
 }
 
 static void
-launch_cb (StoreAppInstalledTile *self)
+launch_cb (StoreAppInstalledTile *self G_GNUC_UNUSED)
 {
     // FIXME
 }
 
 static void
-remove_cb (StoreAppInstalledTile *self)
+remove_cb (StoreAppInstalledTile *self G_GNUC_UNUSED)
 {
     // FIXME
 }

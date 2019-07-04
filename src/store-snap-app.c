@@ -124,7 +124,7 @@ remove_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 }
 
 static void
-store_snap_app_install_async (StoreApp *self, StoreChannel *channel, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+store_snap_app_install_async (StoreApp *self, StoreChannel *channel G_GNUC_UNUSED, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_autoptr(SnapdClient) client = snapd_client_new ();
     GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?

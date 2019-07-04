@@ -27,7 +27,7 @@ struct _StoreReviewView
 G_DEFINE_TYPE (StoreReviewView, store_review_view, GTK_TYPE_BOX)
 
 static void
-feedback_cb (StoreReviewView *self, const gchar *type)
+feedback_cb (StoreReviewView *self G_GNUC_UNUSED, const gchar *type)
 {
     if (g_strcmp0 (type, "y") == 0) {
         // FIXME
