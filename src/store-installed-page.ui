@@ -30,7 +30,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes" comments="Descripion on installed apps page">Here you can view and manage all of your installed applications</property>
+                    <property name="label" translatable="yes" comments="Descripion on installed apps page">Here you can view and manage all of your installed applications.</property>
                     <style>
                       <class name="installed-page-description-label"/>
                     </style>
