@@ -233,6 +233,8 @@ store_image_set_size (StoreImage *self, guint width, guint height)
     self->width = width;
     self->height = height;
     store_image_set_uri (self, self->uri);
+
+    gtk_widget_queue_resize (GTK_WIDGET (self));
 }
 
 void
