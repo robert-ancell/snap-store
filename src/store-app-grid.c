@@ -89,7 +89,7 @@ store_app_grid_set_apps (StoreAppGrid *self, GPtrArray *apps)
         gtk_widget_show (GTK_WIDGET (tile));
         g_signal_connect_object (tile, "activated", G_CALLBACK (app_activated_cb), self, G_CONNECT_SWAPPED);
         store_app_tile_set_model (tile, self->model);
-        gtk_grid_attach (self, GTK_WIDGET (tile), n_tiles % 3, n_tiles / 3, 1, 1);
+        gtk_grid_attach (GTK_GRID (self), GTK_WIDGET (tile), n_tiles % 3, n_tiles / 3, 1, 1);
         n_tiles++;
     }
     for (GList *link = children; link != NULL; link = link->next) {
@@ -103,7 +103,7 @@ store_app_grid_set_apps (StoreAppGrid *self, GPtrArray *apps)
 
     for (guint i = 0; i < apps->len; i++) {
         StoreApp *app = g_ptr_array_index (apps, i);
-        StoreAppTile *tile = STORE_APP_TILE (gtk_grid_get_child_at (self, i % 3, i / 3));
+        StoreAppTile *tile = STORE_APP_TILE (gtk_grid_get_child_at (GTK_GRID (self), i % 3, i / 3));
         store_app_tile_set_app (tile, app);
     }
 }
