@@ -251,7 +251,7 @@ store_image_set_uri (StoreImage *self, const gchar *uri)
 {
     g_return_if_fail (STORE_IS_IMAGE (self));
 
-    if (g_strcmp0 (uri, self->uri) == 0)
+    if (self->pixbuf != NULL && g_strcmp0 (uri, self->uri) == 0)
         return;
     g_free (self->uri);
     self->uri = g_strdup (uri);
