@@ -147,6 +147,8 @@ store_application_init (StoreApplication *self)
     self->model = store_model_new ();
     g_autoptr(StoreCache) cache = store_cache_new ();
     store_model_set_cache (self->model, cache);
+
+    store_model_update_ratings_async (self->model, NULL, NULL, NULL);
 }
 
 StoreApplication *
