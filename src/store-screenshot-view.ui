@@ -2,16 +2,17 @@
 <interface>
   <template class="StoreScreenshotView" parent="GtkBox">
     <property name="orientation">horizontal</property>
+    <property name="spacing">20</property>
     <child>
       <object class="StoreImage" id="selected_image">
         <property name="visible">True</property>
-        <property name="hexpand">True</property>
       </object>
     </child>
     <child>
       <object class="GtkScrolledWindow">
         <property name="visible">True</property>
         <property name="hscrollbar-policy">never</property>
+        <property name="halign">start</property>
         <child>
           <object class="GtkBox" id="thumbnail_box">
             <property name="visible">False</property>

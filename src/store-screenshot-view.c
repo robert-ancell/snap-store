@@ -73,11 +73,9 @@ store_screenshot_view_set_app (StoreScreenshotView *self, StoreApp *app)
     if (screenshots->len >= 1) {
         StoreMedia *screenshot = g_ptr_array_index (screenshots, 0);
         store_image_set_uri (self->selected_image, store_media_get_uri (screenshot));
-        guint width, height = 420;
+        guint width = 0, height = 420;
         if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)
             width = store_media_get_width (screenshot) * height / store_media_get_height (screenshot);
-        else
-            width = height;
         store_image_set_size (self->selected_image, width, height);
     }
     g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->thumbnail_box));
@@ -91,11 +89,9 @@ store_screenshot_view_set_app (StoreScreenshotView *self, StoreApp *app)
         gtk_widget_show (GTK_WIDGET (image));
         store_image_set_model (image, self->model);
         store_image_set_uri (image, store_media_get_uri (screenshot));
-        guint width, height = 90;
+        guint width = 0, height = 90;
         if (store_media_get_width (screenshot) > 0 && store_media_get_height (screenshot) > 0)
             width = store_media_get_width (screenshot) * height / store_media_get_height (screenshot);
-        else
-            width = height;
         store_image_set_size (image, width, height);
         gtk_container_add (GTK_CONTAINER (self->thumbnail_box), GTK_WIDGET (image));
     }

@@ -40,6 +40,7 @@ static void
 set_pixbuf (StoreImage *self, GdkPixbuf *pixbuf)
 {
     g_set_object (&self->pixbuf, pixbuf);
+    gtk_widget_queue_resize (GTK_WIDGET (self));
     gtk_widget_queue_draw (GTK_WIDGET (self));
 }
 
@@ -149,14 +150,22 @@ static void
 store_image_get_preferred_height (GtkWidget *widget, gint *minimum_height, gint *natural_height)
 {
     StoreImage *self = STORE_IMAGE (widget);
-    *minimum_height = *natural_height = self->height;
+
+    gint height = self->height;
+    if (height == 0 && self->pixbuf != NULL && gdk_pixbuf_get_width (self->pixbuf) != 0)
+        height = gdk_pixbuf_get_height (self->pixbuf) * self->width / gdk_pixbuf_get_width (self->pixbuf);
+    *minimum_height = *natural_height = height;
 }
 
 static void
 store_image_get_preferred_width (GtkWidget *widget, gint *minimum_width, gint *natural_width)
 {
     StoreImage *self = STORE_IMAGE (widget);
-    *minimum_width = *natural_width = self->width;
+
+    gint width = self->width;
+    if (width == 0 && self->pixbuf != NULL && gdk_pixbuf_get_height (self->pixbuf) != 0)
+        width = gdk_pixbuf_get_width (self->pixbuf) * self->height / gdk_pixbuf_get_height (self->pixbuf);
+    *minimum_width = *natural_width = width;
 }
 
 static gboolean
