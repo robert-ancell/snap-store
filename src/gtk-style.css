@@ -239,24 +239,24 @@
     color: #111111;
 }
 
-.categories-page-category-grid {
+.category-home-page-category-grid {
     padding: 32px;
 }
 
-.categories-page-description-label {
+.category-home-page-description-label {
     font-family: Ubuntu-Light;
     font-size: 16px;
     color: #111111;
     padding-top: 16px;
 }
 
-.categories-page-header-box {
+.category-home-page-header-box {
     background-image: url("snap-background.png");
     background-size: cover;
     padding: 32px;
 }
 
-.categories-page-title-label {
+.category-home-page-title-label {
     font-family: Ubuntu-Light;
     font-size: 28px;
     color: #212121;

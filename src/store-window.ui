@@ -85,7 +85,7 @@
           </object>
         </child>
         <child>
-          <object class="StoreCategoriesPage" id="categories_page">
+          <object class="StoreCategoryHomePage" id="category_home_page">
             <property name="visible">True</property>
             <signal name="category-activated" handler="category_activated_cb" object="StoreWindow" swapped="yes"/>
           </object>

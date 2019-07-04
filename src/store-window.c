@@ -10,7 +10,7 @@
 #include "store-window.h"
 
 #include "store-app-page.h"
-#include "store-categories-page.h"
+#include "store-category-home-page.h"
 #include "store-category-page.h"
 #include "store-home-page.h"
 #include "store-installed-page.h"
@@ -22,7 +22,7 @@ struct _StoreWindow
     StoreAppPage *app_page;
     GtkButton *back_button;
     GtkToggleButton *categories_button;
-    StoreCategoriesPage *categories_page;
+    StoreCategoryHomePage *category_home_page;
     StoreCategoryPage *category_page;
     GtkToggleButton *home_button;
     StoreHomePage *home_page;
@@ -68,7 +68,7 @@ page_toggled_cb (StoreWindow *self, GtkToggleButton *button)
     if (button == self->home_button)
         gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->home_page));
     else if (button == self->categories_button)
-        gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->categories_page));
+        gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->category_home_page));
     else if (button == self->installed_button)
         gtk_stack_set_visible_child (self->stack, GTK_WIDGET (self->installed_page));
     g_clear_pointer (&self->page_stack, g_list_free);
@@ -103,7 +103,7 @@ store_window_class_init (StoreWindowClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, app_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, back_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, categories_button);
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, categories_page);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, category_home_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, category_page);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, home_button);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreWindow, home_page);
@@ -121,7 +121,7 @@ static void
 store_window_init (StoreWindow *self)
 {
     store_app_page_get_type ();
-    store_categories_page_get_type ();
+    store_category_home_page_get_type ();
     store_category_page_get_type ();
     store_home_page_get_type ();
     store_installed_page_get_type ();
@@ -146,7 +146,7 @@ store_window_set_model (StoreWindow *self, StoreModel *model)
     g_set_object (&self->model, model);
 
     store_page_set_model (STORE_PAGE (self->app_page), model);
-    store_page_set_model (STORE_PAGE (self->categories_page), model);
+    store_page_set_model (STORE_PAGE (self->category_home_page), model);
     store_page_set_model (STORE_PAGE (self->category_page), model);
     store_page_set_model (STORE_PAGE (self->home_page), model);
     store_page_set_model (STORE_PAGE (self->installed_page), model);

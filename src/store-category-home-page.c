@@ -7,11 +7,11 @@
  * (at your option) any later version.
  */
 
-#include "store-categories-page.h"
+#include "store-category-home-page.h"
 #include "store-category.h"
 #include "store-category-tile.h"
 
-struct _StoreCategoriesPage
+struct _StoreCategoryHomePage
 {
     StorePage parent_instance;
 
@@ -25,7 +25,7 @@ enum
     PROP_LAST
 };
 
-G_DEFINE_TYPE (StoreCategoriesPage, store_categories_page, store_page_get_type ())
+G_DEFINE_TYPE (StoreCategoryHomePage, store_category_home_page, store_page_get_type ())
 
 enum
 {
@@ -36,26 +36,26 @@ enum
 static guint signals[SIGNAL_LAST] = { 0, };
 
 static void
-category_activated_cb (StoreCategoriesPage *self, StoreCategoryTile *tile)
+category_activated_cb (StoreCategoryHomePage *self, StoreCategoryTile *tile)
 {
     g_signal_emit (self, signals[SIGNAL_CATEGORY_ACTIVATED], 0, store_category_tile_get_category (tile));
 }
 
 static void
-store_categories_page_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
+store_category_home_page_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
 {
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 }
 
 static void
-store_categories_page_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+store_category_home_page_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-    StoreCategoriesPage *self = STORE_CATEGORIES_PAGE (object);
+    StoreCategoryHomePage *self = STORE_CATEGORY_HOME_PAGE (object);
 
     switch (prop_id)
     {
     case PROP_CATEGORIES:
-        store_categories_page_set_categories (self, g_value_get_boxed (value));
+        store_category_home_page_set_categories (self, g_value_get_boxed (value));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -64,29 +64,29 @@ store_categories_page_set_property (GObject *object, guint prop_id, const GValue
 }
 
 static void
-store_categories_page_set_model (StorePage *page, StoreModel *model)
+store_category_home_page_set_model (StorePage *page, StoreModel *model)
 {
-    StoreCategoriesPage *self = STORE_CATEGORIES_PAGE (page);
+    StoreCategoryHomePage *self = STORE_CATEGORY_HOME_PAGE (page);
 
     g_object_bind_property (model, "categories", self, "categories", G_BINDING_SYNC_CREATE);
 
-    STORE_PAGE_CLASS (store_categories_page_parent_class)->set_model (page, model);
+    STORE_PAGE_CLASS (store_category_home_page_parent_class)->set_model (page, model);
 }
 
 static void
-store_categories_page_class_init (StoreCategoriesPageClass *klass)
+store_category_home_page_class_init (StoreCategoryHomePageClass *klass)
 {
-    G_OBJECT_CLASS (klass)->get_property = store_categories_page_get_property;
-    G_OBJECT_CLASS (klass)->set_property = store_categories_page_set_property;
-    STORE_PAGE_CLASS (klass)->set_model = store_categories_page_set_model;
+    G_OBJECT_CLASS (klass)->get_property = store_category_home_page_get_property;
+    G_OBJECT_CLASS (klass)->set_property = store_category_home_page_set_property;
+    STORE_PAGE_CLASS (klass)->set_model = store_category_home_page_set_model;
 
     g_object_class_install_property (G_OBJECT_CLASS (klass),
                                      PROP_CATEGORIES,
                                      g_param_spec_boxed ("categories", NULL, NULL, G_TYPE_PTR_ARRAY, G_PARAM_WRITABLE));
 
-    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-categories-page.ui");
+    gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-category-home-page.ui");
 
-    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoriesPage, category_grid);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreCategoryHomePage, category_grid);
 
     signals[SIGNAL_CATEGORY_ACTIVATED] = g_signal_new ("category-activated",
                                                        G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
@@ -99,15 +99,15 @@ store_categories_page_class_init (StoreCategoriesPageClass *klass)
 }
 
 static void
-store_categories_page_init (StoreCategoriesPage *self)
+store_category_home_page_init (StoreCategoryHomePage *self)
 {
     gtk_widget_init_template (GTK_WIDGET (self));
 }
 
 void
-store_categories_page_set_categories (StoreCategoriesPage *self, GPtrArray *categories)
+store_category_home_page_set_categories (StoreCategoryHomePage *self, GPtrArray *categories)
 {
-    g_return_if_fail (STORE_IS_CATEGORIES_PAGE (self));
+    g_return_if_fail (STORE_IS_CATEGORY_HOME_PAGE (self));
 
     /* Ensure correct number of category tiles */
     // FIXME: Make a new widget that does this

@@ -1,7 +1,7 @@
 src/store-app-page.c
 src/store-app-page.ui
 src/store-application.c
-src/store-categories-page.ui
+src/store-category-home-page.ui
 src/store-home-page.c
 src/store-installed-page.ui
 src/store-model.c

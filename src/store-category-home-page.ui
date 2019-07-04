@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="StoreCategoriesPage" parent="StorePage">
+  <template class="StoreCategoryHomePage" parent="StorePage">
     <child>
       <object class="GtkScrolledWindow">
         <property name="visible">True</property>
@@ -14,7 +14,7 @@
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
                 <style>
-                  <class name="categories-page-header-box"/>
+                  <class name="category-home-page-header-box"/>
                 </style>
                 <child>
                   <object class="GtkLabel">
@@ -22,7 +22,7 @@
                     <property name="xalign">0</property>
                     <property name="label" translatable="yes" comments="Title of app categories page">Categories</property>
                     <style>
-                      <class name="categories-page-title-label"/>
+                      <class name="category-home-page-title-label"/>
                     </style>
                   </object>
                 </child>
@@ -32,7 +32,7 @@
                     <property name="xalign">0</property>
                     <property name="label" translatable="yes" comments="Descripion on app categories page">Browse, browse, browse… dive in and take a look at some of our categories.</property>
                     <style>
-                      <class name="categories-page-description-label"/>
+                      <class name="category-home-page-description-label"/>
                     </style>
                   </object>
                 </child>
@@ -47,7 +47,7 @@
                 <property name="row-homogeneous">True</property>
                 <property name="column-homogeneous">True</property>
                 <style>
-                  <class name="categories-page-category-grid"/>
+                  <class name="category-home-page-category-grid"/>
                 </style>
               </object>
             </child>

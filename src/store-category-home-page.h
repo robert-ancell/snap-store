@@ -13,8 +13,8 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE (StoreCategoriesPage, store_categories_page, STORE, CATEGORIES_PAGE, StorePage)
+G_DECLARE_FINAL_TYPE (StoreCategoryHomePage, store_category_home_page, STORE, CATEGORY_HOME_PAGE, StorePage)
 
-void store_categories_page_set_categories (StoreCategoriesPage *self, GPtrArray *categories);
+void store_category_home_page_set_categories (StoreCategoryHomePage *self, GPtrArray *categories);
 
 G_END_DECLS
