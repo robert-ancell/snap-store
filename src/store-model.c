@@ -159,7 +159,7 @@ get_section_title (const gchar *name)
         return _("Security");
     if (strcmp (name, "featured") == 0)
         /* Title for Featured snap category */
-        return _("Featured");
+        return _("Editors picks"); /*_("Featured");*/
     if (strcmp (name, "devices-and-iot") == 0)
         /* Title for Devices and IoT snap category */
         return _("Devices and IoT");
@@ -194,6 +194,16 @@ get_section_title (const gchar *name)
         /* Title for Personalisation snap category */
         return _("Personalisation");
     return name;
+}
+
+static const gchar *
+get_section_summary (const gchar *name)
+{
+    if (strcmp (name, "featured") == 0)
+        /* Summary for Featured snap category */
+        return _("Here are this months hand-picked applications from our content team, we hope you like them!");
+
+    return NULL;
 }
 
 static GPtrArray *
@@ -238,6 +248,7 @@ load_cached_categories (StoreModel *self)
         g_ptr_array_add (categories, category);
         store_category_set_name (category, section);
         store_category_set_title (category, get_section_title (section));
+        store_category_set_summary (category, get_section_summary (section));
 
         g_autoptr(GPtrArray) apps = load_cached_category_apps (self, section);
         store_category_set_apps (category, apps);
@@ -322,6 +333,7 @@ get_sections_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         g_ptr_array_add (self->categories, category);
         store_category_set_name (category, sections[i]);
         store_category_set_title (category, get_section_title (sections[i]));
+        store_category_set_summary (category, get_section_summary (sections[i]));
 
         g_autoptr(GPtrArray) apps = load_cached_category_apps (self, sections[i]);
         store_category_set_apps (category, apps);

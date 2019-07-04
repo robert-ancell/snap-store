@@ -64,13 +64,39 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkLabel">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes" comments="Heading above editors picks on home page">Editors picks</property>
-                    <property name="xalign">0</property>
-                    <style>
-                      <class name="home-page-editors-picks-label"/>
-                    </style>
+                    <property name="orientation">horizontal</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes" comments="Heading above editors picks on home page">Editors picks</property>
+                        <property name="xalign">0</property>
+                        <style>
+                          <class name="home-page-editors-picks-label"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEventBox">
+                        <property name="visible">True</property>
+                        <signal name="button_release_event" handler="see_more_editors_picks_cb" object="StoreHomePage" swapped="yes"/>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="halign">end</property>
+                            <property name="valign">end</property>
+                            <property name="label" translatable="yes" comments="Link to see more of the editors picks">See more</property>
+                            <style>
+                              <class name="home-page-see-more-label"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="pack-type">end</property>
+                      </packing>
+                    </child>
                   </object>
                 </child>
                 <child>

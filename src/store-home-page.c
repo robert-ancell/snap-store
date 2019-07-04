@@ -33,6 +33,7 @@ struct _StoreHomePage
     StoreAppGrid *search_results_grid;
     GtkBox *small_banner_box;
 
+    StoreCategory *featured_category;
     GCancellable *search_cancellable;
     GSource *search_timeout;
 };
@@ -137,12 +138,19 @@ search_changed_cb (StoreHomePage *self)
 }
 
 static void
+see_more_editors_picks_cb (StoreHomePage *self)
+{
+    g_signal_emit (self, signals[SIGNAL_CATEGORY_ACTIVATED], 0, self->featured_category);
+}
+
+static void
 store_home_page_dispose (GObject *object)
 {
     StoreHomePage *self = STORE_HOME_PAGE (object);
 
     g_cancellable_cancel (self->search_cancellable);
     g_clear_object (&self->search_cancellable);
+    g_clear_object (&self->featured_category);
     if (self->search_timeout)
         g_source_destroy (self->search_timeout);
     g_clear_pointer (&self->search_timeout, g_source_unref);
@@ -224,6 +232,7 @@ store_home_page_class_init (StoreHomePageClass *klass)
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), category_list_activated_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), search_changed_cb);
+    gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), see_more_editors_picks_cb);
 
     signals[SIGNAL_APP_ACTIVATED] = g_signal_new ("app-activated",
                                                   G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),
@@ -262,10 +271,12 @@ store_home_page_set_categories (StoreHomePage *self, GPtrArray *categories)
     StoreCategoryList *category_lists[] = { self->category_list1, self->category_list2, self->category_list3, self->category_list4 };
 
     guint n = 0;
+    g_clear_object (&self->featured_category);
     for (guint i = 0; i < categories->len; i++) {
         StoreCategory *category = g_ptr_array_index (categories, i);
 
         if (g_strcmp0 (store_category_get_name (category), "featured") == 0) {
+            g_set_object (&self->featured_category, category);
             g_autoptr(GPtrArray) featured_apps = g_ptr_array_new_with_free_func (g_object_unref);
             GPtrArray *apps = store_category_get_apps (category);
             for (guint i = 0; i < apps->len && i < 6; i++) {

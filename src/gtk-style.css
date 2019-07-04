@@ -344,6 +344,12 @@
     margin-bottom: 52px;
 }
 
+.home-page-see-more-label {
+    font-family: Ubuntu-Light;
+    font-size: 16px;
+    color: #007aa6;
+}
+
 .home-page-top-apps-label {
     font-family: Ubuntu-Light;
     font-size: 28px;
