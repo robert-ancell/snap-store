@@ -7,6 +7,8 @@
  * (at your option) any later version.
  */
 
+#include <math.h>
+
 #include "store-app-installed-tile.h"
 
 #include "store-image.h"
@@ -56,6 +58,30 @@ remove_cb (StoreAppInstalledTile *self)
     // FIXME
 }
 
+static gboolean
+installed_size_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue *to_value, gpointer user_data G_GNUC_UNUSED)
+{
+    gint64 size = g_value_get_int64 (from_value);
+    if (size <= 0) {
+        g_value_set_string (to_value, "");
+        return TRUE;
+    }
+
+    g_autofree gchar *text = NULL;
+    if (size >= 1000000000)
+        text = g_strdup_printf ("%.0f GB", round (size / 1000000000.0));
+    else if (size >= 1000000)
+        text = g_strdup_printf ("%.0f MB", round (size / 1000000.0));
+    else if (size >= 1000)
+        text = g_strdup_printf ("%.0f kB", round (size / 1000.0));
+    else
+        text = g_strdup_printf ("%" G_GINT64_FORMAT " B", size);
+
+    g_value_set_string (to_value, text);
+
+    return TRUE;
+}
+
 static void
 store_app_installed_tile_dispose (GObject *object)
 {
@@ -77,7 +103,7 @@ store_app_installed_tile_class_init (StoreAppInstalledTileClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppInstalledTile, publisher_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppInstalledTile, publisher_validated_image);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppInstalledTile, rating_label);
-    // FIXMEgtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppInstalledTile, size_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppInstalledTile, size_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppInstalledTile, summary_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppInstalledTile, title_label);
 
@@ -127,7 +153,7 @@ store_app_installed_tile_set_app (StoreAppInstalledTile *self, StoreApp *app)
     g_object_bind_property (app, "review-average", self->rating_label, "rating", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "summary", self->summary_label, "label", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "title", self->title_label, "label", G_BINDING_SYNC_CREATE);
-    // FIXME: Size
+    g_object_bind_property_full (app, "installed-size", self->size_label, "label", G_BINDING_SYNC_CREATE, installed_size_to_label, NULL, NULL, NULL); // FIXME: Support download size for uninstalled snaps
 }
 
 StoreApp *
