@@ -12,8 +12,8 @@
 
 #include "store-home-page.h"
 
+#include "store-app-grid.h"
 #include "store-banner-tile.h"
-#include "store-category-grid.h"
 #include "store-category-list.h"
 
 struct _StoreHomePage
@@ -28,9 +28,9 @@ struct _StoreHomePage
     StoreCategoryList *category_list2;
     StoreCategoryList *category_list3;
     StoreCategoryList *category_list4;
-    StoreCategoryGrid *editors_picks_grid;
+    StoreAppGrid *editors_picks_grid;
     GtkEntry *search_entry;
-    StoreCategoryGrid *search_results_grid;
+    StoreAppGrid *search_results_grid;
     GtkBox *small_banner_box;
 
     GCancellable *search_cancellable;
@@ -87,7 +87,7 @@ search_results_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    store_category_grid_set_apps (self->search_results_grid, apps);
+    store_app_grid_set_apps (self->search_results_grid, apps);
 
     gtk_widget_hide (GTK_WIDGET (self->category_box));
     gtk_widget_hide (GTK_WIDGET (self->editors_picks_grid));
@@ -177,6 +177,8 @@ store_home_page_set_model (StorePage *page, StoreModel *model)
 {
     StoreHomePage *self = STORE_HOME_PAGE (page);
 
+    store_app_grid_set_model (self->editors_picks_grid, model);
+    store_app_grid_set_model (self->search_results_grid, model);
     store_banner_tile_set_model (self->banner_tile, model);
     store_banner_tile_set_model (self->banner1_tile, model);
     store_banner_tile_set_model (self->banner2_tile, model);
@@ -184,8 +186,6 @@ store_home_page_set_model (StorePage *page, StoreModel *model)
     store_category_list_set_model (self->category_list2, model);
     store_category_list_set_model (self->category_list3, model);
     store_category_list_set_model (self->category_list4, model);
-    store_category_grid_set_model (self->editors_picks_grid, model);
-    store_category_grid_set_model (self->search_results_grid, model);
 
     g_object_bind_property (model, "categories", self, "categories", G_BINDING_SYNC_CREATE);
 
@@ -247,15 +247,11 @@ store_home_page_class_init (StoreHomePageClass *klass)
 static void
 store_home_page_init (StoreHomePage *self)
 {
+    store_app_grid_get_type ();
     store_banner_tile_get_type ();
     store_category_list_get_type ();
-    store_category_grid_get_type ();
     store_page_get_type ();
     gtk_widget_init_template (GTK_WIDGET (self));
-
-    store_category_grid_set_title (self->editors_picks_grid,
-                                   /* Title for category editors picks */
-                                   _("Editors picks")); // FIXME: Make a property in .ui
 }
 
 void
@@ -276,7 +272,7 @@ store_home_page_set_categories (StoreHomePage *self, GPtrArray *categories)
                 StoreSnapApp *app = g_ptr_array_index (apps, i);
                 g_ptr_array_add (featured_apps, g_object_ref (app));
             }
-            store_category_grid_set_apps (self->editors_picks_grid, featured_apps);
+            store_app_grid_set_apps (self->editors_picks_grid, featured_apps);
             continue;
         }
 

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/io/snapcraft/Store">
+    <file preprocess="xml-stripblanks">store-app-grid.ui</file>
     <file preprocess="xml-stripblanks">store-app-installed-tile.ui</file>
     <file preprocess="xml-stripblanks">store-app-page.ui</file>
     <file preprocess="xml-stripblanks">store-app-small-tile.ui</file>
     <file preprocess="xml-stripblanks">store-app-tile.ui</file>
     <file preprocess="xml-stripblanks">store-banner-tile.ui</file>
-    <file preprocess="xml-stripblanks">store-category-grid.ui</file>
     <file preprocess="xml-stripblanks">store-category-home-page.ui</file>
     <file preprocess="xml-stripblanks">store-category-list.ui</file>
     <file preprocess="xml-stripblanks">store-category-page.ui</file>

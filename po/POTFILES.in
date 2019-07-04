@@ -3,6 +3,8 @@ src/store-app-page.ui
 src/store-application.c
 src/store-category-home-page.ui
 src/store-home-page.c
+src/store-home-page.ui
+src/store-installed-page.c
 src/store-installed-page.ui
 src/store-model.c
 src/store-review-view.ui

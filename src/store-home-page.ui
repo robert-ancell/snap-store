@@ -20,7 +20,6 @@
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">36</property>
                 <style>
                   <class name="home-page-content-box"/>
                 </style>
@@ -30,10 +29,13 @@
                     <property name="hexpand">True</property>
                     <signal name="notify::text" handler="search_changed_cb" object="StoreHomePage" swapped="yes"/>
                     <signal name="activate" handler="search_cb" object="StoreHomePage" swapped="yes"/>
+                    <style>
+                      <class name="home-page-search-entry"/>
+                    </style>
                   </object>
                 </child>
                 <child>
-                  <object class="StoreCategoryGrid" id="search_results_grid">
+                  <object class="StoreAppGrid" id="search_results_grid">
                     <property name="visible">False</property>
                     <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
                   </object>
@@ -62,9 +64,32 @@
                   </object>
                 </child>
                 <child>
-                  <object class="StoreCategoryGrid" id="editors_picks_grid">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes" comments="Heading above editors picks on home page">Editors picks</property>
+                    <property name="xalign">0</property>
+                    <style>
+                      <class name="home-page-editors-picks-label"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="StoreAppGrid" id="editors_picks_grid">
                     <property name="visible">True</property>
                     <signal name="app-activated" handler="app_activated_cb" object="StoreHomePage" swapped="yes"/>
+                    <style>
+                      <class name="home-page-editors-picks-grid"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes" comments="Heading above top apps on home page">Top apps</property>
+                    <property name="xalign">0</property>
+                    <style>
+                      <class name="home-page-top-apps-label"/>
+                    </style>
                   </object>
                 </child>
                 <child>
@@ -73,6 +98,9 @@
                     <property name="orientation">horizontal</property>
                     <property name="homogeneous">True</property>
                     <property name="spacing">20</property>
+                    <style>
+                      <class name="home-page-category-box"/>
+                    </style>
                     <child>
                       <object class="StoreCategoryList" id="category_list1">
                         <property name="visible">True</property>

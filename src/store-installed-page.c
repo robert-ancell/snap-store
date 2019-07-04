@@ -7,6 +7,8 @@
  * (at your option) any later version.
  */
 
+#include <glib/gi18n.h>
+
 #include "store-app.h"
 #include "store-app-installed-tile.h"
 #include "store-installed-page.h"
@@ -16,7 +18,7 @@ struct _StoreInstalledPage
     StorePage parent_instance;
 
     GtkBox *app_box;
-    GtkLabel *summary_label; // FIXME
+    GtkLabel *count_label;
 
     GCancellable *cancellable;
 };
@@ -56,6 +58,21 @@ store_installed_page_dispose (GObject *object)
     G_OBJECT_CLASS (store_installed_page_parent_class)->dispose (object);
 }
 
+static gboolean
+installed_count_to_label (GBinding *binding G_GNUC_UNUSED, const GValue *from_value, GValue *to_value, gpointer user_data G_GNUC_UNUSED)
+{
+    GPtrArray *apps = g_value_get_boxed (from_value);
+
+    g_autofree gchar *text = g_strdup_printf (ngettext (/* Text shown above the list of installed applications */
+                                                        "You have %d installed application…",
+                                                        "You have %d installed applications…", apps->len), apps->len);
+
+    g_value_set_string (to_value, text);
+
+    return TRUE;
+}
+
+
 static void
 store_installed_page_get_property (GObject *object, guint prop_id, GValue *value G_GNUC_UNUSED, GParamSpec *pspec)
 {
@@ -86,6 +103,7 @@ store_installed_page_set_model (StorePage *page, StoreModel *model)
     // FIXME: Should apply to children
 
     g_object_bind_property (model, "installed", self, "apps", G_BINDING_SYNC_CREATE);
+    g_object_bind_property_full (model, "installed", self->count_label, "label", G_BINDING_SYNC_CREATE, installed_count_to_label, NULL, NULL, NULL);
 
     STORE_PAGE_CLASS (store_installed_page_parent_class)->set_model (page, model);
 }
@@ -105,7 +123,7 @@ store_installed_page_class_init (StoreInstalledPageClass *klass)
     gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (klass), "/io/snapcraft/Store/store-installed-page.ui");
 
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreInstalledPage, app_box);
-    //FIXMEgtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreInstalledPage, summary_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreInstalledPage, count_label);
 
     signals[SIGNAL_APP_ACTIVATED] = g_signal_new ("app-activated",
                                                   G_TYPE_FROM_CLASS (G_OBJECT_CLASS (klass)),

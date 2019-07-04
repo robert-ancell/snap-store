@@ -321,12 +321,44 @@
     color: #212121;
 }
 
+.home-page-category-box {
+    margin-top: 24px;
+}
+
 .home-page-content-box {
     margin: 32px;
 }
 
-.installed-page-app-box {
+.home-page-editors-picks-grid {
+    margin-top: 24px;
+}
+
+.home-page-editors-picks-label {
+    font-family: Ubuntu-Light;
+    font-size: 28px;
+    color: #212121;
+    margin-top: 52px;
+}
+
+.home-page-search-entry {
+    margin-bottom: 52px;
+}
+
+.home-page-top-apps-label {
+    font-family: Ubuntu-Light;
+    font-size: 28px;
+    color: #212121;
+    margin-top: 52px;
+}
+
+.installed-page-content-box {
     margin: 32px;
+}
+
+.installed-page-count-label {
+    font-family: Ubuntu-Light;
+    font-size: 21px;
+    color: #111111;
 }
 
 .installed-page-description-label {

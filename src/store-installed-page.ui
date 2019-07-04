@@ -39,13 +39,32 @@
               </object>
             </child>
             <child>
-              <object class="GtkBox" id="app_box">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">20</property>
+                <property name="spacing">32</property>
                 <style>
-                  <class name="installed-page-app-box"/>
+                  <class name="installed-page-content-box"/>
                 </style>
+                <child>
+                  <object class="GtkLabel" id="count_label">
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                    <style>
+                      <class name="installed-page-count-label"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="app_box">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">20</property>
+                    <style>
+                      <class name="installed-page-app-box"/>
+                    </style>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
