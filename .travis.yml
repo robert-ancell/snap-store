@@ -12,6 +12,6 @@ script:
   - docker pull $IMAGE
   - cid=`docker run --tty --detach --volume $TRAVIS_BUILD_DIR:/snap-store --workdir /snap-store $IMAGE bash`
   - if [ $IMAGE = "ubuntu:rolling" ]; then docker exec $cid apt-get update; fi
-  - if [ $IMAGE = "ubuntu:rolling" ]; then docker exec $cid apt-get install -y --no-install-recommends libglib2.0-dev libjson-glib-dev libsnapd-glib-dev libsoup2.4-dev meson; fi
+  - if [ $IMAGE = "ubuntu:rolling" ]; then docker exec $cid apt-get install -y --no-install-recommends libglib2.0-dev libgtk-3-dev libjson-glib-dev libsnapd-glib-dev libsoup2.4-dev meson; fi
   - docker exec $cid meson _build
   - docker exec $cid ninja -C _build
