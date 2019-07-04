@@ -87,6 +87,7 @@ store_screenshot_view_set_app (StoreScreenshotView *self, StoreApp *app)
         StoreMedia *screenshot = g_ptr_array_index (screenshots, i);
         StoreImage *image = store_image_new ();
         gtk_widget_show (GTK_WIDGET (image));
+        gtk_widget_set_halign (GTK_WIDGET (image), GTK_ALIGN_START);
         store_image_set_model (image, self->model);
         store_image_set_uri (image, store_media_get_uri (screenshot));
         guint width = 0, height = 90;
