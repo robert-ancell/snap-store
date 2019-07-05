@@ -104,22 +104,40 @@ ratings_cb (SoupServer *server G_GNUC_UNUSED, SoupMessage *msg, const gchar *pat
     json_builder_begin_object (builder);
     for (guint i = 0; i < self->apps->len; i++) {
         MockApp *app = g_ptr_array_index (self->apps, i);
+
+        gint64 count0, count1, count2 = 0, count3 = 0, count4 = 0, count5 = 0;
+        for (guint j = 0; j < app->reviews->len; j++) {
+            MockReview *review = g_ptr_array_index (app->reviews, j);
+            if (review->rating == 0)
+                count0++;
+            if (review->rating == 1)
+                count1++;
+            if (review->rating == 2)
+                count2++;
+            if (review->rating == 3)
+                count3++;
+            if (review->rating == 4)
+                count4++;
+            if (review->rating == 5)
+                count5++;
+        }
+
         json_builder_set_member_name (builder, app->id);
         json_builder_begin_object (builder);
         json_builder_set_member_name (builder, "star0");
-        json_builder_add_int_value (builder, 0);
+        json_builder_add_int_value (builder, count0);
         json_builder_set_member_name (builder, "star1");
-        json_builder_add_int_value (builder, 0);
+        json_builder_add_int_value (builder, count1);
         json_builder_set_member_name (builder, "star2");
-        json_builder_add_int_value (builder, 0);
+        json_builder_add_int_value (builder, count2);
         json_builder_set_member_name (builder, "star3");
-        json_builder_add_int_value (builder, 0);
+        json_builder_add_int_value (builder, count3);
         json_builder_set_member_name (builder, "star4");
-        json_builder_add_int_value (builder, 0);
+        json_builder_add_int_value (builder, count4);
         json_builder_set_member_name (builder, "star5");
-        json_builder_add_int_value (builder, 0);
+        json_builder_add_int_value (builder, count5);
         json_builder_set_member_name (builder, "total");
-        json_builder_add_int_value (builder, 0);
+        json_builder_add_int_value (builder, count0 + count1 + count2 + count3 + count4 + count5);
         json_builder_end_object (builder);
     }
     json_builder_end_object (builder);
