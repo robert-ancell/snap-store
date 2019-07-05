@@ -19,6 +19,10 @@ G_DECLARE_FINAL_TYPE (StoreOdrsClient, store_odrs_client, STORE, ODRS_CLIENT, GO
 
 StoreOdrsClient *store_odrs_client_new                  (void);
 
+void             store_odrs_client_set_server_uri       (StoreOdrsClient *client, const gchar *server_uri);
+
+const gchar     *store_odrs_client_get_server_uri       (StoreOdrsClient *client);
+
 void             store_odrs_client_set_distro           (StoreOdrsClient *client, const gchar *distro);
 
 void             store_odrs_client_set_locale           (StoreOdrsClient *client, const gchar *locale);

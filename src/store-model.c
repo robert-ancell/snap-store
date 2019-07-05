@@ -678,6 +678,22 @@ store_model_get_cache (StoreModel *self)
 }
 
 void
+store_model_set_odrs_server_uri (StoreModel *self, const gchar *uri)
+{
+    g_return_if_fail (STORE_IS_MODEL (self));
+
+    store_odrs_client_set_server_uri (self->odrs_client, uri);
+}
+
+const gchar *
+store_model_get_odrs_server (StoreModel *self)
+{
+    g_return_val_if_fail (STORE_IS_MODEL (self), NULL);
+
+    return store_odrs_client_get_server_uri (self->odrs_client);
+}
+
+void
 store_model_load (StoreModel *self)
 {
     g_return_if_fail (STORE_IS_MODEL (self));

@@ -28,6 +28,10 @@ void           store_model_set_cache                (StoreModel *model, StoreCac
 
 StoreCache    *store_model_get_cache                (StoreModel *model);
 
+void           store_model_set_odrs_server_uri      (StoreModel *model, const gchar *uri);
+
+const gchar   *store_model_get_odrs_server_uri      (StoreModel *model);
+
 StoreSnapApp  *store_model_get_snap                 (StoreModel *model, const gchar *name);
 
 GPtrArray     *store_model_get_categories           (StoreModel *model);

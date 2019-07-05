@@ -58,6 +58,12 @@ store_application_command_line (GApplication *application, GApplicationCommandLi
     if (g_variant_dict_contains (options, "no-cache"))
         store_model_set_cache (self->model, NULL);
 
+    if (g_variant_dict_contains (options, "odrs-server")) {
+        const gchar *uri;
+        g_variant_dict_lookup (options, "odrs-server", "&s", &uri);
+        store_model_set_odrs_server_uri (self->model, uri);
+    }
+
     if (g_variant_dict_contains (options, "version")) {
         g_print ("snap-store " VERSION "\n");
         return 0;
@@ -138,6 +144,11 @@ store_application_init (StoreApplication *self)
         { "no-cache", 0, 0, G_OPTION_ARG_NONE, NULL,
            /* Help text for --no-cache command line option */
            _("Disable caching"), NULL },
+        { "odrs-server", 0, 0, G_OPTION_ARG_STRING, NULL,
+           /* Help text for --odrs-server command line option */
+           _("ODRS server URI"),
+           /* Help text for argument to --odrs-server command line option */
+           _("URI") },
         { NULL }
     };
 
