@@ -140,8 +140,10 @@ store_cache_lookup_json (StoreCache *self, const gchar *type, const gchar *name,
         return NULL;
 
     JsonNode *root = json_parser_get_root (parser);
-    if (root == NULL)
+    if (root == NULL) {
+        g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED, "No JSON data returned");
         return NULL;
+    }
 
     return json_node_ref (root);
 }
