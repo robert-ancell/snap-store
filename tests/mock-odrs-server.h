@@ -20,6 +20,10 @@ typedef struct _MockReview MockReview;
 
 MockOdrsServer *mock_odrs_server_new         (void);
 
+void            mock_odrs_server_set_port    (MockOdrsServer *server, guint port);
+
+guint           mock_odrs_server_get_port    (MockOdrsServer *server);
+
 MockApp        *mock_odrs_server_add_app     (MockOdrsServer *server, const gchar *id);
 
 MockApp        *mock_odrs_server_find_app    (MockOdrsServer *server, const gchar *id);

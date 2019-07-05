@@ -16,6 +16,7 @@ struct _MockOdrsServer
     SoupServer parent_instance;
 
     GPtrArray *apps;
+    guint port;
 };
 
 G_DEFINE_TYPE (MockOdrsServer, mock_odrs_server, SOUP_TYPE_SERVER)
@@ -400,18 +401,21 @@ mock_odrs_server_new (void)
     return g_object_new (mock_odrs_server_get_type (), NULL);
 }
 
-gboolean
-mock_odrs_server_start (MockOdrsServer *self, GError **error)
+void
+mock_odrs_server_set_port (MockOdrsServer *self, guint port)
 {
-    g_return_val_if_fail (MOCK_IS_ODRS_SERVER (self), FALSE);
+    g_return_if_fail (MOCK_IS_ODRS_SERVER (self));
 
-    return soup_server_listen_local (SOUP_SERVER (self), 0, 0, error);
+    self->port = port;
 }
 
 guint
 mock_odrs_server_get_port (MockOdrsServer *self)
 {
     g_return_val_if_fail (MOCK_IS_ODRS_SERVER (self), 0);
+
+    if (self->port != 0)
+        return self->port;
 
     GSList *uris = soup_server_get_uris (SOUP_SERVER (self));
 
@@ -424,6 +428,14 @@ mock_odrs_server_get_port (MockOdrsServer *self)
     g_slist_free_full (uris, (GDestroyNotify) soup_uri_free);
 
     return port;
+}
+
+gboolean
+mock_odrs_server_start (MockOdrsServer *self, GError **error)
+{
+    g_return_val_if_fail (MOCK_IS_ODRS_SERVER (self), FALSE);
+
+    return soup_server_listen_local (SOUP_SERVER (self), self->port, 0, error);
 }
 
 MockApp *
@@ -523,11 +535,16 @@ mock_review_set_rating (MockReview *review, gint64 rating)
 }
 
 int
-main (int argc G_GNUC_UNUSED, char **argv G_GNUC_UNUSED)
+main (int argc, char **argv)
 {
     g_autoptr(GMainLoop) loop = g_main_loop_new (NULL, FALSE);
 
+    guint port = 0;
+    if (argc > 1)
+        port = atoi (argv[1]);
+
     g_autoptr(MockOdrsServer) server = mock_odrs_server_new ();
+    mock_odrs_server_set_port (server, port);
     g_autoptr(GError) error = NULL;
     if (!mock_odrs_server_start (server, &error)) {
         g_printerr ("Failed to start server: %s\n", error->message);
