@@ -25,5 +25,4 @@ void store_review_summary_set_review_count_four_star  (StoreReviewSummary *view,
 
 void store_review_summary_set_review_count_five_star  (StoreReviewSummary *view, const gint64 count);
 
-
 G_END_DECLS
