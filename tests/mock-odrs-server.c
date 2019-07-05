@@ -195,6 +195,18 @@ respond (SoupMessage *msg, gboolean success, const gchar *message)
     soup_message_set_response (msg, "application/json; charset=utf-8", SOUP_MEMORY_TAKE, g_steal_pointer (&json_text), json_text_length);
 }
 
+static gboolean
+check_member (SoupMessage *msg, JsonObject *object, const gchar *name)
+{
+    if (json_object_has_member (object, name))
+        return TRUE;
+
+    g_autofree gchar *message = g_strdup_printf ("missing required field %s", name);
+    respond (msg, FALSE, message);
+
+    return FALSE;
+}
+
 static void
 fetch_cb (SoupServer *server G_GNUC_UNUSED, SoupMessage *msg, const gchar *path G_GNUC_UNUSED, GHashTable *query G_GNUC_UNUSED, SoupClientContext *context G_GNUC_UNUSED, gpointer user_data)
 {
@@ -208,27 +220,31 @@ fetch_cb (SoupServer *server G_GNUC_UNUSED, SoupMessage *msg, const gchar *path 
     g_autoptr(GError) error = NULL;
     g_autoptr(JsonNode) root = decode_request (msg, &error);
     if (root == NULL) {
-        respond (msg, FALSE, NULL);
+        respond (msg, FALSE, "invalid JSON");
         return;
     }
 
     JsonObject *object = json_node_get_object (root);
+
+    if (!check_member (msg, object, "user_hash") ||
+        !check_member (msg, object, "app_id"))
+        return;
+
     const gchar *user_hash = json_object_get_string_member (object, "user_hash");
     const gchar *app_id = json_object_get_string_member (object, "app_id");
-    //json_object_get_array_member (object, "compat_ids");
-    gint64 limit = json_object_get_int_member (object, "limit");
+    //if (json_object_has_member (object, "compat_ids"))
+    //    json_object_get_array_member (object, "compat_ids");
+    gint64 limit = G_MAXINT64;
+    if (json_object_has_member (object, "limit"))
+        limit = json_object_get_int_member (object, "limit");
 
     MockApp *app = mock_odrs_server_find_app (self, app_id);
-    if (app == NULL) {
-        respond (msg, FALSE, NULL);
-        return;
-    }
 
     g_autofree gchar *user_skey = calculate_user_skey (user_hash);
 
     g_autoptr(JsonBuilder) builder = json_builder_new ();
     json_builder_begin_array (builder);
-    for (guint i = 0; i < app->reviews->len && i < limit; i++) {
+    for (guint i = 0; app != NULL && i < app->reviews->len && i < limit; i++) {
         MockReview *review = g_ptr_array_index (app->reviews, i);
         json_builder_begin_object (builder);
         json_builder_set_member_name (builder, "user_skey");
@@ -247,7 +263,7 @@ fetch_cb (SoupServer *server G_GNUC_UNUSED, SoupMessage *msg, const gchar *path 
         json_builder_add_string_value (builder, review->description);
         json_builder_end_object (builder);
     }
-    if (app->reviews->len == 0) {
+    if (app == NULL || app->reviews->len == 0) {
         json_builder_begin_object (builder);
         json_builder_set_member_name (builder, "user_skey");
         json_builder_add_string_value (builder, user_skey);
@@ -278,33 +294,52 @@ submit_cb (SoupServer *server G_GNUC_UNUSED, SoupMessage *msg, const gchar *path
     g_autoptr(GError) error = NULL;
     g_autoptr(JsonNode) root = decode_request (msg, &error);
     if (root == NULL) {
-        respond (msg, FALSE, NULL);
+        respond (msg, FALSE, "invalid request");
         return;
     }
 
     JsonObject *object = json_node_get_object (root);
+
+    if (!check_member (msg, object, "user_hash") ||
+        !check_member (msg, object, "user_skey") ||
+        !check_member (msg, object, "app_id") ||
+        !check_member (msg, object, "user_display") ||
+        !check_member (msg, object, "summary") ||
+        !check_member (msg, object, "description") ||
+        !check_member (msg, object, "rating"))
+        return;
+
     const gchar *user_hash = json_object_get_string_member (object, "user_hash");
     const gchar *user_skey = json_object_get_string_member (object, "user_skey");
     const gchar *app_id = json_object_get_string_member (object, "app_id");
-    const gchar *locale = json_object_get_string_member (object, "locale");
-    const gchar *distro = json_object_get_string_member (object, "distro");
-    const gchar *version = json_object_get_string_member (object, "version");
+    const gchar *locale = NULL;
+    if (json_object_has_member (object, "locale"))
+        locale = json_object_get_string_member (object, "locale");
+    const gchar *distro = NULL;
+    if (json_object_has_member (object, "distro"))
+        distro = json_object_get_string_member (object, "distro");
+    const gchar *version = NULL;
+    if (json_object_has_member (object, "version"))
+        version = json_object_get_string_member (object, "version");
     const gchar *user_display = json_object_get_string_member (object, "user_display");
     const gchar *summary = json_object_get_string_member (object, "summary");
     const gchar *description = json_object_get_string_member (object, "description");
     gint64 rating = json_object_get_int_member (object, "rating");
 
     if (!validate_user (user_hash, user_skey)) {
-        respond (msg, FALSE, NULL);
+        respond (msg, FALSE, "invalid user");
         return;
     }
+
+    g_autoptr(GDateTime) date_created = g_date_time_new_now_utc ();
 
     MockApp *app = mock_odrs_server_add_app (self, app_id);
     MockReview *review = mock_app_add_review (app);
     mock_review_set_locale (review, locale);
-    mock_review_set_distro (review, distro);
+    mock_review_set_version (review, distro);
     mock_review_set_version (review, version);
     mock_review_set_user_display (review, user_display);
+    mock_review_set_date_created (review, g_date_time_to_unix (date_created));
     mock_review_set_summary (review, summary);
     mock_review_set_description (review, description);
     mock_review_set_rating (review, rating);
@@ -325,30 +360,37 @@ feedback_cb (SoupServer *server G_GNUC_UNUSED, SoupMessage *msg, const gchar *pa
     g_autoptr(GError) error = NULL;
     g_autoptr(JsonNode) root = decode_request (msg, &error);
     if (root == NULL) {
-        respond (msg, FALSE, NULL);
+        respond (msg, FALSE, "invalid JSON");
         return;
     }
 
     JsonObject *object = json_node_get_object (root);
+
+    if (!check_member (msg, object, "user_hash") ||
+        !check_member (msg, object, "user_skey") ||
+        !check_member (msg, object, "app_id") ||
+        !check_member (msg, object, "review_id"))
+        return;
+
     const gchar *user_hash = json_object_get_string_member (object, "user_hash");
     const gchar *user_skey = json_object_get_string_member (object, "user_skey");
     const gchar *app_id = json_object_get_string_member (object, "app_id");
     gint64 review_id = json_object_get_int_member (object, "review_id");
 
     if (!validate_user (user_hash, user_skey)) {
-        respond (msg, FALSE, NULL);
+        respond (msg, FALSE, "invalid user_skey");
         return;
     }
 
     MockApp *app = mock_odrs_server_find_app (self, app_id);
     if (app == NULL) {
-        respond (msg, FALSE, NULL);
+        respond (msg, FALSE, "invalid app_id");
         return;
     }
 
     MockReview *review = mock_app_find_review (app, review_id);
     if (review == NULL) {
-        respond (msg, FALSE, NULL);
+        respond (msg, FALSE, "invalid review_id");
         return;
     }
 
@@ -512,6 +554,12 @@ mock_review_set_user_display (MockReview *review, const gchar *user_display)
 {
     g_free (review->user_display);
     review->user_display = g_strdup (user_display);
+}
+
+void
+mock_review_set_date_created (MockReview *review, gint64 date_created)
+{
+    review->date_created = date_created;
 }
 
 void

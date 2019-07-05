@@ -38,6 +38,8 @@ void            mock_review_set_distro       (MockReview *review, const gchar *d
 
 void            mock_review_set_version      (MockReview *review, const gchar *version);
 
+void            mock_review_set_date_created (MockReview *review, gint64 date_created);
+
 void            mock_review_set_user_display (MockReview *review, const gchar *user_display);
 
 void            mock_review_set_summary      (MockReview *review, const gchar *summary);
