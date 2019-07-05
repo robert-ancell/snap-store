@@ -69,6 +69,13 @@ store_application_command_line (GApplication *application, GApplicationCommandLi
         return 0;
     }
 
+    store_model_load (self->model);
+    store_model_update_ratings_async (self->model, NULL, NULL, NULL);
+
+    self->window = store_window_new (self);
+    store_window_set_model (self->window, self->model);
+    store_window_load (self->window);
+
     int args_length;
     g_auto(GStrv) args = g_application_command_line_get_arguments (command_line, &args_length);
     if (args_length >= 2) {
@@ -105,12 +112,6 @@ store_application_startup (GApplication *application)
     StoreApplication *self = STORE_APPLICATION (application);
 
     G_APPLICATION_CLASS (store_application_parent_class)->startup (application);
-
-    store_model_load (self->model);
-
-    self->window = store_window_new (self);
-    store_window_set_model (self->window, self->model);
-    store_window_load (self->window);
 
     self->css_provider = gtk_css_provider_new ();
     gtk_style_context_add_provider_for_screen (gdk_screen_get_default (), GTK_STYLE_PROVIDER (self->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -158,8 +159,6 @@ store_application_init (StoreApplication *self)
     self->model = store_model_new ();
     g_autoptr(StoreCache) cache = store_cache_new ();
     store_model_set_cache (self->model, cache);
-
-    store_model_update_ratings_async (self->model, NULL, NULL, NULL);
 }
 
 StoreApplication *
