@@ -2,6 +2,9 @@ project('snap-store', 'c',
         version : '0.1',
         default_options : ['warning_level=3', 'c_std=c11'])
 
+# GResource generates longer strings than the spec allows but GCC and clang support these fine
+add_project_arguments('-Wno-overlength-strings', language : 'c')
+
 gnome = import('gnome')
 i18n = import('i18n')
 
