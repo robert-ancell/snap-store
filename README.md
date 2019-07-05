@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ubuntu/snap-store.svg?branch=master)](https://travis-ci.org/ubuntu/snap-store)
+
 ## Snap Store is a graphical desktop application for discovering, installing and managing snaps on Linux.
 
 Snap Store showcases featured and popular applications with useful descriptions, ratings, reviews and screenshots.
