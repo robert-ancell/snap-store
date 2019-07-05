@@ -19,6 +19,7 @@ top_inc = include_directories('.')
 cc = meson.get_compiler('c')
 m_dep = cc.find_library('m', required : false)
 gtk_dep = dependency('gtk+-3.0')
+json_glib_dep = dependency('json-glib-1.0')
 snapd_glib_dep = dependency('snapd-glib')
 soup_dep = dependency('libsoup-2.4')
 
@@ -26,3 +27,4 @@ install_data('io.snapcraft.Store.desktop', install_dir: join_paths(get_option('d
 
 subdir('po')
 subdir('src')
+subdir('tests')
