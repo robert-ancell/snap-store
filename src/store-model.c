@@ -211,6 +211,9 @@ load_cached_category_apps (StoreModel *self, const gchar *section)
 {
     g_autoptr(GPtrArray) apps = g_ptr_array_new_with_free_func (g_object_unref);
 
+    if (self->cache == NULL)
+        return g_steal_pointer (&apps);
+
     g_autoptr(JsonNode) sections_cache = store_cache_lookup_json (self->cache, "sections", section, FALSE, NULL, NULL);
     if (sections_cache == NULL)
         return g_steal_pointer (&apps);
@@ -728,7 +731,8 @@ store_model_get_snap (StoreModel *self, const gchar *name)
         g_hash_table_insert (self->snaps, g_strdup (name), snap); // FIXME: Use a weak ref to clean out when no-longer used
     }
 
-    store_app_update_from_cache (STORE_APP (snap), self->cache);
+    if (self->cache != NULL)
+        store_app_update_from_cache (STORE_APP (snap), self->cache);
     set_review_counts (self, STORE_APP (snap));
     g_autoptr(GPtrArray) reviews = load_cached_reviews (self, name);
     if (reviews != NULL)
@@ -866,6 +870,11 @@ store_model_get_cached_image_async (StoreModel *self, const gchar *uri, gint wid
     g_return_if_fail (STORE_IS_MODEL (self));
 
     g_autoptr(GTask) task = g_task_new (self, cancellable, callback, callback_data);
+    if (self->cache == NULL) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_NOT_FOUND, "No cache");
+        return;
+    }
+
     g_task_set_task_data (task, get_image_data_new (self, uri, width, height), (GDestroyNotify) get_image_data_free);
     store_cache_lookup_async (self->cache, "images", uri, TRUE, cancellable, cached_image_cb, g_steal_pointer (&task)); // FIXME: Combine cancellables
 }
