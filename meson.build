@@ -18,6 +18,7 @@ top_inc = include_directories('.')
 
 cc = meson.get_compiler('c')
 m_dep = cc.find_library('m', required : false)
+gio_unix_dep = dependency('gio-unix-2.0')
 gtk_dep = dependency('gtk+-3.0')
 json_glib_dep = dependency('json-glib-1.0')
 snapd_glib_dep = dependency('snapd-glib')
