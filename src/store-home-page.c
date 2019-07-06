@@ -8,7 +8,6 @@
  */
 
 #include <glib/gi18n.h>
-#include <snapd-glib/snapd-glib.h>
 
 #include "store-home-page.h"
 
@@ -109,7 +108,6 @@ search_cb (StoreHomePage *self)
         return;
     }
 
-    g_autoptr(SnapdClient) client = snapd_client_new ();
     g_cancellable_cancel (self->search_cancellable);
     g_clear_object (&self->search_cancellable);
     self->search_cancellable = g_cancellable_new ();
