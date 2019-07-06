@@ -64,6 +64,12 @@ store_application_command_line (GApplication *application, GApplicationCommandLi
         store_model_set_odrs_server_uri (self->model, uri);
     }
 
+    if (g_variant_dict_contains (options, "snapd-socket-path")) {
+        const gchar *path;
+        g_variant_dict_lookup (options, "snapd-socket-path", "&s", &path);
+        store_model_set_snapd_socket_path (self->model, path);
+    }
+
     if (g_variant_dict_contains (options, "version")) {
         g_print ("snap-store " VERSION "\n");
         return 0;
@@ -150,6 +156,11 @@ store_application_init (StoreApplication *self)
            _("ODRS server URI"),
            /* Help text for argument to --odrs-server command line option */
            _("URI") },
+        { "snapd-socket-path", 0, 0, G_OPTION_ARG_STRING, NULL,
+           /* Help text for --snapd-socket-path command line option */
+           _("Socket snapd server is using"),
+           /* Help text for argument to --snapd-socket-path command line option */
+           _("PATH") },
         { NULL }
     };
 

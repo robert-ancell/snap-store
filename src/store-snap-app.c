@@ -12,6 +12,8 @@
 struct _StoreSnapApp
 {
     StoreApp parent_instance;
+
+    gchar *snapd_socket_path; // FIXME Make obsolete by having all the client code in StoreModel
 };
 
 G_DEFINE_TYPE (StoreSnapApp, store_snap_app, store_app_get_type ())
@@ -124,48 +126,67 @@ remove_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 }
 
 static void
-store_snap_app_install_async (StoreApp *self, StoreChannel *channel G_GNUC_UNUSED, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+store_snap_app_dispose (GObject *object)
 {
+    StoreSnapApp *self = STORE_SNAP_APP (object);
+
+    g_clear_pointer (&self->snapd_socket_path, g_free);
+
+    G_OBJECT_CLASS (store_snap_app_parent_class)->dispose (object);
+}
+
+static void
+store_snap_app_install_async (StoreApp *app, StoreChannel *channel G_GNUC_UNUSED, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+{
+    StoreSnapApp *self = STORE_SNAP_APP (app);
+
     g_autoptr(SnapdClient) client = snapd_client_new ();
-    GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
-    snapd_client_install2_async (client, SNAPD_INSTALL_FLAGS_NONE, store_app_get_name (self), NULL, NULL, NULL, NULL, cancellable, install_cb, task); // FIXME: channel
+    snapd_client_set_socket_path (client, self->snapd_socket_path);
+    GTask *task = g_task_new (app, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
+    snapd_client_install2_async (client, SNAPD_INSTALL_FLAGS_NONE, store_app_get_name (app), NULL, NULL, NULL, NULL, cancellable, install_cb, task); // FIXME: channel
 }
 
 static gboolean
-store_snap_app_install_finish (StoreApp *self G_GNUC_UNUSED, GAsyncResult *result, GError **error)
+store_snap_app_install_finish (StoreApp *app G_GNUC_UNUSED, GAsyncResult *result, GError **error)
 {
     return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 static gboolean
-store_snap_app_launch (StoreApp *self, GError **error)
+store_snap_app_launch (StoreApp *app, GError **error)
 {
-    g_autofree gchar *command_line = g_strdup_printf ("snap run %s", store_app_get_name (self));
+    g_autofree gchar *command_line = g_strdup_printf ("snap run %s", store_app_get_name (app));
     // FIXME: Use desktop file if available
     // FIXME: Won't handle command line apps
     return g_spawn_command_line_async (command_line, error);
 }
 
 static void
-store_snap_app_refresh_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+store_snap_app_refresh_async (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
+    StoreSnapApp *self = STORE_SNAP_APP (app);
+
     g_autoptr(SnapdClient) client = snapd_client_new ();
+    snapd_client_set_socket_path (client, self->snapd_socket_path);
     GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
-    snapd_client_find_async (client, SNAPD_FIND_FLAGS_MATCH_NAME, store_app_get_name (self), cancellable, find_cb, task);
+    snapd_client_find_async (client, SNAPD_FIND_FLAGS_MATCH_NAME, store_app_get_name (app), cancellable, find_cb, task);
 }
 
 static gboolean
-store_snap_app_refresh_finish (StoreApp *self G_GNUC_UNUSED, GAsyncResult *result, GError **error)
+store_snap_app_refresh_finish (StoreApp *app G_GNUC_UNUSED, GAsyncResult *result, GError **error)
 {
     return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 static void
-store_snap_app_remove_async (StoreApp *self, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
+store_snap_app_remove_async (StoreApp *app, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
+    StoreSnapApp *self = STORE_SNAP_APP (app);
+
     g_autoptr(SnapdClient) client = snapd_client_new ();
+    snapd_client_set_socket_path (client, self->snapd_socket_path);
     GTask *task = g_task_new (self, cancellable, callback, callback_data); // FIXME: Need to combine cancellables?
-    snapd_client_remove_async (client, store_app_get_name (self), NULL, NULL, cancellable, remove_cb, task);
+    snapd_client_remove_async (client, store_app_get_name (app), NULL, NULL, cancellable, remove_cb, task);
 }
 
 static gboolean
@@ -288,6 +309,7 @@ store_snap_app_update_from_cache (StoreApp *self, StoreCache *cache)
 static void
 store_snap_app_class_init (StoreSnapAppClass *klass)
 {
+    G_OBJECT_CLASS (klass)->dispose = store_snap_app_dispose;
     STORE_APP_CLASS (klass)->install_async = store_snap_app_install_async;
     STORE_APP_CLASS (klass)->install_finish = store_snap_app_install_finish;
     STORE_APP_CLASS (klass)->launch = store_snap_app_launch;
@@ -325,6 +347,14 @@ is_screenshot (SnapdMedia *media)
         return FALSE;
 
     return TRUE;
+}
+
+void
+store_snap_app_set_snapd_socket_path (StoreSnapApp *self, const gchar *path)
+{
+    g_return_if_fail (STORE_IS_SNAP_APP (self));
+    g_free (self->snapd_socket_path);
+    self->snapd_socket_path = g_strdup (path);
 }
 
 void

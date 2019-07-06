@@ -32,6 +32,8 @@ void           store_model_set_odrs_server_uri      (StoreModel *model, const gc
 
 const gchar   *store_model_get_odrs_server_uri      (StoreModel *model);
 
+void           store_model_set_snapd_socket_path    (StoreModel *model, const gchar *path);
+
 StoreSnapApp  *store_model_get_snap                 (StoreModel *model, const gchar *name);
 
 GPtrArray     *store_model_get_categories           (StoreModel *model);

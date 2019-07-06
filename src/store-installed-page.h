@@ -10,7 +10,6 @@
 #pragma once
 
 #include "store-page.h"
-#include "store-snap-pool.h"
 
 G_BEGIN_DECLS
 

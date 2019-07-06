@@ -17,8 +17,10 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (StoreSnapApp, store_snap_app, STORE, SNAP_APP, StoreApp)
 
-StoreSnapApp *store_snap_app_new                (void);
+StoreSnapApp *store_snap_app_new                   (void);
 
-void          store_snap_app_update_from_search (StoreSnapApp *app, SnapdSnap *snap);
+void          store_snap_app_set_snapd_socket_path (StoreSnapApp *app, const gchar *path);
+
+void          store_snap_app_update_from_search    (StoreSnapApp *app, SnapdSnap *snap);
 
 G_END_DECLS

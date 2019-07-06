@@ -13,7 +13,6 @@
 
 #include "store-model.h"
 #include "store-odrs-client.h"
-#include "store-snap-pool.h"
 
 struct _StoreModel
 {
@@ -24,7 +23,8 @@ struct _StoreModel
     GPtrArray *installed;
     StoreOdrsClient *odrs_client;
     SoupSession *session;
-    StoreSnapPool *snap_pool;
+    gchar *snapd_socket_path;
+    GHashTable *snaps;
 };
 
 enum
@@ -339,6 +339,7 @@ get_sections_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         store_category_set_apps (category, apps);
 
         g_autoptr(SnapdClient) client = snapd_client_new ();
+        snapd_client_set_socket_path (client, self->snapd_socket_path);
         snapd_client_find_section_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, sections[i], NULL, g_task_get_cancellable (task), get_category_snaps_cb, find_section_data_new (self, sections[i]));
     }
 
@@ -403,9 +404,11 @@ ratings_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     StoreModel *self = g_task_get_source_object (task);
 
     /* Update existing apps */
-    g_autoptr(GPtrArray) snaps = store_snap_pool_get_snaps (self->snap_pool);
-    for (guint i = 0; i < snaps->len; i++) {
-        StoreSnapApp *snap = g_ptr_array_index (snaps, i);
+    GHashTableIter iter;
+    g_hash_table_iter_init (&iter, self->snaps);
+    gpointer key, value;
+    while (g_hash_table_iter_next (&iter, &key, &value)) {
+        StoreSnapApp *snap = value;
         gint64 *ratings = store_odrs_client_get_ratings (self->odrs_client, store_app_get_appstream_id (STORE_APP (snap)));
         store_app_set_review_count_one_star (STORE_APP (snap), ratings != NULL ? ratings[0] : 0);
         store_app_set_review_count_two_star (STORE_APP (snap), ratings != NULL ? ratings[1] : 0);
@@ -599,7 +602,8 @@ store_model_dispose (GObject *object)
     g_clear_pointer (&self->installed, g_ptr_array_unref);
     g_clear_object (&self->odrs_client);
     g_clear_object (&self->session);
-    g_clear_object (&self->snap_pool);
+    g_clear_pointer (&self->snapd_socket_path, g_free);
+    g_clear_pointer (&self->snaps, g_hash_table_unref);
 
     G_OBJECT_CLASS (store_model_parent_class)->dispose (object);
 }
@@ -652,7 +656,7 @@ store_model_init (StoreModel *self)
     self->installed = g_ptr_array_new ();
     self->odrs_client = store_odrs_client_new ();
     self->session = soup_session_new ();
-    self->snap_pool = store_snap_pool_new ();
+    self->snaps = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 }
 
 StoreModel *
@@ -694,6 +698,15 @@ store_model_get_odrs_server (StoreModel *self)
 }
 
 void
+store_model_set_snapd_socket_path (StoreModel *self, const gchar *path)
+{
+    g_return_if_fail (STORE_IS_MODEL (self));
+    g_free (self->snapd_socket_path);
+    self->snapd_socket_path = g_strdup (path);
+    // FIXME: Update existing StoreSnapApp objects
+}
+
+void
 store_model_load (StoreModel *self)
 {
     g_return_if_fail (STORE_IS_MODEL (self));
@@ -707,14 +720,21 @@ store_model_get_snap (StoreModel *self, const gchar *name)
 {
     g_return_val_if_fail (STORE_IS_MODEL (self), NULL);
 
-    g_autoptr(StoreSnapApp) snap = store_snap_pool_get_snap (self->snap_pool, name);
+    StoreSnapApp *snap = g_hash_table_lookup (self->snaps, name);
+    if (snap == NULL) {
+        snap = store_snap_app_new ();
+        store_snap_app_set_snapd_socket_path (snap, self->snapd_socket_path);
+        store_app_set_name (STORE_APP (snap), name);
+        g_hash_table_insert (self->snaps, g_strdup (name), snap); // FIXME: Use a weak ref to clean out when no-longer used
+    }
+
     store_app_update_from_cache (STORE_APP (snap), self->cache);
     set_review_counts (self, STORE_APP (snap));
     g_autoptr(GPtrArray) reviews = load_cached_reviews (self, name);
     if (reviews != NULL)
         store_app_set_reviews (STORE_APP (snap), reviews);
 
-    return g_steal_pointer (&snap);
+    return g_object_ref (snap);
 }
 
 GPtrArray *
@@ -732,6 +752,7 @@ store_model_update_categories_async (StoreModel *self,
 
     g_autoptr(GTask) task = g_task_new (self, cancellable, callback, callback_data);
     g_autoptr(SnapdClient) client = snapd_client_new ();
+    snapd_client_set_socket_path (client, self->snapd_socket_path);
     snapd_client_get_sections_async (client, cancellable, get_sections_cb, g_steal_pointer (&task)); // FIXME: Combine cancellables
 }
 
@@ -759,6 +780,7 @@ store_model_update_installed_async (StoreModel *self,
 
     g_autoptr(GTask) task = g_task_new (self, cancellable, callback, callback_data);
     g_autoptr(SnapdClient) client = snapd_client_new ();
+    snapd_client_set_socket_path (client, self->snapd_socket_path);
     snapd_client_get_snaps_async (client, SNAPD_GET_SNAPS_FLAGS_NONE, NULL, cancellable, get_snaps_cb, g_steal_pointer (&task)); // FIXME: Combine cancellables
 }
 
@@ -824,6 +846,7 @@ store_model_search_async (StoreModel *self, const gchar *query,
 
     g_autoptr(GTask) task = g_task_new (self, cancellable, callback, callback_data);
     g_autoptr(SnapdClient) client = snapd_client_new ();
+    snapd_client_set_socket_path (client, self->snapd_socket_path);
     snapd_client_find_async (client, SNAPD_FIND_FLAGS_SCOPE_WIDE, query, cancellable, search_cb, g_steal_pointer (&task)); // FIXME: Combine cancellables
 }
 
