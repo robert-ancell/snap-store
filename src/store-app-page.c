@@ -44,6 +44,7 @@ struct _StoreAppPage
     StoreScreenshotView *screenshot_view;
     GtkLabel *summary_label;
     GtkLabel *title_label;
+    GtkButton *write_review_button;
 
     StoreApp *app;
     GCancellable *cancellable;
@@ -249,6 +250,7 @@ store_app_page_class_init (StoreAppPageClass *klass)
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, screenshot_view);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, summary_label);
     gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, title_label);
+    gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (klass), StoreAppPage, write_review_button);
 
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), contact_link_cb);
     gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (klass), install_cb);
@@ -303,6 +305,7 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     g_object_bind_property (app, "review-count-four-star", self->review_summary, "review-count-four-star", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "review-count-five-star", self->review_summary, "review-count-five-star", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "reviews", self, "reviews", G_BINDING_SYNC_CREATE);
+    g_object_bind_property (app, "installed", self->write_review_button, "visible", G_BINDING_SYNC_CREATE);
 
     if (store_app_get_contact (app) != NULL) {
         /* Link shown below app description to contact app publisher. */
@@ -314,9 +317,9 @@ store_app_page_set_app (StoreAppPage *self, StoreApp *app)
     else
         gtk_widget_hide (GTK_WIDGET (self->contact_label));
 
+    g_object_bind_property (app, "installed", self->channel_combo, "visible", G_BINDING_SYNC_CREATE | G_BINDING_INVERT_BOOLEAN);
     g_object_bind_property (app, "channels", self->channel_combo, "channels", G_BINDING_SYNC_CREATE);
 
-    g_object_bind_property (app, "installed", self->channel_combo, "visible", G_BINDING_SYNC_CREATE | G_BINDING_INVERT_BOOLEAN);
     g_object_bind_property (app, "installed", self->launch_button, "visible", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "installed", self->remove_button, "visible", G_BINDING_SYNC_CREATE);
     g_object_bind_property (app, "installed", self->install_button, "visible", G_BINDING_SYNC_CREATE | G_BINDING_INVERT_BOOLEAN);
