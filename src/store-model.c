@@ -567,6 +567,15 @@ read_cb (GObject *object, GAsyncResult *result, gpointer user_data)
             json_builder_set_member_name (builder, "etag");
             json_builder_add_string_value (builder, etag);
         }
+        const gchar *cache_control = soup_message_headers_get_one (image_data->message->response_headers, "Cache-Control");
+        if (cache_control != NULL) {
+            g_autoptr(GHashTable) params = soup_header_parse_param_list (cache_control);
+            const gchar *max_age = g_hash_table_lookup (params, "max-age");
+            if (max_age != NULL) {
+                json_builder_set_member_name (builder, "max-age");
+                json_builder_add_int_value (builder, g_ascii_strtoull (max_age, NULL, 10));
+            }
+        }
         json_builder_end_object (builder);
         g_autoptr(JsonNode) root = json_builder_get_root (builder);
         store_cache_insert_json (self->cache, "image-metadata", image_data->uri, TRUE, root, g_task_get_cancellable (task), NULL);
