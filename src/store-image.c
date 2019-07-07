@@ -15,7 +15,6 @@ struct _StoreImage
 {
     GtkDrawingArea parent_instance;
 
-    GCancellable *cache_cancellable;
     GCancellable *cancellable;
     guint height;
     StoreModel *model;
@@ -58,28 +57,6 @@ image_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    /* Cancel cached image if we got there first */
-    g_cancellable_cancel (self->cache_cancellable);
-    g_clear_object (&self->cache_cancellable);
-
-    set_pixbuf (self, pixbuf);
-}
-
-static void
-cache_cb (GObject *object, GAsyncResult *result, gpointer user_data)
-{
-    StoreImage *self = user_data;
-
-    g_autoptr(GError) error = NULL;
-    g_autoptr(GdkPixbuf) pixbuf = store_model_get_cached_image_finish (STORE_MODEL (object), result, &error);
-    if (pixbuf == NULL) {
-        if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-            return;
-        if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
-            g_warning ("Failed to load cached image: %s", error->message);
-        return;
-    }
-
     set_pixbuf (self, pixbuf);
 }
 
@@ -88,8 +65,6 @@ store_image_dispose (GObject *object)
 {
     StoreImage *self = STORE_IMAGE (object);
 
-    g_cancellable_cancel (self->cache_cancellable);
-    g_clear_object (&self->cache_cancellable);
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
     g_clear_object (&self->model);
@@ -259,8 +234,6 @@ store_image_set_uri (StoreImage *self, const gchar *uri)
     /* Cancel existing operation */
     g_cancellable_cancel (self->cancellable);
     g_clear_object (&self->cancellable);
-    g_cancellable_cancel (self->cache_cancellable);
-    g_clear_object (&self->cache_cancellable);
 
     g_autoptr(GdkPixbuf) pixbuf = gdk_pixbuf_new_from_resource_at_scale ("/io/snapcraft/Store/default-snap-icon.svg", self->width, self->height, TRUE, NULL); // FIXME: Make a property
     set_pixbuf (self, pixbuf);
@@ -268,16 +241,6 @@ store_image_set_uri (StoreImage *self, const gchar *uri)
     if (uri == NULL)
         return;
 
-    /* Load cache information */
-    g_autofree gchar *etag = NULL;
-    g_autoptr(GError) error = NULL;
-    if (!store_model_get_cached_image_metadata_sync (self->model, uri, &etag, NULL, NULL, self->cancellable, &error))
-        g_warning ("Failed to cached image metadata: %s", error->message);
-
     self->cancellable = g_cancellable_new ();
-    store_model_get_image_async (self->model, uri, etag, self->width, self->height, self->cancellable, image_cb, self);
-
-    /* Load cached version */
-    self->cache_cancellable = g_cancellable_new ();
-    store_model_get_cached_image_async (self->model, uri, self->width, self->height, self->cache_cancellable, cache_cb, self);
+    store_model_get_image_async (self->model, uri, self->width, self->height, self->cancellable, image_cb, self);
 }

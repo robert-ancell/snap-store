@@ -65,15 +65,7 @@ void           store_model_search_async                   (StoreModel *model, co
 
 GPtrArray     *store_model_search_finish                  (StoreModel *model, GAsyncResult *result, GError **error);
 
-gboolean       store_model_get_cached_image_metadata_sync (StoreModel *model, const gchar *uri, gchar **etag, gint64 *width, gint64 *height,
-                                                           GCancellable *cancellable, GError **error);
-
-void           store_model_get_cached_image_async         (StoreModel *model, const gchar *uri, gint width, gint height,
-                                                           GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
-
-GdkPixbuf     *store_model_get_cached_image_finish        (StoreModel *model, GAsyncResult *result, GError **error);
-
-void           store_model_get_image_async                (StoreModel *model, const gchar *uri, const gchar *etag, gint width, gint height,
+void           store_model_get_image_async                (StoreModel *model, const gchar *uri, gint width, gint height,
                                                            GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data);
 
 GdkPixbuf     *store_model_get_image_finish               (StoreModel *model, GAsyncResult *result, GError **error);
