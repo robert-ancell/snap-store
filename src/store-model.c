@@ -65,6 +65,9 @@ typedef struct
 {
     StoreModel *self;
     gchar *uri;
+    SoupMessage *message;
+    gint orig_width;
+    gint orig_height;
     gint width;
     gint height;
     GByteArray *buffer;
@@ -85,9 +88,10 @@ get_image_data_new (StoreModel *self, const gchar *uri, gint width, gint height)
 static void
 get_image_data_free (GetImageData *data)
 {
-    g_byte_array_unref (data->buffer);
-    g_free (data->uri);
-    g_free (data);
+    g_clear_pointer (&data->buffer, g_byte_array_unref);
+    g_clear_pointer (&data->uri, g_free);
+    g_clear_object (&data->message);
+    g_clear_pointer (&data, g_free);
 }
 
 static void
@@ -461,6 +465,9 @@ reviews_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 static void
 image_size_cb (GetImageData *data, gint width, gint height, GdkPixbufLoader *loader)
 {
+    data->orig_width = width;
+    data->orig_height = height;
+
     if (data->width == 0 || data->height == 0)
         return;
 
@@ -545,9 +552,26 @@ read_cb (GObject *object, GAsyncResult *result, gpointer user_data)
         return;
     }
 
-    /* Save in model */
-    if (self->cache != NULL)
+    /* Save in cache */
+    if (self->cache != NULL) {
+        g_autoptr(JsonBuilder) builder = json_builder_new ();
+        json_builder_begin_object (builder);
+        json_builder_set_member_name (builder, "uri");
+        json_builder_add_string_value (builder, image_data->uri);
+        json_builder_set_member_name (builder, "width");
+        json_builder_add_int_value (builder, image_data->orig_width);
+        json_builder_set_member_name (builder, "height");
+        json_builder_add_int_value (builder, image_data->orig_height);
+        const gchar *etag = soup_message_headers_get_one (image_data->message->response_headers, "ETag");
+        if (etag != NULL) {
+            json_builder_set_member_name (builder, "etag");
+            json_builder_add_string_value (builder, etag);
+        }
+        json_builder_end_object (builder);
+        g_autoptr(JsonNode) root = json_builder_get_root (builder);
+        store_cache_insert_json (self->cache, "image-metadata", image_data->uri, TRUE, root, g_task_get_cancellable (task), NULL);
         store_cache_insert (self->cache, "images", image_data->uri, TRUE, full_data, g_task_get_cancellable (task), NULL);
+    }
 
     g_task_return_pointer (task, g_steal_pointer (&pixbuf), g_object_unref);
 }
@@ -561,6 +585,14 @@ send_cb (GObject *object, GAsyncResult *result, gpointer user_data)
     g_autoptr(GInputStream) stream = soup_session_send_finish (SOUP_SESSION (object), result, &error);
     if (stream == NULL) {
         g_task_return_error (task, g_steal_pointer (&error));
+        return;
+    }
+
+    GetImageData *image_data = g_task_get_task_data (task);
+    SoupMessage *msg = image_data->message;
+
+    if (msg->status_code != SOUP_STATUS_OK) {
+        g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_FAILED, "Server returned status code %d", msg->status_code); // FIXME: Report 304 errors better
         return;
     }
 
@@ -863,6 +895,26 @@ store_model_search_finish (StoreModel *self, GAsyncResult *result, GError **erro
     return g_task_propagate_pointer (G_TASK (result), error);
 }
 
+gboolean
+store_model_get_cached_image_metadata_sync (StoreModel *self, const gchar *uri, gchar **etag, gint64 *width, gint64 *height, GCancellable *cancellable, GError **error)
+{
+    g_return_val_if_fail (STORE_IS_MODEL (self), FALSE);
+
+    g_autoptr(JsonNode) node = store_cache_lookup_json (self->cache, "image-metadata", uri, TRUE, cancellable, error);
+    if (node == NULL)
+        return FALSE;
+
+    JsonObject *o = json_node_get_object (node);
+    if (etag != NULL && json_object_has_member (o, "etag"))
+        *etag = g_strdup (json_object_get_string_member (o, "etag"));
+    if (width != NULL && json_object_has_member (o, "width"))
+        *width = json_object_get_int_member (o, "width");
+    if (height != NULL && json_object_has_member (o, "height"))
+        *height = json_object_get_int_member (o, "height");
+
+    return TRUE;
+}
+
 void
 store_model_get_cached_image_async (StoreModel *self, const gchar *uri, gint width, gint height,
                                     GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
@@ -889,15 +941,18 @@ store_model_get_cached_image_finish (StoreModel *self, GAsyncResult *result, GEr
 }
 
 void
-store_model_get_image_async (StoreModel *self, const gchar *uri, gint width, gint height,
+store_model_get_image_async (StoreModel *self, const gchar *uri, const gchar *etag, gint width, gint height,
                              GCancellable *cancellable, GAsyncReadyCallback callback, gpointer callback_data)
 {
     g_return_if_fail (STORE_IS_MODEL (self));
 
     g_autoptr(GTask) task = g_task_new (self, cancellable, callback, callback_data);
-    g_task_set_task_data (task, get_image_data_new (self, uri, width, height), (GDestroyNotify) get_image_data_free);
-    g_autoptr(SoupMessage) message = soup_message_new ("GET", uri);
-    soup_session_send_async (self->session, message, cancellable, send_cb, g_steal_pointer (&task)); // FIXME: Combine cancellables
+    GetImageData *image_data = get_image_data_new (self, uri, width, height);
+    g_task_set_task_data (task, image_data, (GDestroyNotify) get_image_data_free);
+    image_data->message = soup_message_new ("GET", uri);
+    if (etag != NULL)
+        soup_message_headers_append (image_data->message->request_headers, "If-None-Match", etag);
+    soup_session_send_async (self->session, image_data->message, cancellable, send_cb, g_steal_pointer (&task)); // FIXME: Combine cancellables
 }
 
 GdkPixbuf *

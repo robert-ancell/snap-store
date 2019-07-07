@@ -268,8 +268,14 @@ store_image_set_uri (StoreImage *self, const gchar *uri)
     if (uri == NULL)
         return;
 
+    /* Load cache information */
+    g_autofree gchar *etag = NULL;
+    g_autoptr(GError) error = NULL;
+    if (!store_model_get_cached_image_metadata_sync (self->model, uri, &etag, NULL, NULL, self->cancellable, &error))
+        g_warning ("Failed to cached image metadata: %s", error->message);
+
     self->cancellable = g_cancellable_new ();
-    store_model_get_image_async (self->model, uri, self->width, self->height, self->cancellable, image_cb, self);
+    store_model_get_image_async (self->model, uri, etag, self->width, self->height, self->cancellable, image_cb, self);
 
     /* Load cached version */
     self->cache_cancellable = g_cancellable_new ();
